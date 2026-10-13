@@ -9,6 +9,7 @@ import (
 	"slices"
 	"testing"
 	"testing/synctest"
+	"time"
 
 	"connectrpc.com/connect"
 
@@ -198,5 +199,43 @@ func TestDataConnect(t *testing.T) {
 	res, err := c.RowKey(context.Background(), connect.NewRequest(&quarryv1.RowKeyRequest{ConnId: "pg", Node: tableNode}))
 	if err != nil || !slices.Equal(res.Msg.Columns, []string{"id"}) {
 		t.Fatalf("row key = %v, %v", res, err)
+	}
+}
+
+type fakeTTLConn struct {
+	*fakeConn
+	ttl time.Duration
+}
+
+func (c *fakeTTLConn) SetKeyTTL(_ context.Context, _ *driver.Node, ttl time.Duration) error {
+	c.ttl = ttl
+	return nil
+}
+
+func TestSetTTL(t *testing.T) {
+	ctx := context.Background()
+	e := newEnv(t, nil)
+	tc := &fakeTTLConn{fakeConn: e.conn}
+	e.live.add("rd", driver.Redis, tc)
+	d := e.s.Data()
+	req := func(id string, ms int64, confirmed bool) *connect.Request[quarryv1.SetTTLRequest] {
+		return connect.NewRequest(&quarryv1.SetTTLRequest{ConnId: id, Node: tableNode, TtlMs: ms, Confirmed: confirmed})
+	}
+	if _, err := d.SetTTL(ctx, req("rd", 1500, false)); err != nil || tc.ttl != 1500*time.Millisecond {
+		t.Fatalf("set: %v, ttl %v", err, tc.ttl)
+	}
+	if _, err := d.SetTTL(ctx, req("pg", 1, false)); code(err) != connect.CodeUnimplemented {
+		t.Fatalf("pg: %v", err)
+	}
+	e.live.configure("rd", func(c *driver.Config) { c.Env = "prod" })
+	if _, err := d.SetTTL(ctx, req("rd", 0, false)); code(err) != connect.CodeFailedPrecondition {
+		t.Fatalf("prod unconfirmed: %v", err)
+	}
+	if _, err := d.SetTTL(ctx, req("rd", 0, true)); err != nil || tc.ttl != 0 {
+		t.Fatalf("prod confirmed: %v", err)
+	}
+	e.live.configure("rd", func(c *driver.Config) { c.ReadOnly = true })
+	if _, err := d.SetTTL(ctx, req("rd", 0, true)); code(err) != connect.CodeFailedPrecondition {
+		t.Fatalf("read-only: %v", err)
 	}
 }

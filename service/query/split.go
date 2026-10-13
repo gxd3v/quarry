@@ -8,6 +8,7 @@ import (
 	quarryv1 "github.com/gxd3v/quarry/gen/quarry/v1"
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
+	"github.com/gxd3v/quarry/internal/driver/redis"
 )
 
 // splitter cuts a script into statements in a backend's dialect.
@@ -18,6 +19,7 @@ type splitter struct {
 
 var splitters = map[driver.Kind]splitter{
 	driver.Postgres: {split: postgres.Split, at: postgres.StatementAt},
+	driver.Redis:    {split: redis.Split, at: redis.StatementAt},
 }
 
 func splitterFor(k driver.Kind) splitter {

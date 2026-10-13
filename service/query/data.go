@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"connectrpc.com/connect"
 
@@ -76,6 +77,33 @@ func (d *DataService) RowKey(ctx context.Context, req *connect.Request[quarryv1.
 	}
 	res.Columns = cols
 	return connect.NewResponse(res), nil
+}
+
+// keyTTLSetter is implemented by connections whose keys expire (Redis).
+type keyTTLSetter interface {
+	SetKeyTTL(ctx context.Context, target *driver.Node, ttl time.Duration) error
+}
+
+func (d *DataService) SetTTL(ctx context.Context, req *connect.Request[quarryv1.SetTTLRequest]) (*connect.Response[quarryv1.SetTTLResponse], error) {
+	m := req.Msg
+	conn, cfg, err := d.s.live.Live(m.ConnId)
+	if err != nil {
+		return nil, service.LiveError(err)
+	}
+	ts, ok := conn.(keyTTLSetter)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("%s connections have no key expiry", cfg.Kind))
+	}
+	if cfg.ReadOnly {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("connection is read-only"))
+	}
+	if strings.EqualFold(cfg.Env, "prod") && !m.Confirmed {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("confirmation required: changing a key's expiry on a prod connection"))
+	}
+	if err := ts.SetKeyTTL(ctx, service.NodeOf(m.Node), time.Duration(m.TtlMs)*time.Millisecond); err != nil {
+		return nil, driverError(err)
+	}
+	return connect.NewResponse(&quarryv1.SetTTLResponse{}), nil
 }
 
 func (d *DataService) ApplyChanges(ctx context.Context, req *connect.Request[quarryv1.ApplyChangesRequest]) (*connect.Response[quarryv1.ApplyChangesResponse], error) {

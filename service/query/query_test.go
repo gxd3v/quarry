@@ -539,7 +539,9 @@ func TestAnalyze(t *testing.T) {
 	}
 
 	res = analyze("redis", "\n  GET k\nSET k v  \n", 0)
-	if len(res.Statements) != 1 || res.Current != 0 || res.Statements[0].Start != 3 || res.Statements[0].End != 16 {
+	// One command per line.
+	if len(res.Statements) != 2 || res.Current != 0 || res.Statements[0].Start != 3 || res.Statements[0].End != 8 ||
+		res.Statements[1].Start != 9 || res.Statements[1].End != 16 {
 		t.Fatalf("redis analyze = %v", res)
 	}
 }
