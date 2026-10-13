@@ -1,22 +1,8 @@
 <script lang="ts">
-  import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
-  import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
-  import { PostgreSQL, sql } from '@codemirror/lang-sql'
-  import { bracketMatching, indentOnInput } from '@codemirror/language'
-  import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search'
   import { EditorState } from '@codemirror/state'
-  import {
-    drawSelection,
-    dropCursor,
-    EditorView,
-    highlightActiveLine,
-    highlightActiveLineGutter,
-    highlightSpecialChars,
-    keymap,
-    lineNumbers,
-  } from '@codemirror/view'
+  import { EditorView } from '@codemirror/view'
   import { untrack } from 'svelte'
-  import { mocha } from './theme'
+  import { baseExtensions } from './setup'
 
   interface Props {
     // Initial document; later changes to the prop are ignored.
@@ -35,21 +21,7 @@
         // Untracked so a new `value` does not recreate the view.
         doc: untrack(() => value),
         extensions: [
-          lineNumbers(),
-          highlightActiveLineGutter(),
-          highlightSpecialChars(),
-          history(),
-          drawSelection(),
-          dropCursor(),
-          indentOnInput(),
-          bracketMatching(),
-          closeBrackets(),
-          highlightActiveLine(),
-          highlightSelectionMatches(),
-          search({ top: true }),
-          keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, indentWithTab]),
-          sql({ dialect: PostgreSQL }),
-          mocha,
+          baseExtensions(),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) onchange?.(u.state.doc.toString())
           }),

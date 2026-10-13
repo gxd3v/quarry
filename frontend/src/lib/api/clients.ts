@@ -1,9 +1,27 @@
 import { createClient, type Client } from '@connectrpc/connect'
+import { ConnectionService } from '../gen/quarry/v1/connection_pb'
 import { DevService } from '../gen/quarry/v1/dev_pb'
+import { ExplorerService } from '../gen/quarry/v1/explorer_pb'
+import { QueryService } from '../gen/quarry/v1/query_pb'
 import { transport } from './transport'
 
 let dev: Client<typeof DevService> | undefined
+let connection: Client<typeof ConnectionService> | undefined
+let explorer: Client<typeof ExplorerService> | undefined
+let query: Client<typeof QueryService> | undefined
 
 export function devClient(): Client<typeof DevService> {
   return (dev ??= createClient(DevService, transport))
+}
+
+export function connectionClient(): Client<typeof ConnectionService> {
+  return (connection ??= createClient(ConnectionService, transport))
+}
+
+export function explorerClient(): Client<typeof ExplorerService> {
+  return (explorer ??= createClient(ExplorerService, transport))
+}
+
+export function queryClient(): Client<typeof QueryService> {
+  return (query ??= createClient(QueryService, transport))
 }

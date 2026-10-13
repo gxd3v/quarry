@@ -1,0 +1,153 @@
+/* Shared controls of the app shell, built on the Mocha tokens. */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--surface1);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--crust);
+  font-weight: 600;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: var(--lavender);
+}
+
+.btn.danger {
+  color: var(--red);
+}
+
+.btn.danger.solid {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--crust);
+  font-weight: 600;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--overlay2);
+  cursor: pointer;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--surface0);
+  color: var(--text);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+:is(.btn, .icon-btn, [tabindex]):focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--crust);
+  border: 1px solid var(--surface1);
+  border-radius: 5px;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field::placeholder {
+  color: var(--overlay0);
+}
+
+select.field {
+  padding: 0 4px;
+}
+
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--overlay1);
+}
+
+.env-dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--env-local);
+}
+
+[data-env='dev'] {
+  --env: var(--env-dev);
+}
+[data-env='qa'] {
+  --env: var(--env-qa);
+}
+[data-env='prod'] {
+  --env: var(--env-prod);
+}
+[data-env='local'] {
+  --env: var(--env-local);
+}
+
+.env-dot[data-env] {
+  background: var(--env);
+}
+
+.spinner {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--surface2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
