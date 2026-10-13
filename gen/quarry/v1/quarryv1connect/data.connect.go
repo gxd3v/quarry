@@ -40,6 +40,8 @@ const (
 	// DataServiceApplyChangesProcedure is the fully-qualified name of the DataService's ApplyChanges
 	// RPC.
 	DataServiceApplyChangesProcedure = "/quarry.v1.DataService/ApplyChanges"
+	// DataServiceSetTTLProcedure is the fully-qualified name of the DataService's SetTTL RPC.
+	DataServiceSetTTLProcedure = "/quarry.v1.DataService/SetTTL"
 )
 
 // DataServiceClient is a client for the quarry.v1.DataService service.
@@ -52,6 +54,8 @@ type DataServiceClient interface {
 	RowKey(context.Context, *connect.Request[v1.RowKeyRequest]) (*connect.Response[v1.RowKeyResponse], error)
 	// ApplyChanges writes all changes in one transaction.
 	ApplyChanges(context.Context, *connect.Request[v1.ApplyChangesRequest]) (*connect.Response[v1.ApplyChangesResponse], error)
+	// SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
+	SetTTL(context.Context, *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error)
 }
 
 // NewDataServiceClient constructs a client for the quarry.v1.DataService service. By default, it
@@ -83,6 +87,12 @@ func NewDataServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(dataServiceMethods.ByName("ApplyChanges")),
 			connect.WithClientOptions(opts...),
 		),
+		setTTL: connect.NewClient[v1.SetTTLRequest, v1.SetTTLResponse](
+			httpClient,
+			baseURL+DataServiceSetTTLProcedure,
+			connect.WithSchema(dataServiceMethods.ByName("SetTTL")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -91,6 +101,7 @@ type dataServiceClient struct {
 	openData     *connect.Client[v1.OpenDataRequest, v1.RunEvent]
 	rowKey       *connect.Client[v1.RowKeyRequest, v1.RowKeyResponse]
 	applyChanges *connect.Client[v1.ApplyChangesRequest, v1.ApplyChangesResponse]
+	setTTL       *connect.Client[v1.SetTTLRequest, v1.SetTTLResponse]
 }
 
 // OpenData calls quarry.v1.DataService.OpenData.
@@ -108,6 +119,11 @@ func (c *dataServiceClient) ApplyChanges(ctx context.Context, req *connect.Reque
 	return c.applyChanges.CallUnary(ctx, req)
 }
 
+// SetTTL calls quarry.v1.DataService.SetTTL.
+func (c *dataServiceClient) SetTTL(ctx context.Context, req *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error) {
+	return c.setTTL.CallUnary(ctx, req)
+}
+
 // DataServiceHandler is an implementation of the quarry.v1.DataService service.
 type DataServiceHandler interface {
 	// OpenData runs the table's data query in a query tab (see QueryService),
@@ -118,6 +134,8 @@ type DataServiceHandler interface {
 	RowKey(context.Context, *connect.Request[v1.RowKeyRequest]) (*connect.Response[v1.RowKeyResponse], error)
 	// ApplyChanges writes all changes in one transaction.
 	ApplyChanges(context.Context, *connect.Request[v1.ApplyChangesRequest]) (*connect.Response[v1.ApplyChangesResponse], error)
+	// SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
+	SetTTL(context.Context, *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error)
 }
 
 // NewDataServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -145,6 +163,12 @@ func NewDataServiceHandler(svc DataServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(dataServiceMethods.ByName("ApplyChanges")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dataServiceSetTTLHandler := connect.NewUnaryHandler(
+		DataServiceSetTTLProcedure,
+		svc.SetTTL,
+		connect.WithSchema(dataServiceMethods.ByName("SetTTL")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/quarry.v1.DataService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DataServiceOpenDataProcedure:
@@ -153,6 +177,8 @@ func NewDataServiceHandler(svc DataServiceHandler, opts ...connect.HandlerOption
 			dataServiceRowKeyHandler.ServeHTTP(w, r)
 		case DataServiceApplyChangesProcedure:
 			dataServiceApplyChangesHandler.ServeHTTP(w, r)
+		case DataServiceSetTTLProcedure:
+			dataServiceSetTTLHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -172,4 +198,8 @@ func (UnimplementedDataServiceHandler) RowKey(context.Context, *connect.Request[
 
 func (UnimplementedDataServiceHandler) ApplyChanges(context.Context, *connect.Request[v1.ApplyChangesRequest]) (*connect.Response[v1.ApplyChangesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.DataService.ApplyChanges is not implemented"))
+}
+
+func (UnimplementedDataServiceHandler) SetTTL(context.Context, *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.DataService.SetTTL is not implemented"))
 }

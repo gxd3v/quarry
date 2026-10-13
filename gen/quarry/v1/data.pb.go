@@ -415,6 +415,111 @@ func (*ApplyChangesResponse) Descriptor() ([]byte, []int) {
 	return file_quarry_v1_data_proto_rawDescGZIP(), []int{5}
 }
 
+type SetTTLRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	ConnId string                 `protobuf:"bytes,1,opt,name=conn_id,json=connId,proto3" json:"conn_id,omitempty"`
+	Node   *Node                  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
+	TtlMs  int64                  `protobuf:"varint,3,opt,name=ttl_ms,json=ttlMs,proto3" json:"ttl_ms,omitempty"`
+	// Required on prod connections.
+	Confirmed     bool `protobuf:"varint,4,opt,name=confirmed,proto3" json:"confirmed,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetTTLRequest) Reset() {
+	*x = SetTTLRequest{}
+	mi := &file_quarry_v1_data_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetTTLRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetTTLRequest) ProtoMessage() {}
+
+func (x *SetTTLRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_data_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetTTLRequest.ProtoReflect.Descriptor instead.
+func (*SetTTLRequest) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_data_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SetTTLRequest) GetConnId() string {
+	if x != nil {
+		return x.ConnId
+	}
+	return ""
+}
+
+func (x *SetTTLRequest) GetNode() *Node {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+func (x *SetTTLRequest) GetTtlMs() int64 {
+	if x != nil {
+		return x.TtlMs
+	}
+	return 0
+}
+
+func (x *SetTTLRequest) GetConfirmed() bool {
+	if x != nil {
+		return x.Confirmed
+	}
+	return false
+}
+
+type SetTTLResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetTTLResponse) Reset() {
+	*x = SetTTLResponse{}
+	mi := &file_quarry_v1_data_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetTTLResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetTTLResponse) ProtoMessage() {}
+
+func (x *SetTTLResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_data_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetTTLResponse.ProtoReflect.Descriptor instead.
+func (*SetTTLResponse) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_data_proto_rawDescGZIP(), []int{7}
+}
+
 var File_quarry_v1_data_proto protoreflect.FileDescriptor
 
 const file_quarry_v1_data_proto_rawDesc = "" +
@@ -446,16 +551,23 @@ const file_quarry_v1_data_proto_rawDesc = "" +
 	"\x04node\x18\x02 \x01(\v2\x0f.quarry.v1.NodeR\x04node\x12.\n" +
 	"\achanges\x18\x03 \x03(\v2\x14.quarry.v1.RowChangeR\achanges\x12\x1c\n" +
 	"\tconfirmed\x18\x04 \x01(\bR\tconfirmed\"\x16\n" +
-	"\x14ApplyChangesResponse*g\n" +
+	"\x14ApplyChangesResponse\"\x82\x01\n" +
+	"\rSetTTLRequest\x12\x17\n" +
+	"\aconn_id\x18\x01 \x01(\tR\x06connId\x12#\n" +
+	"\x04node\x18\x02 \x01(\v2\x0f.quarry.v1.NodeR\x04node\x12\x15\n" +
+	"\x06ttl_ms\x18\x03 \x01(\x03R\x05ttlMs\x12\x1c\n" +
+	"\tconfirmed\x18\x04 \x01(\bR\tconfirmed\"\x10\n" +
+	"\x0eSetTTLResponse*g\n" +
 	"\bChangeOp\x12\x19\n" +
 	"\x15CHANGE_OP_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10CHANGE_OP_INSERT\x10\x01\x12\x14\n" +
 	"\x10CHANGE_OP_UPDATE\x10\x02\x12\x14\n" +
-	"\x10CHANGE_OP_DELETE\x10\x032\xdc\x01\n" +
+	"\x10CHANGE_OP_DELETE\x10\x032\x9b\x02\n" +
 	"\vDataService\x12=\n" +
 	"\bOpenData\x12\x1a.quarry.v1.OpenDataRequest\x1a\x13.quarry.v1.RunEvent0\x01\x12=\n" +
 	"\x06RowKey\x12\x18.quarry.v1.RowKeyRequest\x1a\x19.quarry.v1.RowKeyResponse\x12O\n" +
-	"\fApplyChanges\x12\x1e.quarry.v1.ApplyChangesRequest\x1a\x1f.quarry.v1.ApplyChangesResponseB0Z.github.com/gxd3v/quarry/gen/quarry/v1;quarryv1b\x06proto3"
+	"\fApplyChanges\x12\x1e.quarry.v1.ApplyChangesRequest\x1a\x1f.quarry.v1.ApplyChangesResponse\x12=\n" +
+	"\x06SetTTL\x12\x18.quarry.v1.SetTTLRequest\x1a\x19.quarry.v1.SetTTLResponseB0Z.github.com/gxd3v/quarry/gen/quarry/v1;quarryv1b\x06proto3"
 
 var (
 	file_quarry_v1_data_proto_rawDescOnce sync.Once
@@ -470,7 +582,7 @@ func file_quarry_v1_data_proto_rawDescGZIP() []byte {
 }
 
 var file_quarry_v1_data_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_quarry_v1_data_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_quarry_v1_data_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_quarry_v1_data_proto_goTypes = []any{
 	(ChangeOp)(0),                // 0: quarry.v1.ChangeOp
 	(*OpenDataRequest)(nil),      // 1: quarry.v1.OpenDataRequest
@@ -479,33 +591,38 @@ var file_quarry_v1_data_proto_goTypes = []any{
 	(*RowChange)(nil),            // 4: quarry.v1.RowChange
 	(*ApplyChangesRequest)(nil),  // 5: quarry.v1.ApplyChangesRequest
 	(*ApplyChangesResponse)(nil), // 6: quarry.v1.ApplyChangesResponse
-	nil,                          // 7: quarry.v1.RowChange.KeyEntry
-	nil,                          // 8: quarry.v1.RowChange.ValuesEntry
-	(*Node)(nil),                 // 9: quarry.v1.Node
-	(*Value)(nil),                // 10: quarry.v1.Value
-	(*RunEvent)(nil),             // 11: quarry.v1.RunEvent
+	(*SetTTLRequest)(nil),        // 7: quarry.v1.SetTTLRequest
+	(*SetTTLResponse)(nil),       // 8: quarry.v1.SetTTLResponse
+	nil,                          // 9: quarry.v1.RowChange.KeyEntry
+	nil,                          // 10: quarry.v1.RowChange.ValuesEntry
+	(*Node)(nil),                 // 11: quarry.v1.Node
+	(*Value)(nil),                // 12: quarry.v1.Value
+	(*RunEvent)(nil),             // 13: quarry.v1.RunEvent
 }
 var file_quarry_v1_data_proto_depIdxs = []int32{
-	9,  // 0: quarry.v1.OpenDataRequest.node:type_name -> quarry.v1.Node
-	9,  // 1: quarry.v1.RowKeyRequest.node:type_name -> quarry.v1.Node
+	11, // 0: quarry.v1.OpenDataRequest.node:type_name -> quarry.v1.Node
+	11, // 1: quarry.v1.RowKeyRequest.node:type_name -> quarry.v1.Node
 	0,  // 2: quarry.v1.RowChange.op:type_name -> quarry.v1.ChangeOp
-	7,  // 3: quarry.v1.RowChange.key:type_name -> quarry.v1.RowChange.KeyEntry
-	8,  // 4: quarry.v1.RowChange.values:type_name -> quarry.v1.RowChange.ValuesEntry
-	9,  // 5: quarry.v1.ApplyChangesRequest.node:type_name -> quarry.v1.Node
+	9,  // 3: quarry.v1.RowChange.key:type_name -> quarry.v1.RowChange.KeyEntry
+	10, // 4: quarry.v1.RowChange.values:type_name -> quarry.v1.RowChange.ValuesEntry
+	11, // 5: quarry.v1.ApplyChangesRequest.node:type_name -> quarry.v1.Node
 	4,  // 6: quarry.v1.ApplyChangesRequest.changes:type_name -> quarry.v1.RowChange
-	10, // 7: quarry.v1.RowChange.KeyEntry.value:type_name -> quarry.v1.Value
-	10, // 8: quarry.v1.RowChange.ValuesEntry.value:type_name -> quarry.v1.Value
-	1,  // 9: quarry.v1.DataService.OpenData:input_type -> quarry.v1.OpenDataRequest
-	2,  // 10: quarry.v1.DataService.RowKey:input_type -> quarry.v1.RowKeyRequest
-	5,  // 11: quarry.v1.DataService.ApplyChanges:input_type -> quarry.v1.ApplyChangesRequest
-	11, // 12: quarry.v1.DataService.OpenData:output_type -> quarry.v1.RunEvent
-	3,  // 13: quarry.v1.DataService.RowKey:output_type -> quarry.v1.RowKeyResponse
-	6,  // 14: quarry.v1.DataService.ApplyChanges:output_type -> quarry.v1.ApplyChangesResponse
-	12, // [12:15] is the sub-list for method output_type
-	9,  // [9:12] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	11, // 7: quarry.v1.SetTTLRequest.node:type_name -> quarry.v1.Node
+	12, // 8: quarry.v1.RowChange.KeyEntry.value:type_name -> quarry.v1.Value
+	12, // 9: quarry.v1.RowChange.ValuesEntry.value:type_name -> quarry.v1.Value
+	1,  // 10: quarry.v1.DataService.OpenData:input_type -> quarry.v1.OpenDataRequest
+	2,  // 11: quarry.v1.DataService.RowKey:input_type -> quarry.v1.RowKeyRequest
+	5,  // 12: quarry.v1.DataService.ApplyChanges:input_type -> quarry.v1.ApplyChangesRequest
+	7,  // 13: quarry.v1.DataService.SetTTL:input_type -> quarry.v1.SetTTLRequest
+	13, // 14: quarry.v1.DataService.OpenData:output_type -> quarry.v1.RunEvent
+	3,  // 15: quarry.v1.DataService.RowKey:output_type -> quarry.v1.RowKeyResponse
+	6,  // 16: quarry.v1.DataService.ApplyChanges:output_type -> quarry.v1.ApplyChangesResponse
+	8,  // 17: quarry.v1.DataService.SetTTL:output_type -> quarry.v1.SetTTLResponse
+	14, // [14:18] is the sub-list for method output_type
+	10, // [10:14] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_quarry_v1_data_proto_init() }
@@ -522,7 +639,7 @@ func file_quarry_v1_data_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_quarry_v1_data_proto_rawDesc), len(file_quarry_v1_data_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

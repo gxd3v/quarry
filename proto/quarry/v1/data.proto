@@ -19,6 +19,8 @@ service DataService {
   rpc RowKey(RowKeyRequest) returns (RowKeyResponse);
   // ApplyChanges writes all changes in one transaction.
   rpc ApplyChanges(ApplyChangesRequest) returns (ApplyChangesResponse);
+  // SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
+  rpc SetTTL(SetTTLRequest) returns (SetTTLResponse);
 }
 
 message OpenDataRequest {
@@ -65,3 +67,13 @@ message ApplyChangesRequest {
 }
 
 message ApplyChangesResponse {}
+
+message SetTTLRequest {
+  string conn_id = 1;
+  Node node = 2;
+  int64 ttl_ms = 3;
+  // Required on prod connections.
+  bool confirmed = 4;
+}
+
+message SetTTLResponse {}
