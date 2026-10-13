@@ -9,14 +9,11 @@ import (
 	"github.com/gxd3v/quarry/internal/driver"
 )
 
-// Session is the editor layout restored at startup.
+// Session is the editor state restored at startup.
 type Session struct {
-	Tabs     []TabState `json:"tabs,omitempty"`
-	Active   int        `json:"active,omitzero"`
-	SideW    int        `json:"side_w,omitzero"`
-	ResH     int        `json:"res_h,omitzero"`
-	ShowSide bool       `json:"show_side,omitzero"`
-	ShowRes  bool       `json:"show_res,omitzero"`
+	Tabs   []TabState `json:"tabs,omitempty"`
+	Active int        `json:"active,omitzero"`
+	Layout string     `json:"layout,omitempty"` // frontend layout as opaque JSON
 }
 
 // TabState is one editor tab of a Session.

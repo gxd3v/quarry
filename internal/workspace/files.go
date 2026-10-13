@@ -22,8 +22,9 @@ import (
 const MaxFileSize = 10 << 20
 
 var (
-	ErrTooLarge = errors.New("file is larger than 10 MB")
-	ErrBinary   = errors.New("file looks binary or UTF-16 (it contains NUL bytes)")
+	ErrTooLarge   = errors.New("file is larger than 10 MB")
+	ErrBinary     = errors.New("file looks binary or UTF-16 (it contains NUL bytes)")
+	ErrNotScratch = errors.New("not a scratch file")
 )
 
 var bom = []byte("\xef\xbb\xbf")
@@ -65,11 +66,13 @@ func ReadFile(path string) (string, error) {
 	return string(b), nil
 }
 
-// WriteFile atomically replaces the file at path with text, keeping the mode
-// of an existing file (new files get 0644) and creating missing parent
-// directories. If path is a symlink, its target is replaced.
+// WriteFile atomically replaces the file at path with text, keeping the mode,
+// the UTF-8 BOM and the CRLF line endings of an existing file (new files get
+// 0644, no BOM and LF) and creating missing parent directories. If path is a
+// symlink, its target is replaced.
 func WriteFile(path, text string) error {
 	perm := fs.FileMode(0o644)
+	data := []byte(text)
 	if real, err := filepath.EvalSymlinks(path); err == nil {
 		path = real
 		fi, err := os.Stat(path)
@@ -80,12 +83,48 @@ func WriteFile(path, text string) error {
 			return fmt.Errorf("%s is a directory", path)
 		}
 		perm = fi.Mode().Perm()
+		hasBOM, crlf, err := fileStyle(path)
+		if err != nil {
+			return err
+		}
+		if crlf {
+			data = bytes.ReplaceAll(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")), []byte("\n"), []byte("\r\n"))
+		}
+		if hasBOM && !bytes.HasPrefix(data, bom) {
+			data = append(bom[:len(bom):len(bom)], data...)
+		}
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return err
 	} else if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	return writeAtomic(path, []byte(text), perm, true)
+	return writeAtomic(path, data, perm, true)
+}
+
+// fileStyle reports whether the file at path starts with a UTF-8 BOM and
+// whether its first line ends with CRLF.
+func fileStyle(path string) (hasBOM, crlf bool, err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, false, err
+	}
+	defer f.Close()
+	b := make([]byte, 64<<10)
+	n, err := io.ReadFull(f, b)
+	if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+		return false, false, err
+	}
+	b = b[:n]
+	if i := bytes.IndexByte(b, '\n'); i > 0 {
+		crlf = b[i-1] == '\r'
+	}
+	return bytes.HasPrefix(b, bom), crlf, nil
+}
+
+// WriteAtomic replaces path with data through a synced temporary file and a
+// rename, so that readers see either the old or the new content.
+func WriteAtomic(path string, data []byte, perm fs.FileMode) error {
+	return writeAtomic(path, data, perm, true)
 }
 
 // Binding is the connection and scope a script runs against.
@@ -263,4 +302,23 @@ func (s *Store) IsScratch(path string) bool {
 	}
 	dir, _ := pathKey(s.scratchDir)
 	return filepath.Dir(key) == dir
+}
+
+// DeleteScratch deletes the scratch file at path and drops its binding. It
+// refuses, with ErrNotScratch, any path that is not a scratch file.
+func (s *Store) DeleteScratch(path string) error {
+	if !s.IsScratch(path) {
+		return fmt.Errorf("%s: %w", path, ErrNotScratch)
+	}
+	fi, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
+	if !fi.Mode().IsRegular() {
+		return fmt.Errorf("%s: %w", path, ErrNotScratch)
+	}
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+	return s.Bind(path, Binding{})
 }

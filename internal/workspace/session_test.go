@@ -30,11 +30,8 @@ func TestSessionRoundTrip(t *testing.T) {
 			{Title: "untitled-1", Unsaved: "select 'ação' from dual;\n\t\"quoted\"\n", Dirty: true},
 			{Path: "/home/u/dirty.sql", Title: "dirty.sql", Cursor: 3, Unsaved: "edited", Dirty: true},
 		},
-		Active:   1,
-		SideW:    30,
-		ResH:     12,
-		ShowSide: true,
-		ShowRes:  true,
+		Active: 1,
+		Layout: `{"side":{"w":30,"open":true},"results":{"h":12},"note":"ação \"x\""}`,
 	}
 	if err := s.SaveSession(want); err != nil {
 		t.Fatal(err)
@@ -98,13 +95,29 @@ func TestSessionCorrupt(t *testing.T) {
 			if b, _ := os.ReadFile(matches[0]); string(b) != content {
 				t.Errorf("quarantined content = %q", b)
 			}
-			if err := s.SaveSession(Session{Active: 0, SideW: 1}); err != nil {
+			if err := s.SaveSession(Session{Layout: "{}"}); err != nil {
 				t.Fatal(err)
 			}
-			if sess, _ := s.LoadSession(); sess.SideW != 1 {
+			if sess, _ := s.LoadSession(); sess.Layout != "{}" {
 				t.Errorf("save after corruption failed: %+v", sess)
 			}
 		})
+	}
+}
+
+func TestSessionLegacyLayout(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "session.json")
+	old := `{"session":{"tabs":[{"title":"a"}],"side_w":30,"show_res":true},"unsaved":["x"]}`
+	os.WriteFile(p, []byte(old), 0o600)
+	s, _ := Open(dir)
+	sess, err := s.LoadSession()
+	want := Session{Tabs: []TabState{{Title: "a", Unsaved: "x"}}}
+	if err != nil || !reflect.DeepEqual(sess, want) {
+		t.Errorf("LoadSession = %+v, %v; want %+v", sess, err, want)
+	}
+	if m, _ := filepath.Glob(p + ".corrupt-*"); len(m) != 0 {
+		t.Errorf("legacy session quarantined: %v", m)
 	}
 }
 

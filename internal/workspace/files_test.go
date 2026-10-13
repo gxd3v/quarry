@@ -362,3 +362,78 @@ func TestScratches(t *testing.T) {
 		t.Errorf("IsScratch(upper case) != %v", want)
 	}
 }
+
+func TestWriteFileKeepsStyle(t *testing.T) {
+	dir := t.TempDir()
+	tests := []struct{ name, old, text, want string }{
+		{"lf", "a\nb\n", "x\ny\n", "x\ny\n"},
+		{"crlf", "a\r\nb\r\n", "x\ny\n", "x\r\ny\r\n"},
+		{"crlf mixed input", "a\r\n", "x\r\ny\nz", "x\r\ny\r\nz"},
+		{"bom", "\xef\xbb\xbfa\n", "x\n", "\xef\xbb\xbfx\n"},
+		{"bom crlf", "\xef\xbb\xbfa\r\nb", "x\ny", "\xef\xbb\xbfx\r\ny"},
+		{"bom not doubled", "\xef\xbb\xbfa", "\xef\xbb\xbfx", "\xef\xbb\xbfx"},
+		{"single line", "a", "x\ny", "x\ny"},
+		{"empty", "", "x\n", "x\n"},
+	}
+	for _, tt := range tests {
+		p := filepath.Join(dir, strings.ReplaceAll(tt.name, " ", "_")+".sql")
+		os.WriteFile(p, []byte(tt.old), 0o644)
+		if err := WriteFile(p, tt.text); err != nil {
+			t.Fatal(err)
+		}
+		if b, _ := os.ReadFile(p); string(b) != tt.want {
+			t.Errorf("%s: wrote %q, want %q", tt.name, b, tt.want)
+		}
+	}
+	// New files are written as given.
+	p := filepath.Join(dir, "new.sql")
+	if err := WriteFile(p, "x\ny\n"); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(p); string(b) != "x\ny\n" {
+		t.Errorf("new file = %q", b)
+	}
+}
+
+func TestDeleteScratch(t *testing.T) {
+	s := openStore(t)
+	p, err := s.NewScratch(".sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Bind(p, Binding{Conn: uuid.New()}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteScratch(p); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(p); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("scratch still exists: %v", err)
+	}
+	if _, ok := s.Binding(p); ok {
+		t.Error("binding kept after delete")
+	}
+	s2, _ := Open(s.Dir())
+	if _, ok := s2.Binding(p); ok {
+		t.Error("binding removal not persisted")
+	}
+	if err := s.DeleteScratch(p); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("deleting twice: err = %v, want ErrNotExist", err)
+	}
+
+	other := filepath.Join(t.TempDir(), "q.sql")
+	os.WriteFile(other, []byte("x"), 0o644)
+	sub := filepath.Join(s.scratchDir, "sub")
+	os.Mkdir(sub, 0o700)
+	for _, bad := range []string{other, filepath.Join(s.Dir(), "session.json"), s.scratchDir, sub} {
+		if err := s.DeleteScratch(bad); !errors.Is(err, ErrNotScratch) {
+			t.Errorf("DeleteScratch(%s): err = %v, want ErrNotScratch", bad, err)
+		}
+	}
+	if _, err := os.Stat(other); err != nil {
+		t.Errorf("non-scratch file deleted: %v", err)
+	}
+	if _, err := os.Stat(sub); err != nil {
+		t.Errorf("directory in scratch dir deleted: %v", err)
+	}
+}
