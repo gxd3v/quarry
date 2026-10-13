@@ -1715,6 +1715,197 @@ func (x *RollbackResponse) GetTx() *TxState {
 	return nil
 }
 
+type CompleteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TabId         string                 `protobuf:"bytes,1,opt,name=tab_id,json=tabId,proto3" json:"tab_id,omitempty"`
+	Script        string                 `protobuf:"bytes,2,opt,name=script,proto3" json:"script,omitempty"`
+	Cursor        int32                  `protobuf:"varint,3,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteRequest) Reset() {
+	*x = CompleteRequest{}
+	mi := &file_quarry_v1_query_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteRequest) ProtoMessage() {}
+
+func (x *CompleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteRequest.ProtoReflect.Descriptor instead.
+func (*CompleteRequest) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *CompleteRequest) GetTabId() string {
+	if x != nil {
+		return x.TabId
+	}
+	return ""
+}
+
+func (x *CompleteRequest) GetScript() string {
+	if x != nil {
+		return x.Script
+	}
+	return ""
+}
+
+func (x *CompleteRequest) GetCursor() int32 {
+	if x != nil {
+		return x.Cursor
+	}
+	return 0
+}
+
+type CompletionItem struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Label string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	// Replaces the response's [start, end) range.
+	Insert string `protobuf:"bytes,2,opt,name=insert,proto3" json:"insert,omitempty"`
+	Detail string `protobuf:"bytes,3,opt,name=detail,proto3" json:"detail,omitempty"`
+	// keyword | schema | table | view | column | function | alias | snippet |
+	// collection | command | key
+	Kind          string `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompletionItem) Reset() {
+	*x = CompletionItem{}
+	mi := &file_quarry_v1_query_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompletionItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompletionItem) ProtoMessage() {}
+
+func (x *CompletionItem) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompletionItem.ProtoReflect.Descriptor instead.
+func (*CompletionItem) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *CompletionItem) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *CompletionItem) GetInsert() string {
+	if x != nil {
+		return x.Insert
+	}
+	return ""
+}
+
+func (x *CompletionItem) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *CompletionItem) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+type CompleteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Start         int32                  `protobuf:"varint,1,opt,name=start,proto3" json:"start,omitempty"`
+	End           int32                  `protobuf:"varint,2,opt,name=end,proto3" json:"end,omitempty"`
+	Items         []*CompletionItem      `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteResponse) Reset() {
+	*x = CompleteResponse{}
+	mi := &file_quarry_v1_query_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteResponse) ProtoMessage() {}
+
+func (x *CompleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteResponse.ProtoReflect.Descriptor instead.
+func (*CompleteResponse) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *CompleteResponse) GetStart() int32 {
+	if x != nil {
+		return x.Start
+	}
+	return 0
+}
+
+func (x *CompleteResponse) GetEnd() int32 {
+	if x != nil {
+		return x.End
+	}
+	return 0
+}
+
+func (x *CompleteResponse) GetItems() []*CompletionItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_quarry_v1_query_proto protoreflect.FileDescriptor
 
 const file_quarry_v1_query_proto_rawDesc = "" +
@@ -1823,11 +2014,24 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\x0fRollbackRequest\x12\x15\n" +
 	"\x06tab_id\x18\x01 \x01(\tR\x05tabId\"6\n" +
 	"\x10RollbackResponse\x12\"\n" +
-	"\x02tx\x18\x01 \x01(\v2\x12.quarry.v1.TxStateR\x02tx*O\n" +
+	"\x02tx\x18\x01 \x01(\v2\x12.quarry.v1.TxStateR\x02tx\"X\n" +
+	"\x0fCompleteRequest\x12\x15\n" +
+	"\x06tab_id\x18\x01 \x01(\tR\x05tabId\x12\x16\n" +
+	"\x06script\x18\x02 \x01(\tR\x06script\x12\x16\n" +
+	"\x06cursor\x18\x03 \x01(\x05R\x06cursor\"j\n" +
+	"\x0eCompletionItem\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\x12\x16\n" +
+	"\x06insert\x18\x02 \x01(\tR\x06insert\x12\x16\n" +
+	"\x06detail\x18\x03 \x01(\tR\x06detail\x12\x12\n" +
+	"\x04kind\x18\x04 \x01(\tR\x04kind\"k\n" +
+	"\x10CompleteResponse\x12\x14\n" +
+	"\x05start\x18\x01 \x01(\x05R\x05start\x12\x10\n" +
+	"\x03end\x18\x02 \x01(\x05R\x03end\x12/\n" +
+	"\x05items\x18\x03 \x03(\v2\x19.quarry.v1.CompletionItemR\x05items*O\n" +
 	"\aRunMode\x12\x18\n" +
 	"\x14RUN_MODE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12RUN_MODE_STATEMENT\x10\x01\x12\x12\n" +
-	"\x0eRUN_MODE_RANGE\x10\x022\x9b\x05\n" +
+	"\x0eRUN_MODE_RANGE\x10\x022\xe0\x05\n" +
 	"\fQueryService\x12@\n" +
 	"\aOpenTab\x12\x19.quarry.v1.OpenTabRequest\x1a\x1a.quarry.v1.OpenTabResponse\x12=\n" +
 	"\x06Rebind\x12\x18.quarry.v1.RebindRequest\x1a\x19.quarry.v1.RebindResponse\x12C\n" +
@@ -1838,7 +2042,8 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\x06Cancel\x12\x18.quarry.v1.CancelRequest\x1a\x19.quarry.v1.CancelResponse\x12R\n" +
 	"\rSetAutoCommit\x12\x1f.quarry.v1.SetAutoCommitRequest\x1a .quarry.v1.SetAutoCommitResponse\x12=\n" +
 	"\x06Commit\x12\x18.quarry.v1.CommitRequest\x1a\x19.quarry.v1.CommitResponse\x12C\n" +
-	"\bRollback\x12\x1a.quarry.v1.RollbackRequest\x1a\x1b.quarry.v1.RollbackResponseB0Z.github.com/gxd3v/quarry/gen/quarry/v1;quarryv1b\x06proto3"
+	"\bRollback\x12\x1a.quarry.v1.RollbackRequest\x1a\x1b.quarry.v1.RollbackResponse\x12C\n" +
+	"\bComplete\x12\x1a.quarry.v1.CompleteRequest\x1a\x1b.quarry.v1.CompleteResponseB0Z.github.com/gxd3v/quarry/gen/quarry/v1;quarryv1b\x06proto3"
 
 var (
 	file_quarry_v1_query_proto_rawDescOnce sync.Once
@@ -1853,7 +2058,7 @@ func file_quarry_v1_query_proto_rawDescGZIP() []byte {
 }
 
 var file_quarry_v1_query_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_quarry_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_quarry_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_quarry_v1_query_proto_goTypes = []any{
 	(RunMode)(0),                  // 0: quarry.v1.RunMode
 	(*TxState)(nil),               // 1: quarry.v1.TxState
@@ -1885,18 +2090,21 @@ var file_quarry_v1_query_proto_goTypes = []any{
 	(*CommitResponse)(nil),        // 27: quarry.v1.CommitResponse
 	(*RollbackRequest)(nil),       // 28: quarry.v1.RollbackRequest
 	(*RollbackResponse)(nil),      // 29: quarry.v1.RollbackResponse
-	(*Scope)(nil),                 // 30: quarry.v1.Scope
-	(*Column)(nil),                // 31: quarry.v1.Column
-	(*Row)(nil),                   // 32: quarry.v1.Row
+	(*CompleteRequest)(nil),       // 30: quarry.v1.CompleteRequest
+	(*CompletionItem)(nil),        // 31: quarry.v1.CompletionItem
+	(*CompleteResponse)(nil),      // 32: quarry.v1.CompleteResponse
+	(*Scope)(nil),                 // 33: quarry.v1.Scope
+	(*Column)(nil),                // 34: quarry.v1.Column
+	(*Row)(nil),                   // 35: quarry.v1.Row
 }
 var file_quarry_v1_query_proto_depIdxs = []int32{
-	30, // 0: quarry.v1.OpenTabRequest.scope:type_name -> quarry.v1.Scope
-	30, // 1: quarry.v1.RebindRequest.scope:type_name -> quarry.v1.Scope
+	33, // 0: quarry.v1.OpenTabRequest.scope:type_name -> quarry.v1.Scope
+	33, // 1: quarry.v1.RebindRequest.scope:type_name -> quarry.v1.Scope
 	8,  // 2: quarry.v1.AnalyzeResponse.statements:type_name -> quarry.v1.StatementRange
 	0,  // 3: quarry.v1.RunRequest.mode:type_name -> quarry.v1.RunMode
 	8,  // 4: quarry.v1.StatementStarted.range:type_name -> quarry.v1.StatementRange
-	31, // 5: quarry.v1.ResultColumns.columns:type_name -> quarry.v1.Column
-	32, // 6: quarry.v1.RowBatch.rows:type_name -> quarry.v1.Row
+	34, // 5: quarry.v1.ResultColumns.columns:type_name -> quarry.v1.Column
+	35, // 6: quarry.v1.RowBatch.rows:type_name -> quarry.v1.Row
 	1,  // 7: quarry.v1.RunFinished.tx:type_name -> quarry.v1.TxState
 	13, // 8: quarry.v1.RunEvent.started:type_name -> quarry.v1.RunStarted
 	14, // 9: quarry.v1.RunEvent.statement:type_name -> quarry.v1.StatementStarted
@@ -1909,31 +2117,34 @@ var file_quarry_v1_query_proto_depIdxs = []int32{
 	1,  // 16: quarry.v1.SetAutoCommitResponse.tx:type_name -> quarry.v1.TxState
 	1,  // 17: quarry.v1.CommitResponse.tx:type_name -> quarry.v1.TxState
 	1,  // 18: quarry.v1.RollbackResponse.tx:type_name -> quarry.v1.TxState
-	2,  // 19: quarry.v1.QueryService.OpenTab:input_type -> quarry.v1.OpenTabRequest
-	4,  // 20: quarry.v1.QueryService.Rebind:input_type -> quarry.v1.RebindRequest
-	6,  // 21: quarry.v1.QueryService.CloseTab:input_type -> quarry.v1.CloseTabRequest
-	9,  // 22: quarry.v1.QueryService.Analyze:input_type -> quarry.v1.AnalyzeRequest
-	11, // 23: quarry.v1.QueryService.Run:input_type -> quarry.v1.RunRequest
-	12, // 24: quarry.v1.QueryService.Fetch:input_type -> quarry.v1.FetchRequest
-	22, // 25: quarry.v1.QueryService.Cancel:input_type -> quarry.v1.CancelRequest
-	24, // 26: quarry.v1.QueryService.SetAutoCommit:input_type -> quarry.v1.SetAutoCommitRequest
-	26, // 27: quarry.v1.QueryService.Commit:input_type -> quarry.v1.CommitRequest
-	28, // 28: quarry.v1.QueryService.Rollback:input_type -> quarry.v1.RollbackRequest
-	3,  // 29: quarry.v1.QueryService.OpenTab:output_type -> quarry.v1.OpenTabResponse
-	5,  // 30: quarry.v1.QueryService.Rebind:output_type -> quarry.v1.RebindResponse
-	7,  // 31: quarry.v1.QueryService.CloseTab:output_type -> quarry.v1.CloseTabResponse
-	10, // 32: quarry.v1.QueryService.Analyze:output_type -> quarry.v1.AnalyzeResponse
-	21, // 33: quarry.v1.QueryService.Run:output_type -> quarry.v1.RunEvent
-	21, // 34: quarry.v1.QueryService.Fetch:output_type -> quarry.v1.RunEvent
-	23, // 35: quarry.v1.QueryService.Cancel:output_type -> quarry.v1.CancelResponse
-	25, // 36: quarry.v1.QueryService.SetAutoCommit:output_type -> quarry.v1.SetAutoCommitResponse
-	27, // 37: quarry.v1.QueryService.Commit:output_type -> quarry.v1.CommitResponse
-	29, // 38: quarry.v1.QueryService.Rollback:output_type -> quarry.v1.RollbackResponse
-	29, // [29:39] is the sub-list for method output_type
-	19, // [19:29] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	31, // 19: quarry.v1.CompleteResponse.items:type_name -> quarry.v1.CompletionItem
+	2,  // 20: quarry.v1.QueryService.OpenTab:input_type -> quarry.v1.OpenTabRequest
+	4,  // 21: quarry.v1.QueryService.Rebind:input_type -> quarry.v1.RebindRequest
+	6,  // 22: quarry.v1.QueryService.CloseTab:input_type -> quarry.v1.CloseTabRequest
+	9,  // 23: quarry.v1.QueryService.Analyze:input_type -> quarry.v1.AnalyzeRequest
+	11, // 24: quarry.v1.QueryService.Run:input_type -> quarry.v1.RunRequest
+	12, // 25: quarry.v1.QueryService.Fetch:input_type -> quarry.v1.FetchRequest
+	22, // 26: quarry.v1.QueryService.Cancel:input_type -> quarry.v1.CancelRequest
+	24, // 27: quarry.v1.QueryService.SetAutoCommit:input_type -> quarry.v1.SetAutoCommitRequest
+	26, // 28: quarry.v1.QueryService.Commit:input_type -> quarry.v1.CommitRequest
+	28, // 29: quarry.v1.QueryService.Rollback:input_type -> quarry.v1.RollbackRequest
+	30, // 30: quarry.v1.QueryService.Complete:input_type -> quarry.v1.CompleteRequest
+	3,  // 31: quarry.v1.QueryService.OpenTab:output_type -> quarry.v1.OpenTabResponse
+	5,  // 32: quarry.v1.QueryService.Rebind:output_type -> quarry.v1.RebindResponse
+	7,  // 33: quarry.v1.QueryService.CloseTab:output_type -> quarry.v1.CloseTabResponse
+	10, // 34: quarry.v1.QueryService.Analyze:output_type -> quarry.v1.AnalyzeResponse
+	21, // 35: quarry.v1.QueryService.Run:output_type -> quarry.v1.RunEvent
+	21, // 36: quarry.v1.QueryService.Fetch:output_type -> quarry.v1.RunEvent
+	23, // 37: quarry.v1.QueryService.Cancel:output_type -> quarry.v1.CancelResponse
+	25, // 38: quarry.v1.QueryService.SetAutoCommit:output_type -> quarry.v1.SetAutoCommitResponse
+	27, // 39: quarry.v1.QueryService.Commit:output_type -> quarry.v1.CommitResponse
+	29, // 40: quarry.v1.QueryService.Rollback:output_type -> quarry.v1.RollbackResponse
+	32, // 41: quarry.v1.QueryService.Complete:output_type -> quarry.v1.CompleteResponse
+	31, // [31:42] is the sub-list for method output_type
+	20, // [20:31] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_quarry_v1_query_proto_init() }
@@ -1959,7 +2170,7 @@ func file_quarry_v1_query_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_quarry_v1_query_proto_rawDesc), len(file_quarry_v1_query_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   29,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

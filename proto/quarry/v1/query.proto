@@ -28,6 +28,9 @@ service QueryService {
   rpc SetAutoCommit(SetAutoCommitRequest) returns (SetAutoCommitResponse);
   rpc Commit(CommitRequest) returns (CommitResponse);
   rpc Rollback(RollbackRequest) returns (RollbackResponse);
+  // Complete suggests completions at the cursor. It never waits for a
+  // running statement of the tab.
+  rpc Complete(CompleteRequest) returns (CompleteResponse);
 }
 
 message TxState {
@@ -196,4 +199,26 @@ message RollbackRequest {
 
 message RollbackResponse {
   TxState tx = 1;
+}
+
+message CompleteRequest {
+  string tab_id = 1;
+  string script = 2;
+  int32 cursor = 3;
+}
+
+message CompletionItem {
+  string label = 1;
+  // Replaces the response's [start, end) range.
+  string insert = 2;
+  string detail = 3;
+  // keyword | schema | table | view | column | function | alias | snippet |
+  // collection | command | key
+  string kind = 4;
+}
+
+message CompleteResponse {
+  int32 start = 1;
+  int32 end = 2;
+  repeated CompletionItem items = 3;
 }

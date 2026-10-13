@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "google/protobuf/timestamp.proto";
+import "quarry/v1/explorer.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// WorkspaceService persists the editing state: script files and their
+// connection bindings, scratches, the restored session, query history and
+// user settings.
+service WorkspaceService {
+  // ReadFile returns a script and the connection it is bound to, if any.
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+  // WriteFile saves a script atomically, keeping its line endings and BOM.
+  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
+  rpc Bind(BindRequest) returns (BindResponse);
+  rpc NewScratch(NewScratchRequest) returns (NewScratchResponse);
+  rpc ListScratches(ListScratchesRequest) returns (ListScratchesResponse);
+  rpc DeleteScratch(DeleteScratchRequest) returns (DeleteScratchResponse);
+  rpc LoadSession(LoadSessionRequest) returns (LoadSessionResponse);
+  rpc SaveSession(SaveSessionRequest) returns (SaveSessionResponse);
+  rpc History(HistoryRequest) returns (HistoryResponse);
+  rpc ClearHistory(ClearHistoryRequest) returns (ClearHistoryResponse);
+  rpc GetSettings(GetSettingsRequest) returns (GetSettingsResponse);
+  rpc SaveSettings(SaveSettingsRequest) returns (SaveSettingsResponse);
+}
+
+message Binding {
+  string conn_id = 1;
+  Scope scope = 2;
+}
+
+message ReadFileRequest {
+  string path = 1;
+}
+
+message ReadFileResponse {
+  string text = 1;
+  // Absent when the file is not bound to a connection.
+  Binding binding = 2;
+  bool scratch = 3;
+}
+
+message WriteFileRequest {
+  string path = 1;
+  string text = 2;
+}
+
+message WriteFileResponse {}
+
+message BindRequest {
+  string path = 1;
+  Binding binding = 2;
+}
+
+message BindResponse {}
+
+message FileInfo {
+  string path = 1;
+  string name = 2;
+  google.protobuf.Timestamp modified = 3;
+  int64 size = 4;
+}
+
+message NewScratchRequest {
+  // Extension such as ".sql"; empty means ".sql".
+  string ext = 1;
+}
+
+message NewScratchResponse {
+  string path = 1;
+}
+
+message ListScratchesRequest {}
+
+message ListScratchesResponse {
+  repeated FileInfo files = 1;
+}
+
+message DeleteScratchRequest {
+  string path = 1;
+}
+
+message DeleteScratchResponse {}
+
+message TabState {
+  // File or scratch path; empty for untitled tabs.
+  string path = 1;
+  string title = 2;
+  string conn_id = 3;
+  Scope scope = 4;
+  // UTF-16 offset in the editor.
+  int32 cursor = 5;
+  // Content of untitled or dirty tabs.
+  string unsaved = 6;
+  bool dirty = 7;
+}
+
+message Session {
+  repeated TabState tabs = 1;
+  int32 active = 2;
+  // Frontend layout (panel sizes, open panels), opaque to the backend.
+  string layout_json = 3;
+}
+
+message LoadSessionRequest {}
+
+message LoadSessionResponse {
+  Session session = 1;
+}
+
+message SaveSessionRequest {
+  Session session = 1;
+}
+
+message SaveSessionResponse {}
+
+message HistoryEntry {
+  google.protobuf.Timestamp at = 1;
+  string conn_id = 2;
+  Scope scope = 3;
+  string text = 4;
+  int64 duration_ms = 5;
+  // -1 when unknown.
+  int64 rows = 6;
+  string error = 7;
+}
+
+message HistoryRequest {
+  string conn_id = 1;
+  // Case-insensitive substring filter on the statement text.
+  string query = 2;
+  // 0 means 200.
+  int32 limit = 3;
+}
+
+message HistoryResponse {
+  // Newest first.
+  repeated HistoryEntry entries = 1;
+}
+
+message ClearHistoryRequest {
+  string conn_id = 1;
+}
+
+message ClearHistoryResponse {}
+
+message GetSettingsRequest {}
+
+message GetSettingsResponse {
+  // JSON object, "{}" when nothing was saved.
+  string json = 1;
+}
+
+message SaveSettingsRequest {
+  string json = 1;
+}
+
+message SaveSettingsResponse {}

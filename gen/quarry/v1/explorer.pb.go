@@ -326,9 +326,11 @@ func (x *CatalogObject) GetColumns() []*Column {
 }
 
 type CatalogRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ConnId        string                 `protobuf:"bytes,1,opt,name=conn_id,json=connId,proto3" json:"conn_id,omitempty"`
-	Scope         *Scope                 `protobuf:"bytes,2,opt,name=scope,proto3" json:"scope,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	ConnId string                 `protobuf:"bytes,1,opt,name=conn_id,json=connId,proto3" json:"conn_id,omitempty"`
+	Scope  *Scope                 `protobuf:"bytes,2,opt,name=scope,proto3" json:"scope,omitempty"`
+	// Catalogs are cached per connection and scope; refresh reloads it.
+	Refresh       bool `protobuf:"varint,3,opt,name=refresh,proto3" json:"refresh,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -375,6 +377,13 @@ func (x *CatalogRequest) GetScope() *Scope {
 		return x.Scope
 	}
 	return nil
+}
+
+func (x *CatalogRequest) GetRefresh() bool {
+	if x != nil {
+		return x.Refresh
+	}
+	return false
 }
 
 type CatalogResponse struct {
@@ -717,10 +726,11 @@ const file_quarry_v1_explorer_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04kind\x18\x03 \x01(\tR\x04kind\x12\x16\n" +
 	"\x06detail\x18\x04 \x01(\tR\x06detail\x12+\n" +
-	"\acolumns\x18\x05 \x03(\v2\x11.quarry.v1.ColumnR\acolumns\"Q\n" +
+	"\acolumns\x18\x05 \x03(\v2\x11.quarry.v1.ColumnR\acolumns\"k\n" +
 	"\x0eCatalogRequest\x12\x17\n" +
 	"\aconn_id\x18\x01 \x01(\tR\x06connId\x12&\n" +
-	"\x05scope\x18\x02 \x01(\v2\x10.quarry.v1.ScopeR\x05scope\"E\n" +
+	"\x05scope\x18\x02 \x01(\v2\x10.quarry.v1.ScopeR\x05scope\x12\x18\n" +
+	"\arefresh\x18\x03 \x01(\bR\arefresh\"E\n" +
 	"\x0fCatalogResponse\x122\n" +
 	"\aobjects\x18\x01 \x03(\v2\x18.quarry.v1.CatalogObjectR\aobjects\"\xa5\x01\n" +
 	"\n" +

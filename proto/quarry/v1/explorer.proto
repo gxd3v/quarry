@@ -50,6 +50,8 @@ message CatalogObject {
 message CatalogRequest {
   string conn_id = 1;
   Scope scope = 2;
+  // Catalogs are cached per connection and scope; refresh reloads it.
+  bool refresh = 3;
 }
 
 message CatalogResponse {

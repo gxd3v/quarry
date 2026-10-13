@@ -54,6 +54,8 @@ const (
 	QueryServiceCommitProcedure = "/quarry.v1.QueryService/Commit"
 	// QueryServiceRollbackProcedure is the fully-qualified name of the QueryService's Rollback RPC.
 	QueryServiceRollbackProcedure = "/quarry.v1.QueryService/Rollback"
+	// QueryServiceCompleteProcedure is the fully-qualified name of the QueryService's Complete RPC.
+	QueryServiceCompleteProcedure = "/quarry.v1.QueryService/Complete"
 )
 
 // QueryServiceClient is a client for the quarry.v1.QueryService service.
@@ -73,6 +75,9 @@ type QueryServiceClient interface {
 	SetAutoCommit(context.Context, *connect.Request[v1.SetAutoCommitRequest]) (*connect.Response[v1.SetAutoCommitResponse], error)
 	Commit(context.Context, *connect.Request[v1.CommitRequest]) (*connect.Response[v1.CommitResponse], error)
 	Rollback(context.Context, *connect.Request[v1.RollbackRequest]) (*connect.Response[v1.RollbackResponse], error)
+	// Complete suggests completions at the cursor. It never waits for a
+	// running statement of the tab.
+	Complete(context.Context, *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error)
 }
 
 // NewQueryServiceClient constructs a client for the quarry.v1.QueryService service. By default, it
@@ -146,6 +151,12 @@ func NewQueryServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(queryServiceMethods.ByName("Rollback")),
 			connect.WithClientOptions(opts...),
 		),
+		complete: connect.NewClient[v1.CompleteRequest, v1.CompleteResponse](
+			httpClient,
+			baseURL+QueryServiceCompleteProcedure,
+			connect.WithSchema(queryServiceMethods.ByName("Complete")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -161,6 +172,7 @@ type queryServiceClient struct {
 	setAutoCommit *connect.Client[v1.SetAutoCommitRequest, v1.SetAutoCommitResponse]
 	commit        *connect.Client[v1.CommitRequest, v1.CommitResponse]
 	rollback      *connect.Client[v1.RollbackRequest, v1.RollbackResponse]
+	complete      *connect.Client[v1.CompleteRequest, v1.CompleteResponse]
 }
 
 // OpenTab calls quarry.v1.QueryService.OpenTab.
@@ -213,6 +225,11 @@ func (c *queryServiceClient) Rollback(ctx context.Context, req *connect.Request[
 	return c.rollback.CallUnary(ctx, req)
 }
 
+// Complete calls quarry.v1.QueryService.Complete.
+func (c *queryServiceClient) Complete(ctx context.Context, req *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error) {
+	return c.complete.CallUnary(ctx, req)
+}
+
 // QueryServiceHandler is an implementation of the quarry.v1.QueryService service.
 type QueryServiceHandler interface {
 	OpenTab(context.Context, *connect.Request[v1.OpenTabRequest]) (*connect.Response[v1.OpenTabResponse], error)
@@ -230,6 +247,9 @@ type QueryServiceHandler interface {
 	SetAutoCommit(context.Context, *connect.Request[v1.SetAutoCommitRequest]) (*connect.Response[v1.SetAutoCommitResponse], error)
 	Commit(context.Context, *connect.Request[v1.CommitRequest]) (*connect.Response[v1.CommitResponse], error)
 	Rollback(context.Context, *connect.Request[v1.RollbackRequest]) (*connect.Response[v1.RollbackResponse], error)
+	// Complete suggests completions at the cursor. It never waits for a
+	// running statement of the tab.
+	Complete(context.Context, *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error)
 }
 
 // NewQueryServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -299,6 +319,12 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(queryServiceMethods.ByName("Rollback")),
 		connect.WithHandlerOptions(opts...),
 	)
+	queryServiceCompleteHandler := connect.NewUnaryHandler(
+		QueryServiceCompleteProcedure,
+		svc.Complete,
+		connect.WithSchema(queryServiceMethods.ByName("Complete")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/quarry.v1.QueryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case QueryServiceOpenTabProcedure:
@@ -321,6 +347,8 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 			queryServiceCommitHandler.ServeHTTP(w, r)
 		case QueryServiceRollbackProcedure:
 			queryServiceRollbackHandler.ServeHTTP(w, r)
+		case QueryServiceCompleteProcedure:
+			queryServiceCompleteHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -368,4 +396,8 @@ func (UnimplementedQueryServiceHandler) Commit(context.Context, *connect.Request
 
 func (UnimplementedQueryServiceHandler) Rollback(context.Context, *connect.Request[v1.RollbackRequest]) (*connect.Response[v1.RollbackResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.QueryService.Rollback is not implemented"))
+}
+
+func (UnimplementedQueryServiceHandler) Complete(context.Context, *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.QueryService.Complete is not implemented"))
 }
