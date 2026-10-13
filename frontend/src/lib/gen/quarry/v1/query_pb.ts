@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file quarry/v1/query.proto.
  */
 export const file_quarry_v1_query: GenFile = /*@__PURE__*/
-  fileDesc("ChVxdWFycnkvdjEvcXVlcnkucHJvdG8SCXF1YXJyeS52MSJACgdUeFN0YXRlEhEKCXN1cHBvcnRlZBgBIAEoCBITCgthdXRvX2NvbW1pdBgCIAEoCBINCgVpbl90eBgDIAEoCCJCCg5PcGVuVGFiUmVxdWVzdBIPCgdjb25uX2lkGAEgASgJEh8KBXNjb3BlGAIgASgLMhAucXVhcnJ5LnYxLlNjb3BlIjMKD09wZW5UYWJSZXNwb25zZRIOCgZ0YWJfaWQYASABKAkSEAoIbGFuZ3VhZ2UYAiABKAkiUQoNUmViaW5kUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDwoHY29ubl9pZBgCIAEoCRIfCgVzY29wZRgDIAEoCzIQLnF1YXJyeS52MS5TY29wZSIiCg5SZWJpbmRSZXNwb25zZRIQCghsYW5ndWFnZRgBIAEoCSIhCg9DbG9zZVRhYlJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhIKEENsb3NlVGFiUmVzcG9uc2UiLAoOU3RhdGVtZW50UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIkAKDkFuYWx5emVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIlEKD0FuYWx5emVSZXNwb25zZRItCgpzdGF0ZW1lbnRzGAEgAygLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlEg8KB2N1cnJlbnQYAiABKAUifAoKUnVuUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDgoGc2NyaXB0GAIgASgJEiAKBG1vZGUYAyABKA4yEi5xdWFycnkudjEuUnVuTW9kZRINCgVzdGFydBgEIAEoBRILCgNlbmQYBSABKAUSEAoIbWF4X3Jvd3MYBiABKAUiMAoMRmV0Y2hSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIQCghtYXhfcm93cxgCIAEoBSIwCgpSdW5TdGFydGVkEg4KBnJ1bl9pZBgBIAEoCRISCgpzdGF0ZW1lbnRzGAIgASgFIksKEFN0YXRlbWVudFN0YXJ0ZWQSDQoFaW5kZXgYASABKAUSKAoFcmFuZ2UYAiABKAsyGS5xdWFycnkudjEuU3RhdGVtZW50UmFuZ2UiMwoNUmVzdWx0Q29sdW1ucxIiCgdjb2x1bW5zGAEgAygLMhEucXVhcnJ5LnYxLkNvbHVtbiIoCghSb3dCYXRjaBIcCgRyb3dzGAEgAygLMg4ucXVhcnJ5LnYxLlJvdyJiCg1TdGF0ZW1lbnREb25lEhAKCGFmZmVjdGVkGAEgASgDEgsKA3RhZxgCIAEoCRISCgplbGFwc2VkX21zGAMgASgDEgwKBHJvd3MYBCABKAMSEAoIaGFzX21vcmUYBSABKAgiWwoKUXVlcnlFcnJvchIPCgdtZXNzYWdlGAEgASgJEgwKBGNvZGUYAiABKAkSDgoGZGV0YWlsGAMgASgJEgwKBGhpbnQYBCABKAkSEAoIcG9zaXRpb24YBSABKAUiLwoNU2VydmVyTWVzc2FnZRIQCghzZXZlcml0eRgBIAEoCRIMCgR0ZXh0GAIgASgJIlMKC1J1bkZpbmlzaGVkEhIKCmVsYXBzZWRfbXMYASABKAMSHgoCdHgYAiABKAsyEi5xdWFycnkudjEuVHhTdGF0ZRIQCghjYW5jZWxlZBgDIAEoCCLsAgoIUnVuRXZlbnQSKAoHc3RhcnRlZBgBIAEoCzIVLnF1YXJyeS52MS5SdW5TdGFydGVkSAASMAoJc3RhdGVtZW50GAIgASgLMhsucXVhcnJ5LnYxLlN0YXRlbWVudFN0YXJ0ZWRIABIrCgdjb2x1bW5zGAMgASgLMhgucXVhcnJ5LnYxLlJlc3VsdENvbHVtbnNIABIjCgRyb3dzGAQgASgLMhMucXVhcnJ5LnYxLlJvd0JhdGNoSAASKAoEZG9uZRgFIAEoCzIYLnF1YXJyeS52MS5TdGF0ZW1lbnREb25lSAASJgoFZXJyb3IYBiABKAsyFS5xdWFycnkudjEuUXVlcnlFcnJvckgAEisKB21lc3NhZ2UYByABKAsyGC5xdWFycnkudjEuU2VydmVyTWVzc2FnZUgAEioKCGZpbmlzaGVkGAggASgLMhYucXVhcnJ5LnYxLlJ1bkZpbmlzaGVkSABCBwoFZXZlbnQiHwoNQ2FuY2VsUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkiEAoOQ2FuY2VsUmVzcG9uc2UiMgoUU2V0QXV0b0NvbW1pdFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJEgoKAm9uGAIgASgIIjcKFVNldEF1dG9Db21taXRSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIh8KDUNvbW1pdFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIjAKDkNvbW1pdFJlc3BvbnNlEh4KAnR4GAEgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUiIQoPUm9sbGJhY2tSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCSIyChBSb2xsYmFja1Jlc3BvbnNlEh4KAnR4GAEgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUqTwoHUnVuTW9kZRIYChRSVU5fTU9ERV9VTlNQRUNJRklFRBAAEhYKElJVTl9NT0RFX1NUQVRFTUVOVBABEhIKDlJVTl9NT0RFX1JBTkdFEAIymwUKDFF1ZXJ5U2VydmljZRJACgdPcGVuVGFiEhkucXVhcnJ5LnYxLk9wZW5UYWJSZXF1ZXN0GhoucXVhcnJ5LnYxLk9wZW5UYWJSZXNwb25zZRI9CgZSZWJpbmQSGC5xdWFycnkudjEuUmViaW5kUmVxdWVzdBoZLnF1YXJyeS52MS5SZWJpbmRSZXNwb25zZRJDCghDbG9zZVRhYhIaLnF1YXJyeS52MS5DbG9zZVRhYlJlcXVlc3QaGy5xdWFycnkudjEuQ2xvc2VUYWJSZXNwb25zZRJACgdBbmFseXplEhkucXVhcnJ5LnYxLkFuYWx5emVSZXF1ZXN0GhoucXVhcnJ5LnYxLkFuYWx5emVSZXNwb25zZRIzCgNSdW4SFS5xdWFycnkudjEuUnVuUmVxdWVzdBoTLnF1YXJyeS52MS5SdW5FdmVudDABEjcKBUZldGNoEhcucXVhcnJ5LnYxLkZldGNoUmVxdWVzdBoTLnF1YXJyeS52MS5SdW5FdmVudDABEj0KBkNhbmNlbBIYLnF1YXJyeS52MS5DYW5jZWxSZXF1ZXN0GhkucXVhcnJ5LnYxLkNhbmNlbFJlc3BvbnNlElIKDVNldEF1dG9Db21taXQSHy5xdWFycnkudjEuU2V0QXV0b0NvbW1pdFJlcXVlc3QaIC5xdWFycnkudjEuU2V0QXV0b0NvbW1pdFJlc3BvbnNlEj0KBkNvbW1pdBIYLnF1YXJyeS52MS5Db21taXRSZXF1ZXN0GhkucXVhcnJ5LnYxLkNvbW1pdFJlc3BvbnNlEkMKCFJvbGxiYWNrEhoucXVhcnJ5LnYxLlJvbGxiYWNrUmVxdWVzdBobLnF1YXJyeS52MS5Sb2xsYmFja1Jlc3BvbnNlQjBaLmdpdGh1Yi5jb20vZ3hkM3YvcXVhcnJ5L2dlbi9xdWFycnkvdjE7cXVhcnJ5djFiBnByb3RvMw", [file_quarry_v1_common, file_quarry_v1_explorer]);
+  fileDesc("ChVxdWFycnkvdjEvcXVlcnkucHJvdG8SCXF1YXJyeS52MSJACgdUeFN0YXRlEhEKCXN1cHBvcnRlZBgBIAEoCBITCgthdXRvX2NvbW1pdBgCIAEoCBINCgVpbl90eBgDIAEoCCJCCg5PcGVuVGFiUmVxdWVzdBIPCgdjb25uX2lkGAEgASgJEh8KBXNjb3BlGAIgASgLMhAucXVhcnJ5LnYxLlNjb3BlIjMKD09wZW5UYWJSZXNwb25zZRIOCgZ0YWJfaWQYASABKAkSEAoIbGFuZ3VhZ2UYAiABKAkiUQoNUmViaW5kUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDwoHY29ubl9pZBgCIAEoCRIfCgVzY29wZRgDIAEoCzIQLnF1YXJyeS52MS5TY29wZSIiCg5SZWJpbmRSZXNwb25zZRIQCghsYW5ndWFnZRgBIAEoCSIhCg9DbG9zZVRhYlJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhIKEENsb3NlVGFiUmVzcG9uc2UiLAoOU3RhdGVtZW50UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIkAKDkFuYWx5emVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIlEKD0FuYWx5emVSZXNwb25zZRItCgpzdGF0ZW1lbnRzGAEgAygLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlEg8KB2N1cnJlbnQYAiABKAUifAoKUnVuUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDgoGc2NyaXB0GAIgASgJEiAKBG1vZGUYAyABKA4yEi5xdWFycnkudjEuUnVuTW9kZRINCgVzdGFydBgEIAEoBRILCgNlbmQYBSABKAUSEAoIbWF4X3Jvd3MYBiABKAUiMAoMRmV0Y2hSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIQCghtYXhfcm93cxgCIAEoBSIwCgpSdW5TdGFydGVkEg4KBnJ1bl9pZBgBIAEoCRISCgpzdGF0ZW1lbnRzGAIgASgFIksKEFN0YXRlbWVudFN0YXJ0ZWQSDQoFaW5kZXgYASABKAUSKAoFcmFuZ2UYAiABKAsyGS5xdWFycnkudjEuU3RhdGVtZW50UmFuZ2UiMwoNUmVzdWx0Q29sdW1ucxIiCgdjb2x1bW5zGAEgAygLMhEucXVhcnJ5LnYxLkNvbHVtbiIoCghSb3dCYXRjaBIcCgRyb3dzGAEgAygLMg4ucXVhcnJ5LnYxLlJvdyJiCg1TdGF0ZW1lbnREb25lEhAKCGFmZmVjdGVkGAEgASgDEgsKA3RhZxgCIAEoCRISCgplbGFwc2VkX21zGAMgASgDEgwKBHJvd3MYBCABKAMSEAoIaGFzX21vcmUYBSABKAgiWwoKUXVlcnlFcnJvchIPCgdtZXNzYWdlGAEgASgJEgwKBGNvZGUYAiABKAkSDgoGZGV0YWlsGAMgASgJEgwKBGhpbnQYBCABKAkSEAoIcG9zaXRpb24YBSABKAUiLwoNU2VydmVyTWVzc2FnZRIQCghzZXZlcml0eRgBIAEoCRIMCgR0ZXh0GAIgASgJIlMKC1J1bkZpbmlzaGVkEhIKCmVsYXBzZWRfbXMYASABKAMSHgoCdHgYAiABKAsyEi5xdWFycnkudjEuVHhTdGF0ZRIQCghjYW5jZWxlZBgDIAEoCCLsAgoIUnVuRXZlbnQSKAoHc3RhcnRlZBgBIAEoCzIVLnF1YXJyeS52MS5SdW5TdGFydGVkSAASMAoJc3RhdGVtZW50GAIgASgLMhsucXVhcnJ5LnYxLlN0YXRlbWVudFN0YXJ0ZWRIABIrCgdjb2x1bW5zGAMgASgLMhgucXVhcnJ5LnYxLlJlc3VsdENvbHVtbnNIABIjCgRyb3dzGAQgASgLMhMucXVhcnJ5LnYxLlJvd0JhdGNoSAASKAoEZG9uZRgFIAEoCzIYLnF1YXJyeS52MS5TdGF0ZW1lbnREb25lSAASJgoFZXJyb3IYBiABKAsyFS5xdWFycnkudjEuUXVlcnlFcnJvckgAEisKB21lc3NhZ2UYByABKAsyGC5xdWFycnkudjEuU2VydmVyTWVzc2FnZUgAEioKCGZpbmlzaGVkGAggASgLMhYucXVhcnJ5LnYxLlJ1bkZpbmlzaGVkSABCBwoFZXZlbnQiHwoNQ2FuY2VsUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkiEAoOQ2FuY2VsUmVzcG9uc2UiMgoUU2V0QXV0b0NvbW1pdFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJEgoKAm9uGAIgASgIIjcKFVNldEF1dG9Db21taXRSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIh8KDUNvbW1pdFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIjAKDkNvbW1pdFJlc3BvbnNlEh4KAnR4GAEgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUiIQoPUm9sbGJhY2tSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCSIyChBSb2xsYmFja1Jlc3BvbnNlEh4KAnR4GAEgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUiQQoPQ29tcGxldGVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIk0KDkNvbXBsZXRpb25JdGVtEg0KBWxhYmVsGAEgASgJEg4KBmluc2VydBgCIAEoCRIOCgZkZXRhaWwYAyABKAkSDAoEa2luZBgEIAEoCSJYChBDb21wbGV0ZVJlc3BvbnNlEg0KBXN0YXJ0GAEgASgFEgsKA2VuZBgCIAEoBRIoCgVpdGVtcxgDIAMoCzIZLnF1YXJyeS52MS5Db21wbGV0aW9uSXRlbSpPCgdSdW5Nb2RlEhgKFFJVTl9NT0RFX1VOU1BFQ0lGSUVEEAASFgoSUlVOX01PREVfU1RBVEVNRU5UEAESEgoOUlVOX01PREVfUkFOR0UQAjLgBQoMUXVlcnlTZXJ2aWNlEkAKB09wZW5UYWISGS5xdWFycnkudjEuT3BlblRhYlJlcXVlc3QaGi5xdWFycnkudjEuT3BlblRhYlJlc3BvbnNlEj0KBlJlYmluZBIYLnF1YXJyeS52MS5SZWJpbmRSZXF1ZXN0GhkucXVhcnJ5LnYxLlJlYmluZFJlc3BvbnNlEkMKCENsb3NlVGFiEhoucXVhcnJ5LnYxLkNsb3NlVGFiUmVxdWVzdBobLnF1YXJyeS52MS5DbG9zZVRhYlJlc3BvbnNlEkAKB0FuYWx5emUSGS5xdWFycnkudjEuQW5hbHl6ZVJlcXVlc3QaGi5xdWFycnkudjEuQW5hbHl6ZVJlc3BvbnNlEjMKA1J1bhIVLnF1YXJyeS52MS5SdW5SZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESNwoFRmV0Y2gSFy5xdWFycnkudjEuRmV0Y2hSZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESPQoGQ2FuY2VsEhgucXVhcnJ5LnYxLkNhbmNlbFJlcXVlc3QaGS5xdWFycnkudjEuQ2FuY2VsUmVzcG9uc2USUgoNU2V0QXV0b0NvbW1pdBIfLnF1YXJyeS52MS5TZXRBdXRvQ29tbWl0UmVxdWVzdBogLnF1YXJyeS52MS5TZXRBdXRvQ29tbWl0UmVzcG9uc2USPQoGQ29tbWl0EhgucXVhcnJ5LnYxLkNvbW1pdFJlcXVlc3QaGS5xdWFycnkudjEuQ29tbWl0UmVzcG9uc2USQwoIUm9sbGJhY2sSGi5xdWFycnkudjEuUm9sbGJhY2tSZXF1ZXN0GhsucXVhcnJ5LnYxLlJvbGxiYWNrUmVzcG9uc2USQwoIQ29tcGxldGUSGi5xdWFycnkudjEuQ29tcGxldGVSZXF1ZXN0GhsucXVhcnJ5LnYxLkNvbXBsZXRlUmVzcG9uc2VCMFouZ2l0aHViLmNvbS9neGQzdi9xdWFycnkvZ2VuL3F1YXJyeS92MTtxdWFycnl2MWIGcHJvdG8z", [file_quarry_v1_common, file_quarry_v1_explorer]);
 
 /**
  * @generated from message quarry.v1.TxState
@@ -718,6 +718,97 @@ export const RollbackResponseSchema: GenMessage<RollbackResponse> = /*@__PURE__*
   messageDesc(file_quarry_v1_query, 28);
 
 /**
+ * @generated from message quarry.v1.CompleteRequest
+ */
+export type CompleteRequest = Message<"quarry.v1.CompleteRequest"> & {
+  /**
+   * @generated from field: string tab_id = 1;
+   */
+  tabId: string;
+
+  /**
+   * @generated from field: string script = 2;
+   */
+  script: string;
+
+  /**
+   * @generated from field: int32 cursor = 3;
+   */
+  cursor: number;
+};
+
+/**
+ * Describes the message quarry.v1.CompleteRequest.
+ * Use `create(CompleteRequestSchema)` to create a new message.
+ */
+export const CompleteRequestSchema: GenMessage<CompleteRequest> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 29);
+
+/**
+ * @generated from message quarry.v1.CompletionItem
+ */
+export type CompletionItem = Message<"quarry.v1.CompletionItem"> & {
+  /**
+   * @generated from field: string label = 1;
+   */
+  label: string;
+
+  /**
+   * Replaces the response's [start, end) range.
+   *
+   * @generated from field: string insert = 2;
+   */
+  insert: string;
+
+  /**
+   * @generated from field: string detail = 3;
+   */
+  detail: string;
+
+  /**
+   * keyword | schema | table | view | column | function | alias | snippet |
+   * collection | command | key
+   *
+   * @generated from field: string kind = 4;
+   */
+  kind: string;
+};
+
+/**
+ * Describes the message quarry.v1.CompletionItem.
+ * Use `create(CompletionItemSchema)` to create a new message.
+ */
+export const CompletionItemSchema: GenMessage<CompletionItem> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 30);
+
+/**
+ * @generated from message quarry.v1.CompleteResponse
+ */
+export type CompleteResponse = Message<"quarry.v1.CompleteResponse"> & {
+  /**
+   * @generated from field: int32 start = 1;
+   */
+  start: number;
+
+  /**
+   * @generated from field: int32 end = 2;
+   */
+  end: number;
+
+  /**
+   * @generated from field: repeated quarry.v1.CompletionItem items = 3;
+   */
+  items: CompletionItem[];
+};
+
+/**
+ * Describes the message quarry.v1.CompleteResponse.
+ * Use `create(CompleteResponseSchema)` to create a new message.
+ */
+export const CompleteResponseSchema: GenMessage<CompleteResponse> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 31);
+
+/**
  * @generated from enum quarry.v1.RunMode
  */
 export enum RunMode {
@@ -845,6 +936,17 @@ export const QueryService: GenService<{
     methodKind: "unary";
     input: typeof RollbackRequestSchema;
     output: typeof RollbackResponseSchema;
+  },
+  /**
+   * Complete suggests completions at the cursor. It never waits for a
+   * running statement of the tab.
+   *
+   * @generated from rpc quarry.v1.QueryService.Complete
+   */
+  complete: {
+    methodKind: "unary";
+    input: typeof CompleteRequestSchema;
+    output: typeof CompleteResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_quarry_v1_query, 0);
