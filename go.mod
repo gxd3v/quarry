@@ -8,10 +8,14 @@ require (
 	connectrpc.com/connect v1.21.0
 	connectrpc.com/cors v0.1.0
 	github.com/charmbracelet/x/ansi v0.11.9
+	github.com/charmbracelet/x/conpty v0.2.0
+	github.com/creack/pty v1.1.24
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/pelletier/go-toml/v2 v2.4.3
+	github.com/sijms/go-ora/v2 v2.9.0
 	github.com/wailsapp/wails/v2 v2.16.0
 	github.com/zalando/go-keyring v0.2.8
+	golang.org/x/sys v0.49.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -50,7 +54,6 @@ require (
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 )
 
