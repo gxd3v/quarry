@@ -15,6 +15,7 @@ import (
 	"github.com/gxd3v/quarry/gen/quarry/v1/quarryv1connect"
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/service"
+	"github.com/gxd3v/quarry/service/catalog"
 )
 
 type fakeLive map[string]driver.Conn
@@ -63,11 +64,13 @@ func (c *plainConn) Close() error { return nil }
 type richConn struct {
 	plainConn
 	scope  driver.Scope
+	loads  int
 	target *driver.Node
 }
 
 func (c *richConn) Objects(_ context.Context, scope driver.Scope) ([]driver.Object, error) {
 	c.scope = scope
+	c.loads++
 	return []driver.Object{
 		{Schema: "public", Name: "users", Kind: driver.NodeTable, Columns: []driver.Column{{Name: "id", Type: "int4"}, {Name: "name", Type: "text", Nullable: true}}},
 		{Schema: "public", Name: "add", Kind: driver.NodeFunction, Detail: "(int, int)"},
@@ -91,7 +94,7 @@ func (c *richConn) Describe(_ context.Context, target *driver.Node) (*driver.Obj
 func newClient(t *testing.T, live service.Live) quarryv1connect.ExplorerServiceClient {
 	t.Helper()
 	mux := http.NewServeMux()
-	mux.Handle(quarryv1connect.NewExplorerServiceHandler(New(live)))
+	mux.Handle(quarryv1connect.NewExplorerServiceHandler(New(live, catalog.New(live))))
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	return quarryv1connect.NewExplorerServiceClient(srv.Client(), srv.URL)
@@ -150,9 +153,24 @@ func TestCatalog(t *testing.T) {
 		t.Errorf("objects %v", objs)
 	}
 
-	_, err = client.Catalog(ctx, connect.NewRequest(&quarryv1.CatalogRequest{ConnId: "plain"}))
-	if connect.CodeOf(err) != connect.CodeUnimplemented {
-		t.Errorf("catalog without driver support: %v", err)
+	req := &quarryv1.CatalogRequest{ConnId: "rich", Scope: &quarryv1.Scope{Database: "app", Schema: "public"}}
+	if _, err := client.Catalog(ctx, connect.NewRequest(req)); err != nil || rich.loads != 1 {
+		t.Errorf("cached catalog: %v, loads %d", err, rich.loads)
+	}
+	req.Refresh = true
+	if _, err := client.Catalog(ctx, connect.NewRequest(req)); err != nil || rich.loads != 2 {
+		t.Errorf("refreshed catalog: %v, loads %d", err, rich.loads)
+	}
+
+	for id, code := range map[string]connect.Code{
+		"plain":   connect.CodeUnimplemented,
+		"closed":  connect.CodeFailedPrecondition,
+		"unknown": connect.CodeNotFound,
+	} {
+		_, err := client.Catalog(ctx, connect.NewRequest(&quarryv1.CatalogRequest{ConnId: id}))
+		if connect.CodeOf(err) != code {
+			t.Errorf("%s: %v, want %v", id, err, code)
+		}
 	}
 }
 

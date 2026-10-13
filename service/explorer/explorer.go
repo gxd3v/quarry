@@ -13,15 +13,17 @@ import (
 	"github.com/gxd3v/quarry/gen/quarry/v1/quarryv1connect"
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/service"
+	"github.com/gxd3v/quarry/service/catalog"
 )
 
 type Service struct {
 	live service.Live
+	cat  *catalog.Cache
 }
 
 var _ quarryv1connect.ExplorerServiceHandler = (*Service)(nil)
 
-func New(live service.Live) *Service { return &Service{live: live} }
+func New(live service.Live, cat *catalog.Cache) *Service { return &Service{live: live, cat: cat} }
 
 func (s *Service) Children(ctx context.Context, req *connect.Request[quarryv1.ChildrenRequest]) (*connect.Response[quarryv1.ChildrenResponse], error) {
 	conn, _, err := s.conn(req.Msg.ConnId)
@@ -40,16 +42,14 @@ func (s *Service) Children(ctx context.Context, req *connect.Request[quarryv1.Ch
 }
 
 func (s *Service) Catalog(ctx context.Context, req *connect.Request[quarryv1.CatalogRequest]) (*connect.Response[quarryv1.CatalogResponse], error) {
-	conn, cfg, err := s.conn(req.Msg.ConnId)
+	objs, err := s.cat.Objects(ctx, req.Msg.ConnId, service.ScopeOf(req.Msg.Scope), req.Msg.Refresh)
 	if err != nil {
-		return nil, err
-	}
-	cat, ok := conn.(driver.Catalog)
-	if !ok {
-		return nil, unsupported(cfg, "an object catalog")
-	}
-	objs, err := cat.Objects(ctx, service.ScopeOf(req.Msg.Scope))
-	if err != nil {
+		if errors.Is(err, catalog.ErrUnsupported) {
+			return nil, connect.NewError(connect.CodeUnimplemented, err)
+		}
+		if ce := new(connect.Error); errors.As(err, &ce) {
+			return nil, err
+		}
 		return nil, driverError(ctx, err)
 	}
 	res := &quarryv1.CatalogResponse{Objects: make([]*quarryv1.CatalogObject, len(objs))}
