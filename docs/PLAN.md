@@ -35,7 +35,7 @@ Quarry é um IDE de bases de dados **desktop**, rápido e bonito, para substitui
 
 ### Limitações conhecidas e assumidas
 - **Na webview só há unary e server streaming.** Client streaming e bidi não existem sobre `fetch`. Cancelar = abortar o stream (`AbortController` → `ctx` cancelado no Go) ou um `Cancel(run_id)` unary. Input interativo (ex.: o terminal) vai por chamadas unary.
-- **CGO no Linux e macOS.** O Wails liga ao WebKitGTK e ao WebKit, por isso deixa de haver "sem CGO" nesses sistemas. No Linux é preciso `libgtk-3-dev` e `libwebkit2gtk-4.1-dev`; nas distros só com webkit2gtk‑4.1 usa‑se a build tag `webkit2_41` (confirmar na doc do Wails v2). No Windows não precisa de CGO (WebView2).
+- **CGO no Linux e macOS.** O Wails liga ao WebKitGTK e ao WebKit, por isso deixa de haver "sem CGO" nesses sistemas. No Linux é preciso `libgtk-3-dev` e `libwebkit2gtk-4.1-dev`; nas distros só com webkit2gtk‑4.1 usa‑se a build tag `webkit2_41` (confirmado: `go build -tags desktop,production,webkit2_41` ou `wails build -tags webkit2_41`; o `wails doctor` ainda procura a 4.0, ignorar). No Windows não precisa de CGO (WebView2).
 - **WebKitGTK é mais lento que o Chromium.** A grelha e o editor têm de ser validados cedo no Linux.
 
 ## 3. Arquitetura
@@ -56,9 +56,11 @@ Quarry é um IDE de bases de dados **desktop**, rápido e bonito, para substitui
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Transporte Connect: duas opções, a validar na fase A0**
-1. **Handler montado no AssetServer do Wails v2** (`AssetServer.Handler` / middleware): sem porta aberta. Risco: o Wails v2 pode acumular a resposta toda, o que quebra o streaming. Testar com um stream lento.
-2. **`http.Server` em `127.0.0.1:0`** (porta aleatória), com um token aleatório por arranque passado ao frontend (binding Wails `ServerInfo()` ou injetado no HTML). O token vai no header `Authorization: Bearer …`. CORS só para a origem da webview e h2c opcional. É o fallback seguro.
+**Transporte Connect: decidido na fase A0 → `127.0.0.1:0` + token**
+- O pacote `server/` serve o Connect num `http.Server` em `127.0.0.1:0` (porta aleatória), com um token aleatório por arranque (`crypto/rand.Text`). O frontend obtém `{url, token}` pelo binding Wails `App.ServerInfo()` e envia `Authorization: Bearer …` em todos os pedidos.
+- CORS só aceita as origens da webview (`wails://wails` no Linux/macOS, `http://wails.localhost` no Windows) e páginas de loopback (`wails dev`). Quem protege a API é o token, não o CORS.
+- **Porque não o AssetServer:** no Wails v2.16 o `responseWriter` do Windows (`pkg/assetserver/webview/responsewriter_windows.go`) acumula o corpo num `bytes.Buffer` e só o entrega ao WebView2 no `Finish()`. O streaming partia-se no Windows (no Linux usa um pipe e funcionaria). O teste `server.TestStreamArrivesProgressively` garante que os lotes chegam aos poucos.
+- **HTTP/1.1:** a webview fala HTTP/1.1 com o servidor (sem h2c no `fetch`), com ~6 sockets por origem. Cada stream aberto ocupa um socket, por isso: um só `WatchStatus` para todas as conexões, e os runs longos não devem ficar abertos sem necessidade.
 
 **Modelo de sessões** (igual ao da TUI, já implementado nos drivers):
 - Cada tab tem uma `driver.Session` dedicada.
@@ -240,13 +242,23 @@ Estado do backend: **✓ pronto** em `internal/`, **◐ parcial** em `_wip/`, **
 
 Cada fase fecha com um critério de aceitação testável. Implementação: agentes em paralelo, um por pacote ou área disjunta; depois a sessão principal integra, corre a suite e faz commit por componente.
 
-**A0 · Fundação e validação (a seguir).** Aceite quando a app abre no Linux e no Windows, faz stream de 100k linhas por Connect para a grelha virtual a ≥ 50 fps de scroll no WebKitGTK, e o CM6 edita um script de 5k linhas sem lag.
-- [ ] `wails init` (template Svelte + TS) na raiz; atualizar para Svelte 5 + Vite atual; `wails.json` com `frontend:install/build/dev`.
-- [ ] `buf.yaml` + `buf.gen.yaml` (Go: `protoc-gen-go` + `protoc-gen-connect-go` → `gen/`; TS: `@bufbuild/protoc-gen-es` → `frontend/src/lib/gen`). O `buf` 1.37 já está instalado; considerar atualizar.
-- [ ] `proto/quarry/v1/common.proto` (Value/Row/Column) e um serviço de teste `DevService.StreamRows(n)`.
-- [ ] `server/`: montar o Connect. Testar primeiro o AssetServer do Wails com um stream lento; se acumular a resposta, usar `127.0.0.1:0` + token. Escolher e documentar.
-- [ ] Frontend: cliente Connect, grelha virtual mínima e editor CM6 com SQL; tema Mocha.
-- [ ] Medir no Linux (WSL Ubuntu com WSLg, ou máquina Linux) e no Windows.
+**A0 · Fundação e validação (feita a 2026-10-13).** Aceite quando a app abre no Linux e no Windows, faz stream de 100k linhas por Connect para a grelha virtual a ≥ 50 fps de scroll no WebKitGTK, e o CM6 edita um script de 5k linhas sem lag.
+- [x] Wails v2.16 na raiz (`main.go`, `app.go`, `wails.json`, `build/`); frontend Svelte 5 + Vite 8 + TypeScript 6 escrito de raiz (o template ainda usava a API do Svelte 4).
+- [x] `buf.yaml` + `buf.gen.yaml` com plugins locais: `go tool protoc-gen-go`/`protoc-gen-connect-go` (fixados no `go.mod` com `tool`) → `gen/`; `@bufbuild/protoc-gen-es` do `frontend/node_modules` → `frontend/src/lib/gen`. O código gerado vai para o git; o CI verifica que está atualizado.
+- [x] `proto/quarry/v1/common.proto` (Value/Row/Column) e `DevService.StreamRows` + `ReportBench`.
+- [x] `server/`: `127.0.0.1:0` + token (ver §3; o AssetServer acumula a resposta no Windows).
+- [x] Frontend: cliente Connect (binário), grelha virtual (linhas e colunas virtualizadas, buffer compacto de 1 string por linha), CM6 com SQL e tema Mocha.
+- [x] Medido com `quarry --bench-out <ficheiro>`: o frontend corre o benchmark sozinho na webview real e o Go grava o relatório JSON e fecha a app.
+
+| 100k linhas × 12 colunas | Windows (WebView2 154) | Linux (WebKitGTK 2.52, WSLg, render por software) |
+|---|---|---|
+| Primeiro lote / stream completo | 17 ms / 0,57 s | 41 ms / 0,93 s |
+| Scroll da grelha, passos de 66 px | 144 fps (limite do ecrã) | 62 fps (limite do ecrã) |
+| Scroll da grelha, saltos de 4000 px | 76 fps | 28 fps |
+| Escrita no script de 5k linhas (2 frames por tecla) | mediana 14 ms | mediana 21 ms, p95 33 ms |
+| Scroll do editor | 144 fps | 66 fps |
+
+Notas: no WSLg o WebKitGTK não tinha acesso a `/dev/dri` (render por software), por isso os números do Linux são o pior caso. A descodificação protobuf corre na thread da UI e causa 4–5 frames longos (até 300 ms) durante o stream de 100k linhas; se incomodar, passar a descodificação para um Web Worker.
 
 **A1 · PostgreSQL de ponta a ponta.** Aceite quando se cria uma conexão PG, se navegam os schemas e se corre e cancela uma query de 1M linhas sem a UI parar.
 - Serviços Connection/Explorer/Query sobre `internal/`.
