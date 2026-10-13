@@ -79,6 +79,8 @@ type fakeConn struct {
 	noTx     bool
 	sessions []*fakeSession
 	openErr  error
+	objs     []driver.Object // served by Objects
+	objErr   error
 	// unblocked is signalled each time a blocked call returns on cancel.
 	unblocked chan struct{}
 }
@@ -102,6 +104,15 @@ func (c *fakeConn) NewSession(_ context.Context, scope driver.Scope) (driver.Ses
 		return plainSession{s}, nil
 	}
 	return s, nil
+}
+
+func (c *fakeConn) Objects(context.Context, driver.Scope) ([]driver.Object, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.objErr != nil {
+		return nil, c.objErr
+	}
+	return c.objs, nil
 }
 
 func (c *fakeConn) session(i int) *fakeSession {

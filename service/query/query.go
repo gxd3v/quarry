@@ -17,6 +17,7 @@ import (
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/internal/workspace"
 	"github.com/gxd3v/quarry/service"
+	"github.com/gxd3v/quarry/service/catalog"
 )
 
 // DefaultMaxRows is how many rows a result streams before pausing for Fetch.
@@ -40,8 +41,13 @@ func WithLanguage(f func(driver.Kind) (driver.Language, bool)) Option {
 	return func(s *Service) { s.language = f }
 }
 
+// WithCatalog completes object names from c; without it Complete offers
+// keywords only.
+func WithCatalog(c *catalog.Cache) Option { return func(s *Service) { s.catalog = c } }
+
 type Service struct {
 	live     service.Live
+	catalog  *catalog.Cache
 	history  HistorySink
 	maxRows  int
 	language func(driver.Kind) (driver.Language, bool)
@@ -93,6 +99,7 @@ type tab struct {
 	mu     sync.Mutex
 	connID string
 	scope  driver.Scope
+	lang   driver.Language
 	busy   bool
 	closed bool
 	cancel context.CancelFunc
@@ -226,7 +233,7 @@ func (t *tab) txState() *quarryv1.TxState {
 	return &quarryv1.TxState{Supported: true, AutoCommit: t.autoCommit, InTx: tr.InTx()}
 }
 
-func (s *Service) languageOf(connID string) (string, error) {
+func (s *Service) languageOf(connID string) (driver.Language, error) {
 	cfg, ok := s.live.Config(connID)
 	if !ok {
 		return "", connect.NewError(connect.CodeNotFound, fmt.Errorf("unknown connection %q", connID))
@@ -235,7 +242,7 @@ func (s *Service) languageOf(connID string) (string, error) {
 	if !ok {
 		return "", connect.NewError(connect.CodeUnimplemented, fmt.Errorf("no driver for %q", cfg.Kind))
 	}
-	return string(lang), nil
+	return lang, nil
 }
 
 func (s *Service) OpenTab(_ context.Context, req *connect.Request[quarryv1.OpenTabRequest]) (*connect.Response[quarryv1.OpenTabResponse], error) {
@@ -244,11 +251,11 @@ func (s *Service) OpenTab(_ context.Context, req *connect.Request[quarryv1.OpenT
 		return nil, err
 	}
 	id := uuid.New().String()
-	t := &tab{connID: req.Msg.ConnId, scope: service.ScopeOf(req.Msg.Scope), autoCommit: true}
+	t := &tab{connID: req.Msg.ConnId, scope: service.ScopeOf(req.Msg.Scope), lang: lang, autoCommit: true}
 	s.mu.Lock()
 	s.tabs[id] = t
 	s.mu.Unlock()
-	return connect.NewResponse(&quarryv1.OpenTabResponse{TabId: id, Language: lang}), nil
+	return connect.NewResponse(&quarryv1.OpenTabResponse{TabId: id, Language: string(lang)}), nil
 }
 
 func (s *Service) Rebind(ctx context.Context, req *connect.Request[quarryv1.RebindRequest]) (*connect.Response[quarryv1.RebindResponse], error) {
@@ -267,9 +274,9 @@ func (s *Service) Rebind(ctx context.Context, req *connect.Request[quarryv1.Rebi
 	defer release()
 	t.closeSession()
 	t.mu.Lock()
-	t.connID, t.scope = req.Msg.ConnId, service.ScopeOf(req.Msg.Scope)
+	t.connID, t.scope, t.lang = req.Msg.ConnId, service.ScopeOf(req.Msg.Scope), lang
 	t.mu.Unlock()
-	return connect.NewResponse(&quarryv1.RebindResponse{Language: lang}), nil
+	return connect.NewResponse(&quarryv1.RebindResponse{Language: string(lang)}), nil
 }
 
 func (s *Service) CloseTab(_ context.Context, req *connect.Request[quarryv1.CloseTabRequest]) (*connect.Response[quarryv1.CloseTabResponse], error) {

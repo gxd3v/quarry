@@ -17,6 +17,7 @@ import (
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
 	"github.com/gxd3v/quarry/service"
+	"github.com/gxd3v/quarry/service/catalog"
 )
 
 // Integration tests run against the server named by QUARRY_TEST_PG_DSN, e.g.
@@ -190,5 +191,22 @@ func TestITManualCommit(t *testing.T) {
 	ac, err := e.s.SetAutoCommit(ctx, connect.NewRequest(&quarryv1.SetAutoCommitRequest{TabId: e.tab, On: true}))
 	if err != nil || !ac.Msg.Tx.AutoCommit || ac.Msg.Tx.InTx {
 		t.Fatalf("autocommit on = %v, %v", ac, err)
+	}
+}
+
+func TestITComplete(t *testing.T) {
+	e := newPGEnv(t)
+	e.s.catalog = catalog.New(e.s.live)
+	schema := "quarry_complete_" + strings.ReplaceAll(uuid.New().String(), "-", "")[:12]
+	e.runAll(t, "create schema "+schema+"; create table "+schema+".items (id int primary key, label text)", 0)
+	t.Cleanup(func() { e.runAll(t, "drop schema "+schema+" cascade", 0) })
+
+	r, _ := e.completeAt(t, e.tab, "select * from "+schema+".|")
+	if it := item(r, "items"); it == nil || it.Kind != "table" {
+		t.Fatalf("tables: %v", itemLabels(r))
+	}
+	r, _ = e.completeAt(t, e.tab, "select i.la| from "+schema+".items i")
+	if it := item(r, "label"); it == nil || it.Kind != "column" || len(r.Items) != 1 {
+		t.Fatalf("columns: %v", itemLabels(r))
 	}
 }
