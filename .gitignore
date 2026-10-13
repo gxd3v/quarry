@@ -1,0 +1,10 @@
+bin/
+_artifacts/
+
+# Claude Code: local assistant files, never committed
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+**/CLAUDE.md
+docs/HANDOFF.md
+.mcp.json
