@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "quarry/v1/explorer.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// ShellService runs the connection's native CLI (psql, sqlplus, mongosh,
+// redis-cli) in a pseudo-terminal shown by the embedded terminal. Output comes
+// on the StartShell stream; input and resizes are unary calls.
+service ShellService {
+  rpc StartShell(StartShellRequest) returns (stream StartShellResponse);
+  rpc ShellInput(ShellInputRequest) returns (ShellInputResponse);
+  rpc ShellResize(ShellResizeRequest) returns (ShellResizeResponse);
+  // StopShell kills the CLI; closing the StartShell stream does the same.
+  rpc StopShell(StopShellRequest) returns (StopShellResponse);
+}
+
+message StartShellRequest {
+  string conn_id = 1;
+  Scope scope = 2;
+  int32 cols = 3;
+  int32 rows = 4;
+  // Required for ask_password connections; otherwise the keyring is used.
+  optional string password = 5;
+}
+
+message ShellStarted {
+  string shell_id = 1;
+  // Command line shown to the user, without secrets.
+  string display = 2;
+}
+
+message ShellExited {
+  int32 code = 1;
+  string error = 2;
+}
+
+message StartShellResponse {
+  oneof event {
+    ShellStarted started = 1;
+    bytes output = 2;
+    ShellExited exited = 3;
+  }
+}
+
+message ShellInputRequest {
+  string shell_id = 1;
+  bytes data = 2;
+}
+
+message ShellInputResponse {}
+
+message ShellResizeRequest {
+  string shell_id = 1;
+  int32 cols = 2;
+  int32 rows = 3;
+}
+
+message ShellResizeResponse {}
+
+message StopShellRequest {
+  string shell_id = 1;
+}
+
+message StopShellResponse {}
