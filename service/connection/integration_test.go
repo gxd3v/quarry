@@ -60,7 +60,7 @@ func TestITPostgres(t *testing.T) {
 
 	wrong := "not-the-password-x7"
 	_, err = svc.TestConnection(ctx, connect.NewRequest(&quarryv1.TestConnectionRequest{Config: cfg, Password: &wrong}))
-	wantCode(t, err, connect.CodeUnavailable)
+	wantCode(t, err, connect.CodeUnauthenticated)
 	if strings.Contains(err.Error(), wrong) {
 		t.Errorf("password leaked: %v", err)
 	}

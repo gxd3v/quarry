@@ -459,7 +459,7 @@ func (m *Manager) open(ctx context.Context, a *attempt, cfg driver.Config, d dri
 		a.status = newStatus(cfg.ID, quarryv1.ConnectionState_CONNECTION_STATE_FAILED, 0, err)
 		m.setStatus(st, a.status)
 		m.mu.Unlock()
-		a.code, a.err = connect.CodeUnavailable, err
+		a.code, a.err = openCode(err), err
 		return
 	}
 	lctx, stop := context.WithCancel(m.ctx)
@@ -576,7 +576,7 @@ func (m *Manager) test(ctx context.Context, cfg driver.Config, given *string) (t
 		if ctx.Err() != nil {
 			return 0, ctxError(ctx.Err())
 		}
-		return 0, connect.NewError(connect.CodeUnavailable, err)
+		return 0, connect.NewError(openCode(err), err)
 	}
 	c.Close()
 	return latency, nil
@@ -622,4 +622,13 @@ func parseID(s string) (uuid.UUID, error) {
 		return id, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid connection id %q", s))
 	}
 	return id, nil
+}
+
+// openCode classifies a driver Open failure: rejected credentials are
+// Unauthenticated so the UI asks for the password again.
+func openCode(err error) connect.Code {
+	if errors.Is(err, driver.ErrAuth) {
+		return connect.CodeUnauthenticated
+	}
+	return connect.CodeUnavailable
 }

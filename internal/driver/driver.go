@@ -10,8 +10,13 @@ package driver
 
 import (
 	"context"
+	"errors"
 	"uuid"
 )
+
+// ErrAuth is wrapped by Open errors caused by rejected credentials, so the UI
+// can ask for the password again.
+var ErrAuth = errors.New("authentication failed")
 
 type Kind string
 

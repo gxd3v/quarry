@@ -229,6 +229,9 @@ func (c *conn) Close() error {
 func connectError(err error, cfg *pgx.ConnConfig) error {
 	where := net.JoinHostPort(cfg.Host, strconv.Itoa(int(cfg.Port)))
 	if pe, ok := errors.AsType[*pgconn.PgError](err); ok {
+		if strings.HasPrefix(pe.Code, "28") { // invalid_authorization_specification
+			err = fmt.Errorf("%w: %w", driver.ErrAuth, err)
+		}
 		return &friendlyError{msg: pe.Message, err: err}
 	}
 	if errors.Is(err, context.DeadlineExceeded) || isTimeout(err) {
