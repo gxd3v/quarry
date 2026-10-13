@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -41,5 +42,18 @@ func TestValueOf(t *testing.T) {
 		if string(got) != tc.want {
 			t.Errorf("ValueOf(%#v) = %s, want %s", tc.in, got, tc.want)
 		}
+	}
+}
+
+func TestValueFromRoundTrip(t *testing.T) {
+	ts := time.Date(2026, 10, 13, 12, 0, 0, 0, time.UTC)
+	for _, in := range []any{nil, true, int64(-7), 1.5, driver.Number("12.50"), "hi", []byte{1, 2}, ts, driver.JSON(`{"a":1}`), []any{int64(1), nil}} {
+		got := ValueFrom(ValueOf(in))
+		if fmt.Sprintf("%#v", got) != fmt.Sprintf("%#v", in) {
+			t.Errorf("ValueFrom(ValueOf(%#v)) = %#v", in, got)
+		}
+	}
+	if ValueFrom(nil) != nil {
+		t.Error("ValueFrom(nil) != nil")
 	}
 }

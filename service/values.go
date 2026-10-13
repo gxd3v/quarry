@@ -70,3 +70,32 @@ func ColumnsOf(cols []driver.Column) []*quarryv1.Column {
 	}
 	return out
 }
+
+// ValueFrom converts a protobuf value back to a driver value; nil stays nil.
+func ValueFrom(v *quarryv1.Value) any {
+	switch k := v.GetKind().(type) {
+	case *quarryv1.Value_Bool:
+		return k.Bool
+	case *quarryv1.Value_Int:
+		return k.Int
+	case *quarryv1.Value_Float:
+		return k.Float
+	case *quarryv1.Value_Number:
+		return driver.Number(k.Number)
+	case *quarryv1.Value_Text:
+		return k.Text
+	case *quarryv1.Value_Bytes:
+		return k.Bytes
+	case *quarryv1.Value_Time:
+		return k.Time.AsTime()
+	case *quarryv1.Value_Json:
+		return driver.JSON(k.Json)
+	case *quarryv1.Value_Array:
+		out := make([]any, len(k.Array.GetValues()))
+		for i, e := range k.Array.GetValues() {
+			out[i] = ValueFrom(e)
+		}
+		return out
+	}
+	return nil
+}
