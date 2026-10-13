@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	goredis "github.com/redis/go-redis/v9"
 
@@ -16,16 +17,17 @@ import (
 var _ driver.Describer = (*conn)(nil)
 
 const (
-	ddlCap   = 10_000 // elements exported to DDL
-	ddlChunk = 100    // elements per generated command
+	ddlCap       = 10_000  // elements exported to DDL
+	ddlChunk     = 100     // elements per generated command
+	ddlStringCap = 1 << 20 // bytes of a string exported to DDL
 )
 
 // Describe returns what the object viewer shows. For a key: Stats (type,
 // TTL, memory usage, encoding, length), the data view's Columns and, as DDL,
 // a command sequence that recreates the key (SET / HSET / RPUSH / SADD /
-// ZADD / XADD / JSON.SET, then EXPIRE); at most 10,000 elements are
-// exported. For a database: its key counts. For a folder: its prefix and
-// key count.
+// ZADD / XADD / JSON.SET, then PEXPIRE); at most 10,000 elements (or 1 MiB
+// of a string) are exported. For a database: its key counts. For a folder:
+// its prefix and key count.
 func (c *conn) Describe(ctx context.Context, target *driver.Node) (*driver.ObjectDetails, error) {
 	t, err := c.locate(target)
 	if err != nil {
@@ -41,35 +43,36 @@ func (c *conn) Describe(ctx context.Context, target *driver.Node) (*driver.Objec
 	if !t.isKey {
 		return c.describePrefix(ctx, cl, t)
 	}
-	typ, err := c.lookupType(ctx, t.db, t.key)
+	typ, err := lookupType(ctx, cl, t.key)
 	if err != nil {
 		return nil, err
 	}
 	if typ == "none" {
-		return nil, fmt.Errorf("key %q does not exist", t.key)
+		return nil, fmt.Errorf("key %s does not exist", label(t.key))
 	}
 	d := &driver.ObjectDetails{}
 	add := func(name, def string) { d.Stats = append(d.Stats, driver.DetailRow{Name: name, Definition: def}) }
-	add("Key", t.key)
+	add("Key", label(t.key))
 	add("Type", typ)
-	ttl, err := cl.Do(ctx, "TTL", t.key).Int64()
+	ttl, err := cl.PTTL(ctx, t.key).Result()
 	if err != nil {
 		return nil, queryError(err)
 	}
 	if ttl >= 0 {
-		add("TTL", fmt.Sprintf("%d s", ttl))
+		add("TTL", ttl.Round(time.Millisecond).String())
 	} else {
 		add("TTL", "no expiry")
 	}
+	// MEMORY and OBJECT may be denied by ACLs: skip them quietly.
 	if n, err := cl.MemoryUsage(ctx, t.key).Result(); err == nil {
 		add("Memory usage", size(n))
 	}
 	if enc, err := cl.ObjectEncoding(ctx, t.key).Result(); err == nil {
 		add("Encoding", enc)
 	}
-	if label, cmd := lengthCmd(typ); cmd != "" {
+	if name, cmd := lengthCmd(typ); cmd != "" {
 		if n, err := cl.Do(ctx, cmd, t.key).Int64(); err == nil {
-			add(label, strconv.FormatInt(n, 10))
+			add(name, strconv.FormatInt(n, 10))
 		}
 	}
 	d.Columns = columnInfo(typ)
@@ -78,10 +81,19 @@ func (c *conn) Describe(ctx context.Context, target *driver.Node) (*driver.Objec
 		return nil, err
 	}
 	if ttl > 0 {
-		ddl += command("EXPIRE", t.key, strconv.FormatInt(ttl, 10)) + "\n"
+		ddl += command("PEXPIRE", t.key, strconv.FormatInt(max(ttl.Milliseconds(), 1), 10)) + "\n"
 	}
 	d.DDL = ddl
 	return d, nil
+}
+
+// lookupType runs TYPE; a key that does not exist reports "none".
+func lookupType(ctx context.Context, cl goredis.UniversalClient, key string) (string, error) {
+	t, err := cl.Type(ctx, key).Result()
+	if err != nil {
+		return "", queryError(err)
+	}
+	return normType(t), nil
 }
 
 func (c *conn) describePrefix(ctx context.Context, cl goredis.UniversalClient, t target) (*driver.ObjectDetails, error) {
@@ -94,21 +106,24 @@ func (c *conn) describePrefix(ctx context.Context, cl goredis.UniversalClient, t
 			return nil, queryError(err)
 		}
 		add("Keys", strconv.FormatInt(n, 10))
-		if !c.cluster {
-			if info, err := cl.Info(ctx, "keyspace").Result(); err == nil {
-				for _, line := range strings.Fields(info) {
-					name, rest, _ := strings.Cut(line, ":")
-					if name != "db"+strconv.Itoa(t.db) {
-						continue
-					}
-					for _, kv := range strings.Split(rest, ",") {
-						switch k, v, _ := strings.Cut(kv, "="); k {
-						case "expires":
-							add("Keys with expiry", v)
-						case "avg_ttl":
-							add("Average TTL", v+" ms")
-						}
-					}
+		if c.cluster {
+			return d, nil
+		}
+		info, err := cl.Info(ctx, "keyspace").Result()
+		if err != nil {
+			return d, nil
+		}
+		for line := range strings.Lines(info) {
+			name, rest, _ := strings.Cut(strings.TrimSpace(line), ":")
+			if name != "db"+strconv.Itoa(t.db) {
+				continue
+			}
+			for kv := range strings.SplitSeq(rest, ",") {
+				switch k, v, _ := strings.Cut(kv, "="); k {
+				case "expires":
+					add("Keys with expiry", v)
+				case "avg_ttl":
+					add("Average TTL", v+" ms")
 				}
 			}
 		}
@@ -118,7 +133,7 @@ func (c *conn) describePrefix(ctx context.Context, cl goredis.UniversalClient, t
 	if err != nil {
 		return nil, err
 	}
-	add("Prefix", t.prefix)
+	add("Prefix", label(t.prefix))
 	n := strconv.Itoa(len(keys))
 	if more {
 		n = "more than " + n
@@ -155,24 +170,28 @@ func lengthCmd(typ string) (label, cmd string) {
 	return "", ""
 }
 
-// columnInfo describes the columns of a key's data view.
+// columnInfo describes the columns of a key's data view (see DataQuery);
+// PrimaryKey marks the RowKey columns. A stream also gets one column per
+// field name, which depends on its entries.
 func columnInfo(typ string) []driver.ColumnInfo {
 	col := func(name, t string, pk bool) driver.ColumnInfo {
 		return driver.ColumnInfo{Name: name, Type: t, PrimaryKey: pk}
 	}
 	switch typ {
-	case "string", "json":
-		return []driver.ColumnInfo{col("value", typ, false)}
+	case "string":
+		return []driver.ColumnInfo{col("value", "string", true)}
+	case "json":
+		return []driver.ColumnInfo{col("value", "json", false)}
 	case "hash":
 		return []driver.ColumnInfo{col("field", "string", true), col("value", "string", false)}
 	case "list":
 		return []driver.ColumnInfo{col("#", "integer", true), col("value", "string", false)}
 	case "set":
-		return []driver.ColumnInfo{col("value", "string", true)}
+		return []driver.ColumnInfo{col("member", "string", true)}
 	case "zset":
 		return []driver.ColumnInfo{col("member", "string", true), col("score", "double", false)}
 	case "stream":
-		return []driver.ColumnInfo{col("id", "string", false), col("field", "string", false), col("value", "string", false)}
+		return []driver.ColumnInfo{col("id", "string", true)}
 	}
 	return nil
 }
@@ -196,9 +215,12 @@ func recreate(ctx context.Context, cl goredis.UniversalClient, typ, key string) 
 	}
 	switch typ {
 	case "string":
-		v, err := cl.Get(ctx, key).Result()
-		if err != nil && err != goredis.Nil {
+		v, err := cl.GetRange(ctx, key, 0, ddlStringCap-1).Result()
+		if err != nil && !errors.Is(err, goredis.Nil) {
 			return "", queryError(err)
+		}
+		if n, _ := cl.StrLen(ctx, key).Result(); n > ddlStringCap {
+			fmt.Fprintf(&b, "# truncated: only the first %d of %d bytes are included\n", ddlStringCap, n)
 		}
 		b.WriteString(command("SET", key, v) + "\n")
 	case "hash":
@@ -279,7 +301,14 @@ func recreate(ctx context.Context, cl goredis.UniversalClient, typ, key string) 
 				continue
 			}
 			args := []string{"XADD", key, text(ent[0])}
-			fv, _ := ent[1].([]any)
+			fv, ok := ent[1].([]any)
+			if !ok {
+				if m, ok := ent[1].(map[any]any); ok {
+					for k, v := range m {
+						fv = append(fv, k, v)
+					}
+				}
+			}
 			for _, x := range fv {
 				args = append(args, text(x))
 			}

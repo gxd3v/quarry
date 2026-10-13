@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -34,7 +33,44 @@ func isComment(line string) bool {
 	return strings.HasPrefix(line, "#") || strings.HasPrefix(line, "//")
 }
 
-var errUnbalanced = errors.New("invalid argument(s): unbalanced quotes")
+// StatementAt returns the statement under a cursor byte offset, with the
+// same rules as the PostgreSQL driver: a cursor inside a command line (or
+// at its end) picks it; a cursor in the gap between two commands picks the
+// previous one, unless it sits on the line where the next one starts.
+// Before the first command, the first one wins.
+func StatementAt(stmts []driver.Statement, script string, offset int) (driver.Statement, bool) {
+	if len(stmts) == 0 {
+		return driver.Statement{}, false
+	}
+	offset = min(max(offset, 0), len(script))
+	for i, st := range stmts {
+		if offset < st.Offset {
+			if i == 0 {
+				return st, true
+			}
+			prev := stmts[i-1]
+			prevEnd := min(prev.Offset+len(prev.Text), len(script))
+			if !strings.Contains(script[prevEnd:offset], "\n") ||
+				strings.Contains(script[offset:min(st.Offset, len(script))], "\n") {
+				return prev, true
+			}
+			return st, true
+		}
+		if offset <= st.Offset+len(st.Text) {
+			return st, true
+		}
+	}
+	return stmts[len(stmts)-1], true
+}
+
+// syntaxError is a command line that cannot be split into arguments; pos is
+// the byte offset of the offending quote.
+type syntaxError struct {
+	msg string
+	pos int
+}
+
+func (e *syntaxError) Error() string { return e.msg }
 
 // Fields splits a command line into arguments the way redis-cli does:
 // arguments are separated by whitespace; "double quotes" understand the
@@ -54,10 +90,11 @@ func Fields(line string) ([]string, error) {
 		}
 		var cur []byte
 		inq, insq, done := false, false, false
+		open := 0
 		for !done {
 			if i >= len(line) {
 				if inq || insq {
-					return nil, errUnbalanced
+					return nil, &syntaxError{msg: "unbalanced quotes", pos: open}
 				}
 				break
 			}
@@ -87,7 +124,7 @@ func Fields(line string) ([]string, error) {
 					}
 				case c == '"':
 					if i+1 < len(line) && !isSpace(line[i+1]) {
-						return nil, errUnbalanced
+						return nil, &syntaxError{msg: "closing quote must be followed by a space", pos: i}
 					}
 					done = true
 				default:
@@ -100,7 +137,7 @@ func Fields(line string) ([]string, error) {
 					cur = append(cur, '\'')
 				case c == '\'':
 					if i+1 < len(line) && !isSpace(line[i+1]) {
-						return nil, errUnbalanced
+						return nil, &syntaxError{msg: "closing quote must be followed by a space", pos: i}
 					}
 					done = true
 				default:
@@ -111,9 +148,9 @@ func Fields(line string) ([]string, error) {
 				case isSpace(c):
 					done = true
 				case c == '"':
-					inq = true
+					inq, open = true, i
 				case c == '\'':
-					insq = true
+					insq, open = true, i
 				default:
 					cur = append(cur, c)
 				}
@@ -133,11 +170,11 @@ func isHex(c byte) bool {
 }
 
 // Quote renders arg so that Fields reads it back unchanged: plain arguments
-// are returned as is, anything empty or containing whitespace, quotes,
-// backslashes, a leading '#' or non-printable bytes is double-quoted with
-// escapes.
+// are returned as is; anything empty or containing whitespace, quotes,
+// backslashes, a leading comment marker or invalid UTF-8 is double-quoted
+// with escapes.
 func Quote(arg string) string {
-	if arg != "" && !strings.HasPrefix(arg, "#") && !strings.HasPrefix(arg, "//") && plain(arg) {
+	if arg != "" && !isComment(arg) && plain(arg) {
 		return arg
 	}
 	var b strings.Builder
@@ -161,14 +198,13 @@ func Quote(arg string) string {
 			b.WriteString(`\b`)
 		default:
 			if c >= 0x80 {
-				r, size := utf8.DecodeRuneInString(arg[i:])
-				if r != utf8.RuneError || size > 1 {
+				if r, size := utf8.DecodeRuneInString(arg[i:]); r != utf8.RuneError || size > 1 {
 					b.WriteString(arg[i : i+size])
 					i += size
 					continue
 				}
 			}
-			if c < 0x20 || c == 0x7f || c >= 0x80 {
+			if c < 0x20 || c >= 0x7f {
 				b.WriteString(`\x`)
 				b.WriteString(strconv.FormatUint(uint64(c)>>4, 16))
 				b.WriteString(strconv.FormatUint(uint64(c)&0xf, 16))

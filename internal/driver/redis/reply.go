@@ -14,11 +14,13 @@ import (
 	"github.com/gxd3v/quarry/internal/driver"
 )
 
-// table is a command reply laid out as rows.
+// table is a command reply laid out as rows. cursor is set for SCAN-family
+// replies.
 type table struct {
-	cols []driver.Column
-	rows [][]any
-	msgs []driver.Message
+	cols   []driver.Column
+	rows   [][]any
+	msgs   []driver.Message
+	cursor string
 }
 
 // verb returns the upper-cased command name, plus the subcommand for
@@ -39,6 +41,11 @@ func verb(args []string) (cmd, full string) {
 	return cmd, full
 }
 
+func verbOf(args []string) string {
+	cmd, _ := verb(args)
+	return cmd
+}
+
 func hasArg(args []string, flag string) bool {
 	for _, a := range args[1:] {
 		if strings.EqualFold(a, flag) {
@@ -51,7 +58,17 @@ func hasArg(args []string, flag string) bool {
 // tabulate lays out the reply v of the command args (as returned by go-redis:
 // nil, string, int64, float64, bool, *big.Int, error elements, []any and,
 // with RESP3, map[any]any). The shape depends on the command first and on
-// the reply's type second; see the package documentation.
+// the reply's type second:
+//
+//   - scalars: one "value" column and row;
+//   - hash-like replies (HGETALL, CONFIG GET, RESP3 maps): field, value;
+//   - WITHSCORES and ZSCAN: member, score;
+//   - KEYS and SCAN: key; SMEMBERS and set algebra: member (sorted);
+//   - stream entries: id, then one column per field (XREAD adds stream);
+//   - INFO, CLUSTER INFO: section, key, value; CLIENT LIST: one column per field;
+//   - other arrays: "#" (the element index; LRANGE counts from its start), value.
+//
+// Nested replies become driver.JSON.
 func tabulate(args []string, v any) table {
 	cmd, full := verb(args)
 	if v == nil {
@@ -61,6 +78,18 @@ func tabulate(args []string, v any) table {
 	case "SCAN", "SSCAN", "HSCAN", "ZSCAN":
 		if t, ok := scanTable(cmd, args, v); ok {
 			return t
+		}
+	case "KEYS":
+		if a, ok := v.([]any); ok {
+			return sortRows(flatTable(a, "key"))
+		}
+	case "SMEMBERS", "SINTER", "SUNION", "SDIFF":
+		if a, ok := v.([]any); ok {
+			return sortRows(flatTable(a, "member"))
+		}
+	case "SRANDMEMBER", "SPOP":
+		if a, ok := v.([]any); ok {
+			return flatTable(a, "member")
 		}
 	case "INFO":
 		if s, ok := v.(string); ok {
@@ -97,6 +126,11 @@ func tabulate(args []string, v any) table {
 				return t
 			}
 		}
+	case "LRANGE":
+		if a, ok := v.([]any); ok {
+			start, _ := strconv.ParseInt(arg(args, 2), 10, 64)
+			return arrayTable(a, max(start, 0))
+		}
 	case "JSON.GET":
 		if s, ok := v.(string); ok && json.Valid([]byte(s)) {
 			return single(driver.JSON(s))
@@ -121,19 +155,30 @@ func tabulate(args []string, v any) table {
 		t, _ := pairTable(x, "field", "value")
 		return t
 	case []any:
-		t := table{cols: cols("#", "value")}
-		for i, e := range x {
-			t.rows = append(t.rows, []any{int64(i), cell(e)})
-		}
-		t.cols[1].Type = colType(t.rows, 1)
-		return t
+		return arrayTable(x, 0)
 	}
 	return single(cell(v))
+}
+
+func arg(args []string, i int) string {
+	if i < len(args) {
+		return args[i]
+	}
+	return ""
 }
 
 func single(v any) table {
 	t := table{cols: cols("value"), rows: [][]any{{v}}}
 	t.cols[0].Type = colType(t.rows, 0)
+	return t
+}
+
+func arrayTable(a []any, start int64) table {
+	t := table{cols: cols("#", "value")}
+	for i, e := range a {
+		t.rows = append(t.rows, []any{start + int64(i), cell(e)})
+	}
+	t.cols[1].Type = colType(t.rows, 1)
 	return t
 }
 
@@ -185,7 +230,8 @@ func colType(rows [][]any, i int) string {
 }
 
 // cell normalises a reply element to a driver value: strings that are not
-// valid UTF-8 become []byte, big numbers driver.Number, nested replies JSON.
+// valid UTF-8 become []byte, big numbers driver.Number, nested replies JSON,
+// error elements (EXEC) "(error) …" text.
 func cell(v any) any {
 	switch x := v.(type) {
 	case nil, int64, float64, bool:
@@ -214,6 +260,8 @@ func text(v any) string {
 		return ""
 	case string:
 		return x
+	case []byte:
+		return string(x)
 	case int64:
 		return strconv.FormatInt(x, 10)
 	case float64:
@@ -222,6 +270,15 @@ func text(v any) string {
 		return x.Error()
 	}
 	return fmt.Sprint(v)
+}
+
+// label renders a name for a column header or tree node: as is when it is
+// valid UTF-8, quoted with escapes otherwise.
+func label(s string) string {
+	if utf8.ValidString(s) {
+		return s
+	}
+	return Quote(s)
 }
 
 func toJSON(v any) driver.JSON {
@@ -259,7 +316,7 @@ func jsonable(v any) any {
 	return v
 }
 
-// scanTable lays out [cursor, items] and reports the next cursor.
+// scanTable lays out a [cursor, items] page and reports its cursor.
 func scanTable(cmd string, args []string, v any) (table, bool) {
 	a, ok := v.([]any)
 	if !ok || len(a) != 2 {
@@ -269,7 +326,6 @@ func scanTable(cmd string, args []string, v any) (table, bool) {
 	if !ok {
 		return table{}, false
 	}
-	cursor := text(a[0])
 	var t table
 	switch {
 	case cmd == "SCAN":
@@ -286,20 +342,7 @@ func scanTable(cmd string, args []string, v any) (table, bool) {
 	if !ok {
 		return table{}, false
 	}
-	if cursor == "0" {
-		t.msgs = append(t.msgs, driver.Message{Severity: "INFO", Text: "Scan complete (cursor 0)"})
-	} else {
-		next := append([]string{args[0]}, args[1:]...)
-		i := 1
-		if cmd != "SCAN" {
-			i = 2
-		}
-		if i < len(next) {
-			next[i] = cursor
-		}
-		t.msgs = append(t.msgs, driver.Message{Severity: "INFO",
-			Text: fmt.Sprintf("Next cursor: %s; continue with: %s", cursor, command(next...))})
-	}
+	t.cursor = text(a[0])
 	return t, true
 }
 
@@ -312,6 +355,11 @@ func flatTable(items []any, name string) table {
 	return t
 }
 
+func sortRows(t table) table {
+	slices.SortFunc(t.rows, func(a, b []any) int { return cmp.Compare(text(a[0]), text(b[0])) })
+	return t
+}
+
 // pairTable lays out a RESP3 map, a flat [k, v, k, v] array (RESP2) or an
 // array of [k, v] pairs as two columns. Map keys are sorted.
 func pairTable(v any, k, val string) (table, bool) {
@@ -321,14 +369,14 @@ func pairTable(v any, k, val string) (table, bool) {
 		for key, e := range x {
 			t.rows = append(t.rows, []any{cell(key), cell(e)})
 		}
-		slices.SortFunc(t.rows, func(a, b []any) int { return cmp.Compare(text(a[0]), text(b[0])) })
+		t = sortRows(t)
 	case []any:
-		if p, ok := pairs(x); ok {
-			for _, e := range p {
-				t.rows = append(t.rows, []any{cell(e[0]), cell(e[1])})
-			}
-		} else {
+		p, ok := pairs(x)
+		if !ok {
 			return table{}, false
+		}
+		for _, e := range p {
+			t.rows = append(t.rows, []any{cell(e[0]), cell(e[1])})
 		}
 	default:
 		return table{}, false
@@ -407,18 +455,39 @@ func score(v any) any {
 	return cell(v)
 }
 
-// entriesTable lays out stream entries [[id, [f, v, ...]], ...] as one row
-// per field.
-func entriesTable(a []any) (table, bool) {
-	t := table{cols: cols("id", "field", "value")}
-	if !addEntries(&t, a, nil) {
-		return table{}, false
-	}
-	t.cols[2].Type = colType(t.rows, 2)
-	return t, true
+// fieldSuffix marks a stream field whose name collides with a fixed column.
+const fieldSuffix = " (field)"
+
+// streamTable collects stream entries as one row per entry: the fixed
+// columns (id, or stream and id) and one column per field name.
+type streamTable struct {
+	fixed  []string
+	fields []string
+	index  map[string]int
+	rows   [][]any // fixed values, then the values of fields by index
 }
 
-func addEntries(t *table, a []any, prefix []any) bool {
+func newStreamTable(fixed ...string) *streamTable {
+	return &streamTable{fixed: fixed, index: map[string]int{}}
+}
+
+func (st *streamTable) column(field any) int {
+	name := label(text(field))
+	if slices.Contains(st.fixed, name) {
+		name += fieldSuffix
+	}
+	i, ok := st.index[name]
+	if !ok {
+		i = len(st.fixed) + len(st.fields)
+		st.index[name] = i
+		st.fields = append(st.fields, name)
+	}
+	return i
+}
+
+// add appends entries [[id, [f, v, ...]], ...]; lead holds the values of
+// the fixed columns before id.
+func (st *streamTable) add(a []any, lead ...any) bool {
 	for _, e := range a {
 		if e == nil {
 			continue // XCLAIM reports deleted entries as nil
@@ -427,41 +496,67 @@ func addEntries(t *table, a []any, prefix []any) bool {
 		if !ok || len(ent) != 2 {
 			return false
 		}
-		id := cell(ent[0])
-		row := func(f, v any) []any { return append(slices.Clone(prefix), id, f, v) }
+		row := append(slices.Clone(lead), cell(ent[0]))
+		set := func(f, v any) {
+			i := st.column(f)
+			for len(row) <= i {
+				row = append(row, nil)
+			}
+			row[i] = cell(v)
+		}
 		switch fv := ent[1].(type) {
 		case nil:
-			t.rows = append(t.rows, row(nil, nil))
 		case []any:
 			p, ok := pairs(fv)
 			if !ok {
 				return false
 			}
-			if len(p) == 0 {
-				t.rows = append(t.rows, row(nil, nil))
-			}
 			for _, kv := range p {
-				t.rows = append(t.rows, row(cell(kv[0]), cell(kv[1])))
+				set(kv[0], kv[1])
 			}
 		case map[any]any:
 			sub, _ := pairTable(fv, "field", "value")
 			for _, r := range sub.rows {
-				t.rows = append(t.rows, row(r[0], r[1]))
+				set(r[0], r[1])
 			}
 		default:
 			return false
 		}
+		st.rows = append(st.rows, row)
 	}
 	return true
+}
+
+func (st *streamTable) table() table {
+	t := table{cols: cols(append(slices.Clone(st.fixed), st.fields...)...)}
+	width := len(t.cols)
+	for _, r := range st.rows {
+		for len(r) < width {
+			r = append(r, nil)
+		}
+		t.rows = append(t.rows, r)
+	}
+	for i := len(st.fixed); i < width; i++ {
+		t.cols[i].Type = colType(t.rows, i)
+	}
+	return t
+}
+
+func entriesTable(a []any) (table, bool) {
+	st := newStreamTable("id")
+	if !st.add(a) {
+		return table{}, false
+	}
+	return st.table(), true
 }
 
 // xreadTable lays out XREAD replies: RESP2 [[stream, entries], ...] or a
 // RESP3 map stream → entries.
 func xreadTable(v any) (table, bool) {
-	t := table{cols: cols("stream", "id", "field", "value")}
+	st := newStreamTable("stream", "id")
 	add := func(name, entries any) bool {
 		a, ok := entries.([]any)
-		return ok && addEntries(&t, a, []any{cell(name)})
+		return ok && st.add(a, cell(name))
 	}
 	switch x := v.(type) {
 	case map[any]any:
@@ -485,8 +580,7 @@ func xreadTable(v any) (table, bool) {
 	default:
 		return table{}, false
 	}
-	t.cols[3].Type = colType(t.rows, 3)
-	return t, true
+	return st.table(), true
 }
 
 // infoTable parses INFO output ("# Section" headers, "key:value" lines).

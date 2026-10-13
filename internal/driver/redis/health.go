@@ -32,9 +32,6 @@ const pingTimeout = 5 * time.Second
 // "connection lost: <cause>"; go-redis reconnects transparently on the next
 // call. A closed Conn returns "connection is closed".
 func (c *conn) Ping(ctx context.Context) error {
-	if c.closed.Load() {
-		return errClosed
-	}
 	if _, ok := ctx.Deadline(); !ok {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, pingTimeout)
@@ -51,12 +48,14 @@ func (c *conn) Ping(ctx context.Context) error {
 	if errors.Is(ctx.Err(), context.Canceled) {
 		return ctx.Err()
 	}
-	msg := connectError(err, c.where()).Error()
-	msg = strings.TrimPrefix(msg, "cannot connect to "+c.where()+": ")
-	return &friendlyError{msg: "connection lost: " + msg, err: err}
+	fe := connectError(err, c.where()).(*friendlyError)
+	msg := strings.TrimPrefix(fe.msg, "cannot connect to "+c.where()+": ")
+	return &friendlyError{msg: "connection lost: " + msg, err: fe.err}
 }
 
-// Alive reports whether the session's connection is still usable, without
-// a round trip: it turns false after a command hit a transport error or was
-// interrupted, and true again once the next Execute has reconnected.
-func (s *session) Alive() bool { return !s.dead.Load() }
+// Alive reports whether the session is usable, without a round trip. A
+// connection broken by a cancelled command or a network failure is
+// re-established by the next Execute (restoring the selected database), so
+// Alive only turns false once such a reconnect failed, or after Close.
+// Safe to call from any goroutine.
+func (s *session) Alive() bool { return !s.lost.Load() }

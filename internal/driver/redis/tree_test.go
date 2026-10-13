@@ -2,7 +2,9 @@ package redis
 
 import (
 	"reflect"
+	"slices"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/gxd3v/quarry/internal/driver"
 )
@@ -55,8 +57,7 @@ func TestPaths(t *testing.T) {
 	}
 	// A folder and a key with the same name have different paths.
 	folder := []string{"0", "user"}
-	key := KeyPath(0, "user", "")
-	if reflect.DeepEqual(folder, key) {
+	if reflect.DeepEqual(folder, KeyPath(0, "user", "")) {
 		t.Error("folder and key paths collide")
 	}
 	tg, _ = c.locate(&driver.Node{Path: folder, Kind: driver.NodeFolder})
@@ -76,13 +77,32 @@ func TestPaths(t *testing.T) {
 	if tg.isKey || tg.prefix != "\x00k:" {
 		t.Errorf("locate escaped folder = %+v", tg)
 	}
+	// Binary names stay valid UTF-8 in paths and round-trip.
+	bin := "b\xff:k\xfe"
+	bp := KeyPath(0, bin, "")
+	for _, e := range bp {
+		if !utf8.ValidString(e) {
+			t.Errorf("path element %q is not UTF-8", e)
+		}
+	}
+	tg, err = c.locate(&driver.Node{Path: bp, Kind: driver.NodeKey})
+	if err != nil || tg.key != bin {
+		t.Errorf("locate binary key = %+v, %v", tg, err)
+	}
+	tg, err = c.locate(&driver.Node{Path: bp[:2], Kind: driver.NodeFolder})
+	if err != nil || tg.prefix != "b\xff:" {
+		t.Errorf("locate binary folder = %+v, %v", tg, err)
+	}
 	// Nodes built from Catalog objects.
-	tg, err = c.locate(&driver.Node{Path: []string{"1", "", "", "plain"}, Kind: driver.NodeKey, Name: "plain"})
+	tg, err = c.locate(&driver.Node{Path: []string{"1"}, Kind: driver.NodeKey, Name: "plain"})
 	if err != nil || !tg.isKey || tg.key != "plain" || tg.db != 1 {
 		t.Errorf("locate object node = %+v, %v", tg, err)
 	}
 	if _, err := c.locate(nil); err == nil {
 		t.Error("nil node accepted")
+	}
+	if _, err := c.locate(&driver.Node{Path: []string{"x"}}); err == nil {
+		t.Error("bad database accepted")
 	}
 }
 
@@ -138,13 +158,18 @@ func TestNewConnOptions(t *testing.T) {
 	if !c.cluster || !c.opts.IsClusterMode {
 		t.Error("cluster option ignored")
 	}
-	c, err := newConn(driver.Config{Host: "a,b", Options: map[string]string{"master": "mymaster", "tls": "true"}}, "pw")
+	c = testConn(t, map[string]string{"cluster": "n2:7001,n3"})
+	if !c.cluster || !reflect.DeepEqual(c.opts.Addrs, []string{"localhost:1", "n2:7001", "n3:1"}) {
+		t.Errorf("cluster seeds = %q", c.opts.Addrs)
+	}
+	s, err := newConn(driver.Config{Host: "a,b", Options: map[string]string{"sentinel_master": "mymaster", "tls": "true", "sentinel_auth": "true"}}, "pw")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer c.Close()
-	if c.cluster || c.opts.MasterName != "mymaster" || c.opts.Addrs[0] != "a:26379" || c.tls == nil || c.opts.Password != "pw" {
-		t.Errorf("sentinel options = %+v", c.opts)
+	defer s.Close()
+	if s.cluster || s.opts.MasterName != "mymaster" || s.opts.Addrs[0] != "a:26379" || s.tls == nil ||
+		s.opts.Password != "pw" || s.opts.SentinelPassword != "pw" {
+		t.Errorf("sentinel options = %+v", s.opts)
 	}
 	c2, err := newConn(driver.Config{Host: "a,b"}, "")
 	if err != nil {
@@ -154,14 +179,31 @@ func TestNewConnOptions(t *testing.T) {
 	if !c2.cluster {
 		t.Error("several hosts should mean Cluster")
 	}
+	if _, err := newConn(driver.Config{Host: "a,b", Options: map[string]string{"cluster": "false"}}, ""); err == nil {
+		t.Error("several hosts with cluster=false accepted")
+	}
 	if _, err := newConn(driver.Config{Database: "x"}, ""); err == nil {
 		t.Error("bad database accepted")
 	}
 	if _, err := newConn(driver.Config{Database: "3", Options: map[string]string{"cluster": "1"}}, ""); err == nil {
 		t.Error("cluster with db 3 accepted")
 	}
-	c3 := testConn(t, map[string]string{"separator": "/"})
-	if c3.sep != "/" {
-		t.Errorf("separator = %q", c3.sep)
+	if _, err := newConn(driver.Config{Options: map[string]string{"connect_timeout": "soon"}}, ""); err == nil {
+		t.Error("bad timeout accepted")
+	}
+	c3 := testConn(t, map[string]string{"separator": "/", "username": "ann", "connect_timeout": "3"})
+	if c3.sep != "/" || c3.opts.Username != "ann" || c3.opts.DialTimeout.Seconds() != 3 {
+		t.Errorf("options = sep %q user %q timeout %v", c3.sep, c3.opts.Username, c3.opts.DialTimeout)
+	}
+	u, err := newConn(driver.Config{User: "bob", Options: map[string]string{"username": "ann"}}, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer u.Close()
+	if u.opts.Username != "bob" {
+		t.Errorf("Config.User should win, got %q", u.opts.Username)
+	}
+	if slices.Contains([]string{c3.where()}, "") {
+		t.Error("where")
 	}
 }

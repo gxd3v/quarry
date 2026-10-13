@@ -7,32 +7,36 @@
 // driver.Config maps as follows. Host is one host or several comma-separated
 // "host[:port]" entries; entries without a port use Port (default 6379, or
 // 26379 for Sentinel). Database is the logical database index ("" = 0). User
-// and the password authenticate with AUTH/ACL. Options:
+// (or the username option) and the password authenticate with AUTH/ACL.
+// Options:
 //
-//	cluster=true          Redis Cluster (implied by several hosts without master)
-//	master=<name>         Sentinel: hosts are sentinels, <name> the primary
-//	sentinel_user=, sentinel_password=   credentials for the sentinels
-//	tls=true              TLS (rediss://); tls_skip_verify=true skips verification;
-//	                      tls_server_name= overrides the SNI/verification name
+//	cluster=true|<addrs>  Redis Cluster; a comma-separated list adds seed nodes
+//	                      (several hosts without sentinel_master also mean Cluster)
+//	sentinel_master=<n>   Sentinel: the hosts are sentinels, <n> the primary's name
+//	sentinel_auth=true    authenticate to the sentinels with the same user/password
+//	username=<u>          ACL user when User is empty
+//	tls=true              TLS (rediss://); tls_skip_verify=true skips verification,
+//	                      tls_server_name= overrides the verified name
 //	separator=<s>         key tree separator (default ":")
 //	connect_timeout=<n>   seconds or a Go duration (default 10s)
-//	protocol=2            force RESP2 (default RESP3, with fallback)
+//	protocol=2            force RESP2 (default RESP3)
 //
 // # Explorer tree
 //
-// Roots are the logical databases, Path [index] ("0", "1", ...), Name "db0".
-// Below a database, keys are grouped into folders by the separator. Path
-// elements after the index are folder segments in order; a key's last
-// element is keyMarker followed by the whole key name, and a folder segment
-// that happens to start with the NUL byte is prefixed with folderEscape, so
-// a folder and a key with the same name never share a Path. For key "a:b:c"
-// the folders are [db, "a"] and [db, "a", "b"] and the key is
-// [db, "a", "b", "\x00k:a:b:c"]. Key nodes carry "type · ttl Ns" in Detail.
+// Roots are the logical databases: Path [index] ("0", "1", ...), Name "db0".
+// The index is also what driver.Scope.Database expects. Below a database,
+// keys are grouped into folders by the separator: path elements after the
+// index are folder segments, and a key's last element is a marker followed
+// by the whole key name (see KeyPath), so a folder and a key with the same
+// name never share a Path. For key "a:b:c" the folders are [db, "a"] and
+// [db, "a", "b"] and the key is [db, "a", "b", "\x00k:a:b:c"]. Names that
+// are not valid UTF-8 are hex-encoded in paths. Key nodes carry
+// "type · ttl Ns" in Detail.
 //
 // # Statements
 //
-// One command per line, see Split and Fields. Replies become tables by shape:
-// see tabulate.
+// One command per line with redis-cli quoting, see Split and Fields. Replies
+// become tables by shape, see tabulate.
 package redis
 
 import (
@@ -42,6 +46,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -49,6 +54,7 @@ import (
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9/maintnotifications"
 
 	"github.com/gxd3v/quarry/internal/driver"
 )
@@ -60,11 +66,13 @@ const (
 	defaultTimeout      = 10 * time.Second
 	defaultSeparator    = ":"
 	clientName          = "quarry"
+	metaTimeout         = 30 * time.Second
 )
 
 var (
-	errClosed   = errors.New("connection is closed")
-	errReadOnly = errors.New("connection is read-only: changes cannot be saved")
+	errClosed    = errors.New("connection is closed")
+	errReadOnly  = errors.New("connection is read-only: changes cannot be saved")
+	errClusterDB = errors.New("Redis Cluster only has database 0")
 )
 
 type redisDriver struct{}
@@ -80,11 +88,8 @@ func (redisDriver) Open(ctx context.Context, cfg driver.Config, password string)
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := ctx.Deadline(); !ok {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, c.opts.DialTimeout+5*time.Second)
-		defer cancel()
-	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
 	if err := c.base.Ping(ctx).Err(); err != nil {
 		c.Close()
 		return nil, connectError(err, c.where())
@@ -130,7 +135,7 @@ func newConn(cfg driver.Config, password string) (*conn, error) {
 		}
 		timeout = d
 	}
-	master := opt("master")
+	master := cmp.Or(opt("sentinel_master"), opt("master"))
 	port := cfg.Port
 	if port == 0 {
 		port = defaultPort
@@ -142,9 +147,28 @@ func newConn(cfg driver.Config, password string) (*conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.cluster = master == "" && (isTrue(opt("cluster")) || len(addrs) > 1)
+	switch v := opt("cluster"); {
+	case master != "":
+	case isTrue(v):
+		c.cluster = true
+	case v != "" && !isFalse(v):
+		seeds, err := addresses(v, port)
+		if err != nil {
+			return nil, fmt.Errorf("invalid cluster option: %w", err)
+		}
+		for _, s := range seeds {
+			if !slices.Contains(addrs, s) {
+				addrs = append(addrs, s)
+			}
+		}
+		c.cluster = true
+	case len(addrs) > 1 && isFalse(v):
+		return nil, errors.New("several hosts need cluster=true or sentinel_master")
+	case len(addrs) > 1:
+		c.cluster = true
+	}
 	if c.cluster && c.defDB != 0 {
-		return nil, errors.New("Redis Cluster only has database 0")
+		return nil, errClusterDB
 	}
 	if isTrue(opt("tls")) {
 		c.tls = &tls.Config{
@@ -160,25 +184,29 @@ func newConn(cfg driver.Config, password string) (*conn, error) {
 		}
 		proto, _ = strconv.Atoi(v)
 	}
+	user := cmp.Or(cfg.User, opt("username"))
 	c.opts = goredis.UniversalOptions{
-		Addrs:            addrs,
-		ClientName:       clientName,
-		DB:               c.defDB,
-		Protocol:         proto,
-		Username:         cfg.User,
-		Password:         password,
-		SentinelUsername: opt("sentinel_user"),
-		SentinelPassword: opt("sentinel_password"),
-		MasterName:       master,
-		IsClusterMode:    c.cluster,
-		DialTimeout:      timeout,
-		ReadTimeout:      30 * time.Second,
-		WriteTimeout:     30 * time.Second,
-		PoolSize:         4,
-		MaxRetries:       1,
-		// Metadata calls get deadlines from their contexts.
-		ContextTimeoutEnabled: true,
-		DisableIdentity:       true,
+		Addrs:         addrs,
+		ClientName:    clientName,
+		DB:            c.defDB,
+		Protocol:      proto,
+		Username:      user,
+		Password:      password,
+		MasterName:    master,
+		IsClusterMode: c.cluster,
+		DialTimeout:   timeout,
+		DialerRetries: 1,
+		ReadTimeout:   metaTimeout,
+		WriteTimeout:  metaTimeout,
+		PoolSize:      4,
+		MaxRetries:    1,
+		// Metadata calls get their deadlines from their contexts.
+		ContextTimeoutEnabled:    true,
+		DisableIdentity:          true,
+		MaintNotificationsConfig: &maintnotifications.Config{Mode: maintnotifications.ModeDisabled},
+	}
+	if master != "" && isTrue(opt("sentinel_auth")) {
+		c.opts.SentinelUsername, c.opts.SentinelPassword = user, password
 	}
 	c.opts.Dialer = c.dialer(nil)
 	c.base = goredis.NewUniversalClient(&c.opts)
@@ -188,16 +216,22 @@ func newConn(cfg driver.Config, password string) (*conn, error) {
 	return c, nil
 }
 
+// bound gives ctx a deadline long enough to dial and run one command when
+// it has none.
+func (c *conn) bound(ctx context.Context) (context.Context, context.CancelFunc) {
+	if _, ok := ctx.Deadline(); ok {
+		return ctx, func() {}
+	}
+	return context.WithTimeout(ctx, c.opts.DialTimeout+5*time.Second)
+}
+
 // addresses expands "h1,h2:7001,[::1]:7002" into host:port entries.
 func addresses(hosts string, port int) ([]string, error) {
 	var out []string
-	for _, h := range strings.Split(hosts, ",") {
+	for h := range strings.SplitSeq(hosts, ",") {
 		h = strings.TrimSpace(h)
 		if h == "" {
-			if len(out) > 0 || strings.Contains(hosts, ",") {
-				continue
-			}
-			h = defaultHost
+			continue
 		}
 		host, p, err := splitHostPort(h)
 		if err != nil {
@@ -243,6 +277,14 @@ func isTrue(v string) bool {
 	return false
 }
 
+func isFalse(v string) bool {
+	switch strings.ToLower(v) {
+	case "0", "false", "no", "off":
+		return true
+	}
+	return false
+}
+
 func parseTimeout(v string) (time.Duration, error) {
 	if n, err := strconv.Atoi(v); err == nil && n >= 0 {
 		return time.Duration(n) * time.Second, nil
@@ -265,8 +307,7 @@ func (c *conn) dialer(track func(*killConn)) func(context.Context, string, strin
 		if c.tls != nil {
 			cfg := c.tls.Clone()
 			if cfg.ServerName == "" {
-				host, _, _ := net.SplitHostPort(addr)
-				cfg.ServerName = host
+				cfg.ServerName, _, _ = net.SplitHostPort(addr)
 			}
 			tc := tls.Client(nc, cfg)
 			if err := tc.HandshakeContext(ctx); err != nil {
@@ -328,7 +369,7 @@ func (c *conn) client(db int) (goredis.UniversalClient, error) {
 	}
 	if c.cluster {
 		if db != 0 {
-			return nil, errors.New("Redis Cluster only has database 0")
+			return nil, errClusterDB
 		}
 		return c.base, nil
 	}
@@ -357,6 +398,9 @@ func (c *conn) dbIndex(s string) (int, error) {
 	if err != nil || n < 0 {
 		return 0, fmt.Errorf("invalid Redis database %q", s)
 	}
+	if c.cluster && n != 0 {
+		return 0, errClusterDB
+	}
 	return n, nil
 }
 
@@ -380,16 +424,16 @@ func (c *conn) Close() error {
 }
 
 // connectError rewrites connect failures into something a status bar can
-// show; the original error stays reachable with errors.As.
+// show; the original error stays reachable with errors.As. Rejected
+// credentials wrap driver.ErrAuth.
 func connectError(err error, where string) error {
-	if re, ok := errors.AsType[goredis.Error](err); ok {
+	if fe, ok := errors.AsType[*friendlyError](err); ok {
+		return fe
+	}
+	if re, ok := errors.AsType[goredis.Error](err); ok && isServerError(err) {
 		msg := re.Error()
-		switch {
-		case strings.HasPrefix(msg, "NOAUTH"):
-			msg = "authentication required: set a password for this connection"
-		case strings.HasPrefix(msg, "WRONGPASS"), strings.Contains(msg, "invalid password"),
-			strings.Contains(msg, "invalid username-password"):
-			msg = "authentication failed: wrong user name or password"
+		if m, ok := authMessage(msg); ok {
+			return &friendlyError{msg: m, err: fmt.Errorf("%w: %w", driver.ErrAuth, err)}
 		}
 		return &friendlyError{msg: msg, err: err}
 	}
@@ -409,15 +453,40 @@ func connectError(err error, where string) error {
 		return &friendlyError{msg: "cannot connect to " + where + ": the server does not speak TLS", err: err}
 	}
 	msg := strings.TrimPrefix(err.Error(), "redis: ")
-	if err == goredis.ErrClosed || errors.Is(err, net.ErrClosed) {
+	if errors.Is(err, goredis.ErrClosed) || errors.Is(err, net.ErrClosed) {
 		msg = "the connection was closed"
 	}
 	return &friendlyError{msg: "cannot connect to " + where + ": " + msg, err: err}
 }
 
+// authMessage recognises replies that reject the connection's credentials.
+func authMessage(msg string) (string, bool) {
+	lower := strings.ToLower(msg)
+	switch {
+	case strings.HasPrefix(msg, "NOAUTH"):
+		return "authentication required: set a password for this connection", true
+	case strings.HasPrefix(msg, "WRONGPASS"), strings.Contains(lower, "invalid password"),
+		strings.Contains(lower, "invalid username-password"):
+		return "authentication failed: wrong user name or password", true
+	case strings.Contains(lower, "no password is set"), strings.Contains(lower, "without any password configured"):
+		return "authentication failed: the server has no password; clear it in the connection settings", true
+	}
+	return "", false
+}
+
 func isTimeout(err error) bool {
 	ne, ok := errors.AsType[net.Error](err)
 	return ok && ne.Timeout()
+}
+
+// isServerError reports whether err is an error reply from the server, as
+// opposed to a transport failure or go-redis' own sentinel errors.
+func isServerError(err error) bool {
+	if _, ok := errors.AsType[goredis.Error](err); !ok {
+		return false
+	}
+	return !errors.Is(err, goredis.Nil) && !errors.Is(err, goredis.TxFailedErr) &&
+		!strings.HasPrefix(err.Error(), "redis: ")
 }
 
 type friendlyError struct {
@@ -438,14 +507,26 @@ func queryError(err error) error {
 	if qe, ok := errors.AsType[*driver.QueryError](err); ok {
 		return qe
 	}
-	re, ok := errors.AsType[goredis.Error](err)
-	if !ok || err == goredis.Nil {
+	if !isServerError(err) {
 		return err
 	}
-	msg := re.Error()
+	msg := err.Error()
 	code, rest, _ := strings.Cut(msg, " ")
-	if code == "" || strings.ToUpper(code) != code || strings.ContainsAny(code, "'\":") {
+	if !isCode(code) {
 		return &driver.QueryError{Msg: msg, Position: -1}
 	}
 	return &driver.QueryError{Msg: cmp.Or(rest, msg), Code: code, Position: -1}
+}
+
+func isCode(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if !('A' <= c && c <= 'Z' || '0' <= c && c <= '9' || c == '_' || c == '-') {
+			return false
+		}
+	}
+	return true
 }

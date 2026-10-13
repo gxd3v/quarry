@@ -1,8 +1,12 @@
 package redis
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
 	"math/big"
+	"net"
 	"reflect"
 	"strings"
 	"testing"
@@ -41,7 +45,7 @@ func TestTabulateScalars(t *testing.T) {
 	checkTable(t, "string", tabulate(args("GET a"), "hello"), []string{"value"}, [][]any{{"hello"}})
 	checkTable(t, "int", tabulate(args("INCR a"), int64(42)), []string{"value"}, [][]any{{int64(42)}})
 	checkTable(t, "float", tabulate(args("ZSCORE z m"), 1.5), []string{"value"}, [][]any{{1.5}})
-	checkTable(t, "bool", tabulate(args("HELLO"), true), []string{"value"}, [][]any{{true}})
+	checkTable(t, "bool", tabulate(args("X"), true), []string{"value"}, [][]any{{true}})
 	checkTable(t, "bigint", tabulate(args("X"), big.NewInt(7)), []string{"value"}, [][]any{{driver.Number("7")}})
 	checkTable(t, "binary", tabulate(args("GET b"), "\xff\x00"), []string{"value"}, [][]any{{[]byte("\xff\x00")}})
 	checkTable(t, "json", tabulate(args("JSON.GET k"), `{"a":1}`), []string{"value"}, [][]any{{driver.JSON(`{"a":1}`)}})
@@ -51,13 +55,17 @@ func TestTabulateScalars(t *testing.T) {
 }
 
 func TestTabulateArrays(t *testing.T) {
-	checkTable(t, "array", tabulate(args("LRANGE l 0 -1"), []any{"a", nil, int64(3)}),
+	checkTable(t, "array", tabulate(args("MGET a b c"), []any{"a", nil, int64(3)}),
 		[]string{"#", "value"}, [][]any{{int64(0), "a"}, {int64(1), nil}, {int64(2), int64(3)}})
+	checkTable(t, "lrange offset", tabulate(args("LRANGE l 5 6"), []any{"x", "y"}),
+		[]string{"#", "value"}, [][]any{{int64(5), "x"}, {int64(6), "y"}})
 	checkTable(t, "nested", tabulate(args("GEOPOS g a"), []any{[]any{"1.5", "2"}, nil}),
 		[]string{"#", "value"}, [][]any{{int64(0), driver.JSON(`["1.5","2"]`)}, {int64(1), nil}})
-	checkTable(t, "exec", tabulate(args("EXEC"), []any{"OK", goredis.Nil, errors.New("WRONGTYPE bad")}),
-		[]string{"#", "value"}, [][]any{{int64(0), "OK"}, {int64(1), "(error) redis: nil"}, {int64(2), "(error) WRONGTYPE bad"}})
-	checkTable(t, "empty", tabulate(args("SMEMBERS s"), []any{}), []string{"#", "value"}, nil)
+	checkTable(t, "exec", tabulate(args("EXEC"), []any{"OK", errors.New("WRONGTYPE bad")}),
+		[]string{"#", "value"}, [][]any{{int64(0), "OK"}, {int64(1), "(error) WRONGTYPE bad"}})
+	checkTable(t, "smembers", tabulate(args("SMEMBERS s"), []any{"b", "a"}), []string{"member"}, [][]any{{"a"}, {"b"}})
+	checkTable(t, "keys", tabulate(args("keys *"), []any{"k2", "k1"}), []string{"key"}, [][]any{{"k1"}, {"k2"}})
+	checkTable(t, "empty", tabulate(args("SMEMBERS s"), []any{}), []string{"member"}, nil)
 }
 
 func TestTabulatePairs(t *testing.T) {
@@ -69,7 +77,6 @@ func TestTabulatePairs(t *testing.T) {
 		[]string{"field", "value"}, want)
 	checkTable(t, "generic map", tabulate(args("XINFO STREAM s"), map[any]any{"length": int64(2), "first-entry": []any{"1-0", []any{"f", "v"}}}),
 		[]string{"field", "value"}, [][]any{{"first-entry", driver.JSON(`["1-0",["f","v"]]`)}, {"length", int64(2)}})
-	// HRANDFIELD without WITHVALUES is a plain array.
 	checkTable(t, "hrandfield", tabulate(args("HRANDFIELD h 2"), []any{"a", "b"}), []string{"#", "value"},
 		[][]any{{int64(0), "a"}, {int64(1), "b"}})
 }
@@ -90,39 +97,39 @@ func TestTabulateScores(t *testing.T) {
 func TestTabulateScan(t *testing.T) {
 	got := tabulate(args("SCAN 0 MATCH user:* COUNT 10"), []any{"17", []any{"user:1", "user:2"}})
 	checkTable(t, "scan", got, []string{"key"}, [][]any{{"user:1"}, {"user:2"}})
-	if len(got.msgs) != 1 || !strings.Contains(got.msgs[0].Text, "Next cursor: 17") ||
-		!strings.Contains(got.msgs[0].Text, "SCAN 17 MATCH user:* COUNT 10") {
-		t.Errorf("scan messages = %+v", got.msgs)
+	if got.cursor != "17" {
+		t.Errorf("cursor = %q", got.cursor)
 	}
 	got = tabulate(args("SSCAN s 0"), []any{"0", []any{"m"}})
 	checkTable(t, "sscan", got, []string{"member"}, [][]any{{"m"}})
-	if len(got.msgs) != 1 || !strings.Contains(got.msgs[0].Text, "complete") {
-		t.Errorf("sscan messages = %+v", got.msgs)
+	if got.cursor != "0" {
+		t.Errorf("sscan cursor = %q", got.cursor)
 	}
-	got = tabulate(args("HSCAN h 5 MATCH f*"), []any{"9", []any{"f1", "v1"}})
-	checkTable(t, "hscan", got, []string{"field", "value"}, [][]any{{"f1", "v1"}})
-	if !strings.Contains(got.msgs[0].Text, "HSCAN h 9 MATCH f*") {
-		t.Errorf("hscan continuation = %q", got.msgs[0].Text)
-	}
+	checkTable(t, "hscan", tabulate(args("HSCAN h 5 MATCH f*"), []any{"9", []any{"f1", "v1"}}),
+		[]string{"field", "value"}, [][]any{{"f1", "v1"}})
 	checkTable(t, "hscan novalues", tabulate(args("HSCAN h 0 NOVALUES"), []any{"0", []any{"f1", "f2"}}),
 		[]string{"field"}, [][]any{{"f1"}, {"f2"}})
 	checkTable(t, "zscan", tabulate(args("ZSCAN z 0"), []any{"0", []any{"m", "3"}}),
 		[]string{"member", "score"}, [][]any{{"m", 3.0}})
+	if got := tabulate(args("SCAN 0"), "QUEUED"); got.cursor != "" {
+		t.Error("a queued SCAN has no cursor")
+	}
 }
 
 func TestTabulateStreams(t *testing.T) {
 	entries := []any{
 		[]any{"1-0", []any{"f1", "v1", "f2", "v2"}},
-		[]any{"2-0", []any{"f1", "v3"}},
+		[]any{"2-0", []any{"f1", "v3", "id", "x"}},
 	}
-	checkTable(t, "xrange", tabulate(args("XRANGE s - +"), entries), []string{"id", "field", "value"},
-		[][]any{{"1-0", "f1", "v1"}, {"1-0", "f2", "v2"}, {"2-0", "f1", "v3"}})
+	checkTable(t, "xrange", tabulate(args("XRANGE s - +"), entries), []string{"id", "f1", "f2", "id (field)"},
+		[][]any{{"1-0", "v1", "v2", nil}, {"2-0", "v3", nil, "x"}})
 	resp2 := []any{[]any{"s", entries[:1]}}
-	checkTable(t, "xread resp2", tabulate(args("XREAD STREAMS s 0"), resp2), []string{"stream", "id", "field", "value"},
-		[][]any{{"s", "1-0", "f1", "v1"}, {"s", "1-0", "f2", "v2"}})
+	checkTable(t, "xread resp2", tabulate(args("XREAD STREAMS s 0"), resp2), []string{"stream", "id", "f1", "f2"},
+		[][]any{{"s", "1-0", "v1", "v2"}})
 	resp3 := map[any]any{"t": entries[1:], "s": entries[:1]}
-	checkTable(t, "xread resp3", tabulate(args("XREAD COUNT 1 STREAMS s t 0 0"), resp3), []string{"stream", "id", "field", "value"},
-		[][]any{{"s", "1-0", "f1", "v1"}, {"s", "1-0", "f2", "v2"}, {"t", "2-0", "f1", "v3"}})
+	checkTable(t, "xread resp3", tabulate(args("XREAD COUNT 1 STREAMS s t 0 0"), resp3),
+		[]string{"stream", "id", "f1", "f2", "id (field)"},
+		[][]any{{"s", "1-0", "v1", "v2", nil}, {"t", "2-0", "v3", nil, "x"}})
 	checkTable(t, "xclaim justid", tabulate(args("XCLAIM s g c 0 1-0 JUSTID"), []any{"1-0"}), []string{"#", "value"},
 		[][]any{{int64(0), "1-0"}})
 }
@@ -141,16 +148,58 @@ func TestTabulateInfo(t *testing.T) {
 	})
 }
 
+type fakeRedisErr string
+
+func (e fakeRedisErr) Error() string { return string(e) }
+func (fakeRedisErr) RedisError()     {}
+
 func TestQueryError(t *testing.T) {
 	qe, ok := queryError(goredis.ErrCrossSlot).(*driver.QueryError)
 	if !ok || qe.Code != "CROSSSLOT" || qe.Msg != "Keys in request don't hash to the same slot" || qe.Position != -1 {
 		t.Errorf("queryError = %#v", qe)
 	}
+	qe, ok = queryError(fakeRedisErr("WRONGTYPE Operation against a key holding the wrong kind of value")).(*driver.QueryError)
+	if !ok || qe.Code != "WRONGTYPE" || !strings.HasPrefix(qe.Msg, "Operation against") {
+		t.Errorf("wrongtype = %#v", qe)
+	}
 	other := errors.New("dial tcp: refused")
 	if queryError(other) != other {
 		t.Error("non-server errors must pass through")
 	}
+	if queryError(goredis.Nil) != goredis.Nil || isServerError(goredis.TxFailedErr) {
+		t.Error("go-redis sentinel errors are not server errors")
+	}
 	if queryError(nil) != nil {
 		t.Error("nil")
+	}
+}
+
+func TestConnectErrorAuth(t *testing.T) {
+	for _, msg := range []string{
+		"NOAUTH Authentication required.",
+		"WRONGPASS invalid username-password pair or user is disabled.",
+		"ERR invalid password",
+		"ERR AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?",
+	} {
+		err := connectError(fmt.Errorf("init: %w", fakeRedisErr(msg)), "h:1")
+		if !errors.Is(err, driver.ErrAuth) {
+			t.Errorf("%q does not wrap ErrAuth: %v", msg, err)
+		}
+		if !strings.HasPrefix(err.Error(), "authentication") {
+			t.Errorf("%q message = %q", msg, err)
+		}
+	}
+	for _, err := range []error{
+		fakeRedisErr("ERR DB index is out of range"),
+		&net.OpError{Op: "dial", Net: "tcp", Err: errors.New("connection refused")},
+		context.DeadlineExceeded,
+		io.EOF,
+	} {
+		if ce := connectError(err, "h:1"); errors.Is(ce, driver.ErrAuth) {
+			t.Errorf("%v wraps ErrAuth", err)
+		}
+	}
+	if got := connectError(&net.OpError{Op: "dial", Net: "tcp", Err: errors.New("connection refused")}, "h:1").Error(); got != "cannot connect to h:1: connection refused" {
+		t.Errorf("dial error = %q", got)
 	}
 }
