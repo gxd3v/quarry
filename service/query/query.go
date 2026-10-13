@@ -116,7 +116,7 @@ type openResult struct {
 	cur    *cursor
 	rows   int64
 	script string // for error positions
-	stmt   driver.Statement
+	stmt   stmt
 }
 
 var errBusy = errors.New("tab is busy")
@@ -178,6 +178,12 @@ func (t *tab) target() (string, driver.Scope) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	return t.connID, t.scope
+}
+
+func (t *tab) binding() (string, driver.Scope, driver.Language) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.connID, t.scope, t.lang
 }
 
 // discard closes the result kept for Fetch, if any.
@@ -310,9 +316,9 @@ func (s *Service) Analyze(_ context.Context, req *connect.Request[quarryv1.Analy
 		return nil, err
 	}
 	connID, _ := t.target()
-	cfg, ok := s.live.Config(connID)
-	if !ok {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("unknown connection %q", connID))
+	cfg, err := s.config(connID)
+	if err != nil {
+		return nil, err
 	}
 	sp := splitterFor(cfg.Kind)
 	script := req.Msg.Script

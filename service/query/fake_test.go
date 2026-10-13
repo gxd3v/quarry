@@ -39,6 +39,15 @@ func (l *fakeLive) add(id string, kind driver.Kind, c driver.Conn) {
 	}
 }
 
+// configure changes the saved config of id.
+func (l *fakeLive) configure(id string, f func(*driver.Config)) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	cfg := l.cfgs[id]
+	f(&cfg)
+	l.cfgs[id] = cfg
+}
+
 func (l *fakeLive) Live(id string) (driver.Conn, driver.Config, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -119,6 +128,17 @@ func (c *fakeConn) session(i int) *fakeSession {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.sessions[i]
+}
+
+// sessionsRan lists the statements executed by every session, in order.
+func (c *fakeConn) sessionsRan() []string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var out []string
+	for _, s := range c.sessions {
+		out = append(out, s.ran()...)
+	}
+	return out
 }
 
 func (c *fakeConn) count() int {
@@ -301,4 +321,48 @@ func (h *memHistory) all() []workspace.Entry {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	return append([]workspace.Entry(nil), h.entries...)
+}
+
+// fakeDataConn is a fakeConn with a data view and inline editing.
+type fakeDataConn struct {
+	*fakeConn
+	key      []string
+	keyErr   error
+	applyErr error
+
+	mu      sync.Mutex
+	applied [][]driver.RowChange
+	target  *driver.Node
+}
+
+func (c *fakeDataConn) DataQuery(target *driver.Node, filter string, orderBy []string) (string, error) {
+	if target == nil {
+		return "", errors.New("not a table or view")
+	}
+	q := "select * from " + strings.Join(target.Path, ".")
+	if filter != "" {
+		q += " where (" + filter + ")"
+	}
+	if len(orderBy) > 0 {
+		q += " order by " + strings.Join(orderBy, ", ")
+	}
+	return q, nil
+}
+
+func (c *fakeDataConn) RowKey(_ context.Context, target *driver.Node) ([]string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.target = target
+	return c.key, c.keyErr
+}
+
+func (c *fakeDataConn) Apply(_ context.Context, target *driver.Node, changes []driver.RowChange) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.target = target
+	if c.applyErr != nil {
+		return c.applyErr
+	}
+	c.applied = append(c.applied, changes)
+	return nil
 }

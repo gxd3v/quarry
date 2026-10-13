@@ -115,13 +115,24 @@ func (e *emitter) pump(ctx context.Context, c *cursor, limit int64, first int) (
 	return sent, more, err
 }
 
-func queryError(script string, st driver.Statement, err error) *quarryv1.QueryError {
+// stmt is a statement of the script and the text sent for it, which differs
+// when parameters were substituted.
+type stmt struct {
+	driver.Statement
+	exec  string
+	bound bool
+}
+
+// queryError converts a driver error. Server positions refer to the text
+// sent, so they are reported as unknown (-1) for statements whose parameters
+// were substituted.
+func queryError(script string, st stmt, err error) *quarryv1.QueryError {
 	qe, ok := errors.AsType[*driver.QueryError](err)
 	if !ok {
 		return &quarryv1.QueryError{Message: err.Error(), Position: -1}
 	}
 	pos := int32(-1)
-	if qe.Position >= 0 {
+	if qe.Position >= 0 && !st.bound {
 		pos = int32(service.UTF16Offset(script, st.Offset+qe.Position))
 	}
 	return &quarryv1.QueryError{Message: qe.Msg, Code: qe.Code, Detail: qe.Detail, Hint: qe.Hint, Position: pos}
@@ -152,12 +163,11 @@ func (s *Service) limit(n int32) int64 {
 	return int64(n)
 }
 
-func statements(sp splitter, req *quarryv1.RunRequest) []driver.Statement {
-	script := req.Script
+func statements(sp splitter, script string, mode quarryv1.RunMode, start16, end16 int32) []driver.Statement {
 	all := sp.split(script)
-	start := service.ByteOffset(script, int(req.Start))
-	if req.Mode == quarryv1.RunMode_RUN_MODE_RANGE {
-		return inRange(all, start, service.ByteOffset(script, int(req.End)))
+	start := service.ByteOffset(script, int(start16))
+	if mode == quarryv1.RunMode_RUN_MODE_RANGE {
+		return inRange(all, start, service.ByteOffset(script, int(end16)))
 	}
 	if st, ok := sp.at(all, script, start); ok {
 		return []driver.Statement{st}
@@ -175,6 +185,25 @@ func (s *Service) run(ctx context.Context, req *quarryv1.RunRequest, send func(*
 		return err
 	}
 	defer release()
+	connID, _, lang := t.binding()
+	cfg, err := s.config(connID)
+	if err != nil {
+		return err
+	}
+	stmts := statements(splitterFor(cfg.Kind), req.Script, req.Mode, req.Start, req.End)
+	if err := inspect(lang, cfg, stmts).allow(req.Confirmed); err != nil {
+		return err
+	}
+	plan, err := bind(lang, cfg.Kind, stmts, req.Params)
+	if err != nil {
+		return err
+	}
+	return s.execute(ctx, t, req.Script, plan, s.limit(req.MaxRows), send)
+}
+
+// execute runs stmts of script on the tab's session; the caller holds the tab
+// busy. The last result stays open for Fetch when it has more rows.
+func (s *Service) execute(ctx context.Context, t *tab, script string, stmts []stmt, limit int64, send func(*quarryv1.RunEvent) error) error {
 	t.discard()
 	sess, cfg, err := s.session(ctx, t)
 	if err != nil {
@@ -183,9 +212,6 @@ func (s *Service) run(ctx context.Context, req *quarryv1.RunRequest, send func(*
 	_, scope := t.target()
 
 	began := time.Now()
-	script := req.Script
-	stmts := statements(splitterFor(cfg.Kind), req)
-	limit := s.limit(req.MaxRows)
 	e := &emitter{send: send}
 	e.emit(&quarryv1.RunEvent{Event: &quarryv1.RunEvent_Started{Started: &quarryv1.RunStarted{
 		RunId: uuid.New().String(), Statements: int32(len(stmts)),
@@ -199,17 +225,17 @@ func (s *Service) run(ctx context.Context, req *quarryv1.RunRequest, send func(*
 			break
 		}
 		e.emit(&quarryv1.RunEvent{Event: &quarryv1.RunEvent_Statement{Statement: &quarryv1.StatementStarted{
-			Index: int32(i), Range: rangeOf(&conv, st),
+			Index: int32(i), Range: rangeOf(&conv, st.Statement),
 		}}})
 		last := i == len(stmts)-1
-		h := workspace.Entry{At: time.Now(), Conn: cfg.ID, Scope: scope, Text: st.Text, Rows: -1}
+		h := workspace.Entry{At: time.Now(), Conn: cfg.ID, Scope: scope, Text: st.exec, Rows: -1}
 		var (
 			c    *cursor
 			rows int64
 			more bool
 		)
 		t0 := time.Now()
-		res, err := sess.Execute(ctx, st)
+		res, err := sess.Execute(ctx, driver.Statement{Text: st.exec, Offset: st.Offset})
 		if err == nil {
 			c = &cursor{res: res}
 			if cols := res.Columns(); len(cols) > 0 {

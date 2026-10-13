@@ -21,9 +21,7 @@ func (s *Service) Complete(ctx context.Context, req *connect.Request[quarryv1.Co
 	if err != nil {
 		return nil, err
 	}
-	t.mu.Lock()
-	connID, scope, lang := t.connID, t.scope, t.lang
-	t.mu.Unlock()
+	connID, scope, lang := t.binding()
 
 	script := req.Msg.Script
 	cr := complete.Request{Lang: lang, Text: script, Cursor: service.ByteOffset(script, int(req.Msg.Cursor))}

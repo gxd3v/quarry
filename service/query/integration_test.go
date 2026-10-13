@@ -199,7 +199,7 @@ func TestITComplete(t *testing.T) {
 	e.s.catalog = catalog.New(e.s.live)
 	schema := "quarry_complete_" + strings.ReplaceAll(uuid.New().String(), "-", "")[:12]
 	e.runAll(t, "create schema "+schema+"; create table "+schema+".items (id int primary key, label text)", 0)
-	t.Cleanup(func() { e.runAll(t, "drop schema "+schema+" cascade", 0) })
+	t.Cleanup(func() { e.dropSchema(t, schema) })
 
 	r, _ := e.completeAt(t, e.tab, "select * from "+schema+".|")
 	if it := item(r, "items"); it == nil || it.Kind != "table" {
@@ -208,5 +208,13 @@ func TestITComplete(t *testing.T) {
 	r, _ = e.completeAt(t, e.tab, "select i.la| from "+schema+".items i")
 	if it := item(r, "label"); it == nil || it.Kind != "column" || len(r.Items) != 1 {
 		t.Fatalf("columns: %v", itemLabels(r))
+	}
+}
+
+func (e *env) dropSchema(t *testing.T, schema string) {
+	t.Helper()
+	evs, err := e.runReq(&quarryv1.RunRequest{Script: "drop schema " + schema + " cascade", Confirmed: true})
+	if err != nil || errorEvent(evs) != nil {
+		t.Errorf("drop schema %s: %v, %v", schema, err, errorEvent(evs))
 	}
 }
