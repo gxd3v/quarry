@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 	"uuid"
 
 	"connectrpc.com/connect"
@@ -104,6 +105,7 @@ type tab struct {
 	closed bool
 	cancel context.CancelFunc
 	done   chan struct{}
+	opCtx  context.Context
 
 	sess       driver.Session
 	from       driver.Conn
@@ -121,6 +123,9 @@ type openResult struct {
 
 var errBusy = errors.New("tab is busy")
 
+// busyWait bounds how long begin waits for a canceled operation to end.
+const busyWait = 5 * time.Second
+
 func (s *Service) tab(id string) (*tab, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -132,23 +137,40 @@ func (s *Service) tab(id string) (*tab, error) {
 }
 
 // begin marks the tab busy and returns a context that Cancel and CloseTab
-// cancel; release must be called when the operation ends.
+// cancel; release must be called when the operation ends. When the running
+// operation was already canceled (its client went away) begin waits briefly
+// for it to wind down instead of reporting the tab busy.
 func (t *tab) begin(ctx context.Context) (context.Context, func(), error) {
-	t.mu.Lock()
+	for {
+		t.mu.Lock()
+		if t.closed {
+			t.mu.Unlock()
+			return nil, nil, connect.NewError(connect.CodeNotFound, errors.New("tab is closed"))
+		}
+		if !t.busy {
+			break
+		}
+		done, winding := t.done, t.opCtx.Err() != nil
+		t.mu.Unlock()
+		if !winding {
+			return nil, nil, connect.NewError(connect.CodeFailedPrecondition, errBusy)
+		}
+		select {
+		case <-done:
+		case <-ctx.Done():
+			return nil, nil, ctx.Err()
+		case <-time.After(busyWait):
+			return nil, nil, connect.NewError(connect.CodeFailedPrecondition, errBusy)
+		}
+	}
 	defer t.mu.Unlock()
-	if t.closed {
-		return nil, nil, connect.NewError(connect.CodeNotFound, errors.New("tab is closed"))
-	}
-	if t.busy {
-		return nil, nil, connect.NewError(connect.CodeFailedPrecondition, errBusy)
-	}
 	ctx, cancel := context.WithCancel(ctx)
-	t.busy, t.cancel, t.done = true, cancel, make(chan struct{})
+	t.busy, t.cancel, t.done, t.opCtx = true, cancel, make(chan struct{}), ctx
 	return ctx, func() {
 		cancel()
 		t.mu.Lock()
 		closed, done := t.closed, t.done
-		t.busy, t.cancel, t.done = false, nil, nil
+		t.busy, t.cancel, t.done, t.opCtx = false, nil, nil, nil
 		t.mu.Unlock()
 		if closed {
 			t.closeSession()

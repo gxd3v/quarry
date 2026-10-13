@@ -671,3 +671,20 @@ func TestTxState(t *testing.T) {
 		t.Fatalf("tx = %v", tx)
 	}
 }
+
+func TestRunWaitsForCanceledRun(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		e := newEnv(t, map[string]fakeStmt{"select pg_sleep(30)": {blockRun: true}})
+		ctx, cancel := context.WithCancel(context.Background())
+		r := e.runBG(ctx, "select pg_sleep(30)")
+		synctest.Wait()
+		// The client goes away and immediately runs again: the new run waits
+		// for the canceled one instead of failing with "tab is busy".
+		cancel()
+		evs := e.runAll(t, "select 1", 0)
+		<-r.done
+		if f := finished(t, evs); f.Canceled {
+			t.Fatalf("second run: %v", kinds(evs))
+		}
+	})
+}
