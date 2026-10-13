@@ -10,11 +10,19 @@ interface AppBinding {
   // Native file dialogs; "" means cancelled.
   OpenScriptDialog(): Promise<string>
   SaveScriptDialog(defaultName: string): Promise<string>
+  // Lets the window close after the frontend saved its state.
+  ConfirmClose(): Promise<void>
+}
+
+// Minimal shape of the Wails v2 runtime events API.
+interface Runtime {
+  EventsOn(name: string, cb: (...args: unknown[]) => void): () => void
 }
 
 declare global {
   interface Window {
     go?: { main?: { App?: Partial<AppBinding> } }
+    runtime?: Runtime
   }
 }
 
@@ -53,4 +61,16 @@ export async function saveScriptDialog(defaultName: string): Promise<string> {
   const a = app()
   if (!a?.SaveScriptDialog) throw new Error('file dialogs need the desktop app')
   return a.SaveScriptDialog(defaultName)
+}
+
+// onBeforeClose runs fn when the user closes the window, then lets it close.
+// The backend closes the window anyway if fn takes more than a few seconds.
+export function onBeforeClose(fn: () => Promise<unknown>): () => void {
+  const rt = typeof window === 'undefined' ? undefined : window.runtime
+  if (!rt) return () => {}
+  return rt.EventsOn('quarry:before-close', () => {
+    void fn()
+      .catch(() => {})
+      .finally(() => app()?.ConfirmClose?.())
+  })
 }

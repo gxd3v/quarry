@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { closeTab, guard, pickAndNewScript, run, saveTab } from '../app/actions'
+  import { onBeforeClose } from '../api/server'
   import { connections } from '../app/connections.svelte'
   import { clampLayout } from '../app/layout'
   import { menu } from '../app/menu.svelte'
@@ -156,6 +157,7 @@
     }
     window.addEventListener('beforeunload', flush)
     document.addEventListener('visibilitychange', hidden)
+    const offClose = onBeforeClose(() => workspace.flush())
 
     const watch = new AbortController()
     settings.load().catch((err: unknown) => notify.error(err, 'Load settings'))
@@ -169,6 +171,7 @@
       window.removeEventListener('keydown', onkeydown, true)
       window.removeEventListener('beforeunload', flush)
       document.removeEventListener('visibilitychange', hidden)
+      offClose()
       watch.abort()
     }
   })
