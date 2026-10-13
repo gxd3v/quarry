@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file quarry/v1/query.proto.
  */
 export const file_quarry_v1_query: GenFile = /*@__PURE__*/
-  fileDesc("ChVxdWFycnkvdjEvcXVlcnkucHJvdG8SCXF1YXJyeS52MSJACgdUeFN0YXRlEhEKCXN1cHBvcnRlZBgBIAEoCBITCgthdXRvX2NvbW1pdBgCIAEoCBINCgVpbl90eBgDIAEoCCJCCg5PcGVuVGFiUmVxdWVzdBIPCgdjb25uX2lkGAEgASgJEh8KBXNjb3BlGAIgASgLMhAucXVhcnJ5LnYxLlNjb3BlIjMKD09wZW5UYWJSZXNwb25zZRIOCgZ0YWJfaWQYASABKAkSEAoIbGFuZ3VhZ2UYAiABKAkiUQoNUmViaW5kUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDwoHY29ubl9pZBgCIAEoCRIfCgVzY29wZRgDIAEoCzIQLnF1YXJyeS52MS5TY29wZSIiCg5SZWJpbmRSZXNwb25zZRIQCghsYW5ndWFnZRgBIAEoCSIhCg9DbG9zZVRhYlJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhIKEENsb3NlVGFiUmVzcG9uc2UiLAoOU3RhdGVtZW50UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIkAKDkFuYWx5emVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIlEKD0FuYWx5emVSZXNwb25zZRItCgpzdGF0ZW1lbnRzGAEgAygLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlEg8KB2N1cnJlbnQYAiABKAUifAoKUnVuUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDgoGc2NyaXB0GAIgASgJEiAKBG1vZGUYAyABKA4yEi5xdWFycnkudjEuUnVuTW9kZRINCgVzdGFydBgEIAEoBRILCgNlbmQYBSABKAUSEAoIbWF4X3Jvd3MYBiABKAUiMAoMRmV0Y2hSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIQCghtYXhfcm93cxgCIAEoBSIwCgpSdW5TdGFydGVkEg4KBnJ1bl9pZBgBIAEoCRISCgpzdGF0ZW1lbnRzGAIgASgFIksKEFN0YXRlbWVudFN0YXJ0ZWQSDQoFaW5kZXgYASABKAUSKAoFcmFuZ2UYAiABKAsyGS5xdWFycnkudjEuU3RhdGVtZW50UmFuZ2UiMwoNUmVzdWx0Q29sdW1ucxIiCgdjb2x1bW5zGAEgAygLMhEucXVhcnJ5LnYxLkNvbHVtbiIoCghSb3dCYXRjaBIcCgRyb3dzGAEgAygLMg4ucXVhcnJ5LnYxLlJvdyJiCg1TdGF0ZW1lbnREb25lEhAKCGFmZmVjdGVkGAEgASgDEgsKA3RhZxgCIAEoCRISCgplbGFwc2VkX21zGAMgASgDEgwKBHJvd3MYBCABKAMSEAoIaGFzX21vcmUYBSABKAgiWwoKUXVlcnlFcnJvchIPCgdtZXNzYWdlGAEgASgJEgwKBGNvZGUYAiABKAkSDgoGZGV0YWlsGAMgASgJEgwKBGhpbnQYBCABKAkSEAoIcG9zaXRpb24YBSABKAUiLwoNU2VydmVyTWVzc2FnZRIQCghzZXZlcml0eRgBIAEoCRIMCgR0ZXh0GAIgASgJIlMKC1J1bkZpbmlzaGVkEhIKCmVsYXBzZWRfbXMYASABKAMSHgoCdHgYAiABKAsyEi5xdWFycnkudjEuVHhTdGF0ZRIQCghjYW5jZWxlZBgDIAEoCCLsAgoIUnVuRXZlbnQSKAoHc3RhcnRlZBgBIAEoCzIVLnF1YXJyeS52MS5SdW5TdGFydGVkSAASMAoJc3RhdGVtZW50GAIgASgLMhsucXVhcnJ5LnYxLlN0YXRlbWVudFN0YXJ0ZWRIABIrCgdjb2x1bW5zGAMgASgLMhgucXVhcnJ5LnYxLlJlc3VsdENvbHVtbnNIABIjCgRyb3dzGAQgASgLMhMucXVhcnJ5LnYxLlJvd0JhdGNoSAASKAoEZG9uZRgFIAEoCzIYLnF1YXJyeS52MS5TdGF0ZW1lbnREb25lSAASJgoFZXJyb3IYBiABKAsyFS5xdWFycnkudjEuUXVlcnlFcnJvckgAEisKB21lc3NhZ2UYByABKAsyGC5xdWFycnkudjEuU2VydmVyTWVzc2FnZUgAEioKCGZpbmlzaGVkGAggASgLMhYucXVhcnJ5LnYxLlJ1bkZpbmlzaGVkSABCBwoFZXZlbnQiHwoNQ2FuY2VsUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkiEAoOQ2FuY2VsUmVzcG9uc2UiMgoUU2V0QXV0b0NvbW1pdFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJEgoKAm9uGAIgASgIIjcKFVNldEF1dG9Db21taXRSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIh8KDUNvbW1pdFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIjAKDkNvbW1pdFJlc3BvbnNlEh4KAnR4GAEgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUiIQoPUm9sbGJhY2tSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCSIyChBSb2xsYmFja1Jlc3BvbnNlEh4KAnR4GAEgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUiQQoPQ29tcGxldGVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIk0KDkNvbXBsZXRpb25JdGVtEg0KBWxhYmVsGAEgASgJEg4KBmluc2VydBgCIAEoCRIOCgZkZXRhaWwYAyABKAkSDAoEa2luZBgEIAEoCSJYChBDb21wbGV0ZVJlc3BvbnNlEg0KBXN0YXJ0GAEgASgFEgsKA2VuZBgCIAEoBRIoCgVpdGVtcxgDIAMoCzIZLnF1YXJyeS52MS5Db21wbGV0aW9uSXRlbSpPCgdSdW5Nb2RlEhgKFFJVTl9NT0RFX1VOU1BFQ0lGSUVEEAASFgoSUlVOX01PREVfU1RBVEVNRU5UEAESEgoOUlVOX01PREVfUkFOR0UQAjLgBQoMUXVlcnlTZXJ2aWNlEkAKB09wZW5UYWISGS5xdWFycnkudjEuT3BlblRhYlJlcXVlc3QaGi5xdWFycnkudjEuT3BlblRhYlJlc3BvbnNlEj0KBlJlYmluZBIYLnF1YXJyeS52MS5SZWJpbmRSZXF1ZXN0GhkucXVhcnJ5LnYxLlJlYmluZFJlc3BvbnNlEkMKCENsb3NlVGFiEhoucXVhcnJ5LnYxLkNsb3NlVGFiUmVxdWVzdBobLnF1YXJyeS52MS5DbG9zZVRhYlJlc3BvbnNlEkAKB0FuYWx5emUSGS5xdWFycnkudjEuQW5hbHl6ZVJlcXVlc3QaGi5xdWFycnkudjEuQW5hbHl6ZVJlc3BvbnNlEjMKA1J1bhIVLnF1YXJyeS52MS5SdW5SZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESNwoFRmV0Y2gSFy5xdWFycnkudjEuRmV0Y2hSZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESPQoGQ2FuY2VsEhgucXVhcnJ5LnYxLkNhbmNlbFJlcXVlc3QaGS5xdWFycnkudjEuQ2FuY2VsUmVzcG9uc2USUgoNU2V0QXV0b0NvbW1pdBIfLnF1YXJyeS52MS5TZXRBdXRvQ29tbWl0UmVxdWVzdBogLnF1YXJyeS52MS5TZXRBdXRvQ29tbWl0UmVzcG9uc2USPQoGQ29tbWl0EhgucXVhcnJ5LnYxLkNvbW1pdFJlcXVlc3QaGS5xdWFycnkudjEuQ29tbWl0UmVzcG9uc2USQwoIUm9sbGJhY2sSGi5xdWFycnkudjEuUm9sbGJhY2tSZXF1ZXN0GhsucXVhcnJ5LnYxLlJvbGxiYWNrUmVzcG9uc2USQwoIQ29tcGxldGUSGi5xdWFycnkudjEuQ29tcGxldGVSZXF1ZXN0GhsucXVhcnJ5LnYxLkNvbXBsZXRlUmVzcG9uc2VCMFouZ2l0aHViLmNvbS9neGQzdi9xdWFycnkvZ2VuL3F1YXJyeS92MTtxdWFycnl2MWIGcHJvdG8z", [file_quarry_v1_common, file_quarry_v1_explorer]);
+  fileDesc("ChVxdWFycnkvdjEvcXVlcnkucHJvdG8SCXF1YXJyeS52MSJACgdUeFN0YXRlEhEKCXN1cHBvcnRlZBgBIAEoCBITCgthdXRvX2NvbW1pdBgCIAEoCBINCgVpbl90eBgDIAEoCCJCCg5PcGVuVGFiUmVxdWVzdBIPCgdjb25uX2lkGAEgASgJEh8KBXNjb3BlGAIgASgLMhAucXVhcnJ5LnYxLlNjb3BlIjMKD09wZW5UYWJSZXNwb25zZRIOCgZ0YWJfaWQYASABKAkSEAoIbGFuZ3VhZ2UYAiABKAkiUQoNUmViaW5kUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDwoHY29ubl9pZBgCIAEoCRIfCgVzY29wZRgDIAEoCzIQLnF1YXJyeS52MS5TY29wZSIiCg5SZWJpbmRSZXNwb25zZRIQCghsYW5ndWFnZRgBIAEoCSIhCg9DbG9zZVRhYlJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhIKEENsb3NlVGFiUmVzcG9uc2UiLAoOU3RhdGVtZW50UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIkAKDkFuYWx5emVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIlEKD0FuYWx5emVSZXNwb25zZRItCgpzdGF0ZW1lbnRzGAEgAygLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlEg8KB2N1cnJlbnQYAiABKAUi8QEKClJ1blJlcXVlc3QSDgoGdGFiX2lkGAEgASgJEg4KBnNjcmlwdBgCIAEoCRIgCgRtb2RlGAMgASgOMhIucXVhcnJ5LnYxLlJ1bk1vZGUSDQoFc3RhcnQYBCABKAUSCwoDZW5kGAUgASgFEhAKCG1heF9yb3dzGAYgASgFEjEKBnBhcmFtcxgHIAMoCzIhLnF1YXJyeS52MS5SdW5SZXF1ZXN0LlBhcmFtc0VudHJ5EhEKCWNvbmZpcm1lZBgIIAEoCBotCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIm4KDkluc3BlY3RSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSIAoEbW9kZRgDIAEoDjISLnF1YXJyeS52MS5SdW5Nb2RlEg0KBXN0YXJ0GAQgASgFEgsKA2VuZBgFIAEoBSJmCg5TdGF0ZW1lbnRDaGVjaxIoCgVyYW5nZRgBIAEoCzIZLnF1YXJyeS52MS5TdGF0ZW1lbnRSYW5nZRIMCgRyaXNrGAIgASgJEgwKBHZlcmIYAyABKAkSDgoGcmVhc29uGAQgASgJIooBCg9JbnNwZWN0UmVzcG9uc2USLQoKc3RhdGVtZW50cxgBIAMoCzIZLnF1YXJyeS52MS5TdGF0ZW1lbnRDaGVjaxIOCgZwYXJhbXMYAiADKAkSGgoSbmVlZHNfY29uZmlybWF0aW9uGAMgASgIEg8KB2Jsb2NrZWQYBCABKAgSCwoDZW52GAUgASgJIjAKDEZldGNoUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSEAoIbWF4X3Jvd3MYAiABKAUiMAoKUnVuU3RhcnRlZBIOCgZydW5faWQYASABKAkSEgoKc3RhdGVtZW50cxgCIAEoBSJLChBTdGF0ZW1lbnRTdGFydGVkEg0KBWluZGV4GAEgASgFEigKBXJhbmdlGAIgASgLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlIjMKDVJlc3VsdENvbHVtbnMSIgoHY29sdW1ucxgBIAMoCzIRLnF1YXJyeS52MS5Db2x1bW4iKAoIUm93QmF0Y2gSHAoEcm93cxgBIAMoCzIOLnF1YXJyeS52MS5Sb3ciYgoNU3RhdGVtZW50RG9uZRIQCghhZmZlY3RlZBgBIAEoAxILCgN0YWcYAiABKAkSEgoKZWxhcHNlZF9tcxgDIAEoAxIMCgRyb3dzGAQgASgDEhAKCGhhc19tb3JlGAUgASgIIlsKClF1ZXJ5RXJyb3ISDwoHbWVzc2FnZRgBIAEoCRIMCgRjb2RlGAIgASgJEg4KBmRldGFpbBgDIAEoCRIMCgRoaW50GAQgASgJEhAKCHBvc2l0aW9uGAUgASgFIi8KDVNlcnZlck1lc3NhZ2USEAoIc2V2ZXJpdHkYASABKAkSDAoEdGV4dBgCIAEoCSJTCgtSdW5GaW5pc2hlZBISCgplbGFwc2VkX21zGAEgASgDEh4KAnR4GAIgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUSEAoIY2FuY2VsZWQYAyABKAgi7AIKCFJ1bkV2ZW50EigKB3N0YXJ0ZWQYASABKAsyFS5xdWFycnkudjEuUnVuU3RhcnRlZEgAEjAKCXN0YXRlbWVudBgCIAEoCzIbLnF1YXJyeS52MS5TdGF0ZW1lbnRTdGFydGVkSAASKwoHY29sdW1ucxgDIAEoCzIYLnF1YXJyeS52MS5SZXN1bHRDb2x1bW5zSAASIwoEcm93cxgEIAEoCzITLnF1YXJyeS52MS5Sb3dCYXRjaEgAEigKBGRvbmUYBSABKAsyGC5xdWFycnkudjEuU3RhdGVtZW50RG9uZUgAEiYKBWVycm9yGAYgASgLMhUucXVhcnJ5LnYxLlF1ZXJ5RXJyb3JIABIrCgdtZXNzYWdlGAcgASgLMhgucXVhcnJ5LnYxLlNlcnZlck1lc3NhZ2VIABIqCghmaW5pc2hlZBgIIAEoCzIWLnF1YXJyeS52MS5SdW5GaW5pc2hlZEgAQgcKBWV2ZW50Ih8KDUNhbmNlbFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhAKDkNhbmNlbFJlc3BvbnNlIjIKFFNldEF1dG9Db21taXRSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIKCgJvbhgCIAEoCCI3ChVTZXRBdXRvQ29tbWl0UmVzcG9uc2USHgoCdHgYASABKAsyEi5xdWFycnkudjEuVHhTdGF0ZSIfCg1Db21taXRSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCSIwCg5Db21taXRSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIiEKD1JvbGxiYWNrUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkiMgoQUm9sbGJhY2tSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIkEKD0NvbXBsZXRlUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDgoGc2NyaXB0GAIgASgJEg4KBmN1cnNvchgDIAEoBSJNCg5Db21wbGV0aW9uSXRlbRINCgVsYWJlbBgBIAEoCRIOCgZpbnNlcnQYAiABKAkSDgoGZGV0YWlsGAMgASgJEgwKBGtpbmQYBCABKAkiWAoQQ29tcGxldGVSZXNwb25zZRINCgVzdGFydBgBIAEoBRILCgNlbmQYAiABKAUSKAoFaXRlbXMYAyADKAsyGS5xdWFycnkudjEuQ29tcGxldGlvbkl0ZW0qTwoHUnVuTW9kZRIYChRSVU5fTU9ERV9VTlNQRUNJRklFRBAAEhYKElJVTl9NT0RFX1NUQVRFTUVOVBABEhIKDlJVTl9NT0RFX1JBTkdFEAIyogYKDFF1ZXJ5U2VydmljZRJACgdPcGVuVGFiEhkucXVhcnJ5LnYxLk9wZW5UYWJSZXF1ZXN0GhoucXVhcnJ5LnYxLk9wZW5UYWJSZXNwb25zZRI9CgZSZWJpbmQSGC5xdWFycnkudjEuUmViaW5kUmVxdWVzdBoZLnF1YXJyeS52MS5SZWJpbmRSZXNwb25zZRJDCghDbG9zZVRhYhIaLnF1YXJyeS52MS5DbG9zZVRhYlJlcXVlc3QaGy5xdWFycnkudjEuQ2xvc2VUYWJSZXNwb25zZRJACgdBbmFseXplEhkucXVhcnJ5LnYxLkFuYWx5emVSZXF1ZXN0GhoucXVhcnJ5LnYxLkFuYWx5emVSZXNwb25zZRJACgdJbnNwZWN0EhkucXVhcnJ5LnYxLkluc3BlY3RSZXF1ZXN0GhoucXVhcnJ5LnYxLkluc3BlY3RSZXNwb25zZRIzCgNSdW4SFS5xdWFycnkudjEuUnVuUmVxdWVzdBoTLnF1YXJyeS52MS5SdW5FdmVudDABEjcKBUZldGNoEhcucXVhcnJ5LnYxLkZldGNoUmVxdWVzdBoTLnF1YXJyeS52MS5SdW5FdmVudDABEj0KBkNhbmNlbBIYLnF1YXJyeS52MS5DYW5jZWxSZXF1ZXN0GhkucXVhcnJ5LnYxLkNhbmNlbFJlc3BvbnNlElIKDVNldEF1dG9Db21taXQSHy5xdWFycnkudjEuU2V0QXV0b0NvbW1pdFJlcXVlc3QaIC5xdWFycnkudjEuU2V0QXV0b0NvbW1pdFJlc3BvbnNlEj0KBkNvbW1pdBIYLnF1YXJyeS52MS5Db21taXRSZXF1ZXN0GhkucXVhcnJ5LnYxLkNvbW1pdFJlc3BvbnNlEkMKCFJvbGxiYWNrEhoucXVhcnJ5LnYxLlJvbGxiYWNrUmVxdWVzdBobLnF1YXJyeS52MS5Sb2xsYmFja1Jlc3BvbnNlEkMKCENvbXBsZXRlEhoucXVhcnJ5LnYxLkNvbXBsZXRlUmVxdWVzdBobLnF1YXJyeS52MS5Db21wbGV0ZVJlc3BvbnNlQjBaLmdpdGh1Yi5jb20vZ3hkM3YvcXVhcnJ5L2dlbi9xdWFycnkvdjE7cXVhcnJ5djFiBnByb3RvMw", [file_quarry_v1_common, file_quarry_v1_explorer]);
 
 /**
  * @generated from message quarry.v1.TxState
@@ -273,6 +273,21 @@ export type RunRequest = Message<"quarry.v1.RunRequest"> & {
    * @generated from field: int32 max_rows = 6;
    */
   maxRows: number;
+
+  /**
+   * Values for bind parameters (:name, $1), substituted as literals.
+   *
+   * @generated from field: map<string, string> params = 7;
+   */
+  params: { [key: string]: string };
+
+  /**
+   * The user confirmed the risks reported by Inspect. Without it, a run that
+   * needs confirmation fails with FAILED_PRECONDITION before executing.
+   *
+   * @generated from field: bool confirmed = 8;
+   */
+  confirmed: boolean;
 };
 
 /**
@@ -281,6 +296,123 @@ export type RunRequest = Message<"quarry.v1.RunRequest"> & {
  */
 export const RunRequestSchema: GenMessage<RunRequest> = /*@__PURE__*/
   messageDesc(file_quarry_v1_query, 10);
+
+/**
+ * @generated from message quarry.v1.InspectRequest
+ */
+export type InspectRequest = Message<"quarry.v1.InspectRequest"> & {
+  /**
+   * @generated from field: string tab_id = 1;
+   */
+  tabId: string;
+
+  /**
+   * @generated from field: string script = 2;
+   */
+  script: string;
+
+  /**
+   * @generated from field: quarry.v1.RunMode mode = 3;
+   */
+  mode: RunMode;
+
+  /**
+   * @generated from field: int32 start = 4;
+   */
+  start: number;
+
+  /**
+   * @generated from field: int32 end = 5;
+   */
+  end: number;
+};
+
+/**
+ * Describes the message quarry.v1.InspectRequest.
+ * Use `create(InspectRequestSchema)` to create a new message.
+ */
+export const InspectRequestSchema: GenMessage<InspectRequest> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 11);
+
+/**
+ * @generated from message quarry.v1.StatementCheck
+ */
+export type StatementCheck = Message<"quarry.v1.StatementCheck"> & {
+  /**
+   * @generated from field: quarry.v1.StatementRange range = 1;
+   */
+  range?: StatementRange | undefined;
+
+  /**
+   * none | write | ddl | unbounded_write | destructive
+   *
+   * @generated from field: string risk = 2;
+   */
+  risk: string;
+
+  /**
+   * e.g. "DELETE", "DROP TABLE".
+   *
+   * @generated from field: string verb = 3;
+   */
+  verb: string;
+
+  /**
+   * @generated from field: string reason = 4;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message quarry.v1.StatementCheck.
+ * Use `create(StatementCheckSchema)` to create a new message.
+ */
+export const StatementCheckSchema: GenMessage<StatementCheck> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 12);
+
+/**
+ * @generated from message quarry.v1.InspectResponse
+ */
+export type InspectResponse = Message<"quarry.v1.InspectResponse"> & {
+  /**
+   * @generated from field: repeated quarry.v1.StatementCheck statements = 1;
+   */
+  statements: StatementCheck[];
+
+  /**
+   * Distinct parameter names in order of first use.
+   *
+   * @generated from field: repeated string params = 2;
+   */
+  params: string[];
+
+  /**
+   * A Run needs confirmed=true: writes on a prod connection, or unbounded
+   * writes and destructive statements anywhere.
+   *
+   * @generated from field: bool needs_confirmation = 3;
+   */
+  needsConfirmation: boolean;
+
+  /**
+   * The connection is read-only and some statement writes; the Run will fail.
+   *
+   * @generated from field: bool blocked = 4;
+   */
+  blocked: boolean;
+
+  /**
+   * @generated from field: string env = 5;
+   */
+  env: string;
+};
+
+/**
+ * Describes the message quarry.v1.InspectResponse.
+ * Use `create(InspectResponseSchema)` to create a new message.
+ */
+export const InspectResponseSchema: GenMessage<InspectResponse> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 13);
 
 /**
  * @generated from message quarry.v1.FetchRequest
@@ -304,7 +436,7 @@ export type FetchRequest = Message<"quarry.v1.FetchRequest"> & {
  * Use `create(FetchRequestSchema)` to create a new message.
  */
 export const FetchRequestSchema: GenMessage<FetchRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 11);
+  messageDesc(file_quarry_v1_query, 14);
 
 /**
  * @generated from message quarry.v1.RunStarted
@@ -326,7 +458,7 @@ export type RunStarted = Message<"quarry.v1.RunStarted"> & {
  * Use `create(RunStartedSchema)` to create a new message.
  */
 export const RunStartedSchema: GenMessage<RunStarted> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 12);
+  messageDesc(file_quarry_v1_query, 15);
 
 /**
  * @generated from message quarry.v1.StatementStarted
@@ -348,7 +480,7 @@ export type StatementStarted = Message<"quarry.v1.StatementStarted"> & {
  * Use `create(StatementStartedSchema)` to create a new message.
  */
 export const StatementStartedSchema: GenMessage<StatementStarted> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 13);
+  messageDesc(file_quarry_v1_query, 16);
 
 /**
  * @generated from message quarry.v1.ResultColumns
@@ -365,7 +497,7 @@ export type ResultColumns = Message<"quarry.v1.ResultColumns"> & {
  * Use `create(ResultColumnsSchema)` to create a new message.
  */
 export const ResultColumnsSchema: GenMessage<ResultColumns> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 14);
+  messageDesc(file_quarry_v1_query, 17);
 
 /**
  * @generated from message quarry.v1.RowBatch
@@ -382,7 +514,7 @@ export type RowBatch = Message<"quarry.v1.RowBatch"> & {
  * Use `create(RowBatchSchema)` to create a new message.
  */
 export const RowBatchSchema: GenMessage<RowBatch> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 15);
+  messageDesc(file_quarry_v1_query, 18);
 
 /**
  * @generated from message quarry.v1.StatementDone
@@ -425,7 +557,7 @@ export type StatementDone = Message<"quarry.v1.StatementDone"> & {
  * Use `create(StatementDoneSchema)` to create a new message.
  */
 export const StatementDoneSchema: GenMessage<StatementDone> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 16);
+  messageDesc(file_quarry_v1_query, 19);
 
 /**
  * @generated from message quarry.v1.QueryError
@@ -464,7 +596,7 @@ export type QueryError = Message<"quarry.v1.QueryError"> & {
  * Use `create(QueryErrorSchema)` to create a new message.
  */
 export const QueryErrorSchema: GenMessage<QueryError> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 17);
+  messageDesc(file_quarry_v1_query, 20);
 
 /**
  * @generated from message quarry.v1.ServerMessage
@@ -486,7 +618,7 @@ export type ServerMessage = Message<"quarry.v1.ServerMessage"> & {
  * Use `create(ServerMessageSchema)` to create a new message.
  */
 export const ServerMessageSchema: GenMessage<ServerMessage> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 18);
+  messageDesc(file_quarry_v1_query, 21);
 
 /**
  * @generated from message quarry.v1.RunFinished
@@ -513,7 +645,7 @@ export type RunFinished = Message<"quarry.v1.RunFinished"> & {
  * Use `create(RunFinishedSchema)` to create a new message.
  */
 export const RunFinishedSchema: GenMessage<RunFinished> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 19);
+  messageDesc(file_quarry_v1_query, 22);
 
 /**
  * @generated from message quarry.v1.RunEvent
@@ -578,7 +710,7 @@ export type RunEvent = Message<"quarry.v1.RunEvent"> & {
  * Use `create(RunEventSchema)` to create a new message.
  */
 export const RunEventSchema: GenMessage<RunEvent> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 20);
+  messageDesc(file_quarry_v1_query, 23);
 
 /**
  * @generated from message quarry.v1.CancelRequest
@@ -595,7 +727,7 @@ export type CancelRequest = Message<"quarry.v1.CancelRequest"> & {
  * Use `create(CancelRequestSchema)` to create a new message.
  */
 export const CancelRequestSchema: GenMessage<CancelRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 21);
+  messageDesc(file_quarry_v1_query, 24);
 
 /**
  * @generated from message quarry.v1.CancelResponse
@@ -608,7 +740,7 @@ export type CancelResponse = Message<"quarry.v1.CancelResponse"> & {
  * Use `create(CancelResponseSchema)` to create a new message.
  */
 export const CancelResponseSchema: GenMessage<CancelResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 22);
+  messageDesc(file_quarry_v1_query, 25);
 
 /**
  * @generated from message quarry.v1.SetAutoCommitRequest
@@ -630,7 +762,7 @@ export type SetAutoCommitRequest = Message<"quarry.v1.SetAutoCommitRequest"> & {
  * Use `create(SetAutoCommitRequestSchema)` to create a new message.
  */
 export const SetAutoCommitRequestSchema: GenMessage<SetAutoCommitRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 23);
+  messageDesc(file_quarry_v1_query, 26);
 
 /**
  * @generated from message quarry.v1.SetAutoCommitResponse
@@ -647,7 +779,7 @@ export type SetAutoCommitResponse = Message<"quarry.v1.SetAutoCommitResponse"> &
  * Use `create(SetAutoCommitResponseSchema)` to create a new message.
  */
 export const SetAutoCommitResponseSchema: GenMessage<SetAutoCommitResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 24);
+  messageDesc(file_quarry_v1_query, 27);
 
 /**
  * @generated from message quarry.v1.CommitRequest
@@ -664,7 +796,7 @@ export type CommitRequest = Message<"quarry.v1.CommitRequest"> & {
  * Use `create(CommitRequestSchema)` to create a new message.
  */
 export const CommitRequestSchema: GenMessage<CommitRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 25);
+  messageDesc(file_quarry_v1_query, 28);
 
 /**
  * @generated from message quarry.v1.CommitResponse
@@ -681,7 +813,7 @@ export type CommitResponse = Message<"quarry.v1.CommitResponse"> & {
  * Use `create(CommitResponseSchema)` to create a new message.
  */
 export const CommitResponseSchema: GenMessage<CommitResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 26);
+  messageDesc(file_quarry_v1_query, 29);
 
 /**
  * @generated from message quarry.v1.RollbackRequest
@@ -698,7 +830,7 @@ export type RollbackRequest = Message<"quarry.v1.RollbackRequest"> & {
  * Use `create(RollbackRequestSchema)` to create a new message.
  */
 export const RollbackRequestSchema: GenMessage<RollbackRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 27);
+  messageDesc(file_quarry_v1_query, 30);
 
 /**
  * @generated from message quarry.v1.RollbackResponse
@@ -715,7 +847,7 @@ export type RollbackResponse = Message<"quarry.v1.RollbackResponse"> & {
  * Use `create(RollbackResponseSchema)` to create a new message.
  */
 export const RollbackResponseSchema: GenMessage<RollbackResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 28);
+  messageDesc(file_quarry_v1_query, 31);
 
 /**
  * @generated from message quarry.v1.CompleteRequest
@@ -742,7 +874,7 @@ export type CompleteRequest = Message<"quarry.v1.CompleteRequest"> & {
  * Use `create(CompleteRequestSchema)` to create a new message.
  */
 export const CompleteRequestSchema: GenMessage<CompleteRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 29);
+  messageDesc(file_quarry_v1_query, 32);
 
 /**
  * @generated from message quarry.v1.CompletionItem
@@ -779,7 +911,7 @@ export type CompletionItem = Message<"quarry.v1.CompletionItem"> & {
  * Use `create(CompletionItemSchema)` to create a new message.
  */
 export const CompletionItemSchema: GenMessage<CompletionItem> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 30);
+  messageDesc(file_quarry_v1_query, 33);
 
 /**
  * @generated from message quarry.v1.CompleteResponse
@@ -806,7 +938,7 @@ export type CompleteResponse = Message<"quarry.v1.CompleteResponse"> & {
  * Use `create(CompleteResponseSchema)` to create a new message.
  */
 export const CompleteResponseSchema: GenMessage<CompleteResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_query, 31);
+  messageDesc(file_quarry_v1_query, 34);
 
 /**
  * @generated from enum quarry.v1.RunMode
@@ -883,6 +1015,17 @@ export const QueryService: GenService<{
     methodKind: "unary";
     input: typeof AnalyzeRequestSchema;
     output: typeof AnalyzeResponseSchema;
+  },
+  /**
+   * Inspect reports what a Run with the same arguments would execute: the
+   * risk of each statement and the bind parameters that need values.
+   *
+   * @generated from rpc quarry.v1.QueryService.Inspect
+   */
+  inspect: {
+    methodKind: "unary";
+    input: typeof InspectRequestSchema;
+    output: typeof InspectResponseSchema;
   },
   /**
    * Run executes statements; closing the stream cancels the run. The last
