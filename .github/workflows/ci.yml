@@ -17,12 +17,51 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: webview deps
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
       - name: gofmt
         if: runner.os == 'Linux'
-        run: test -z "$(gofmt -l $(go list -f {{.Dir}} ./...))" || (gofmt -l $(go list -f {{.Dir}} ./...) && exit 1)
+        run: test -z "$(gofmt -l $(git ls-files '*.go' | grep -v '^_wip/'))" || (gofmt -l $(git ls-files '*.go' | grep -v '^_wip/') && exit 1)
       - run: go vet ./...
       - run: go test ./...
-      - run: go build ./...
+      - run: go build -tags webkit2_41 ./...
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npx vitest run
+      - run: npm run build
+
+  generated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - run: npm ci
+        working-directory: frontend
+      - run: buf lint && buf generate
+      - name: generated code is up to date
+        run: git diff --exit-code -- gen frontend/src/lib/gen
 
   integration:
     runs-on: ubuntu-latest
