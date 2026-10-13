@@ -5,7 +5,6 @@ import (
 	"flag"
 	"io"
 	"log/slog"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -15,10 +14,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/gxd3v/quarry/gen/quarry/v1/quarryv1connect"
 	"github.com/gxd3v/quarry/internal/applog"
 	"github.com/gxd3v/quarry/internal/store"
-	"github.com/gxd3v/quarry/server"
 	"github.com/gxd3v/quarry/service"
 )
 
@@ -43,15 +40,12 @@ func main() {
 		}
 	}
 
-	mux := http.NewServeMux()
-	opts := server.HandlerOptions()
-	mux.Handle(quarryv1connect.NewDevServiceHandler(dev, opts...))
-	srv, err := server.Start(mux)
+	be, err := startBackend(dev)
 	if err != nil {
-		slog.Error("start api server", "err", err)
+		slog.Error("start backend", "err", err)
 		os.Exit(1)
 	}
-	app.srv = srv
+	app.backend = be
 
 	err = wails.Run(&options.App{
 		Title:            "Quarry",

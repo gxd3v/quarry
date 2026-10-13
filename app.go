@@ -1,17 +1,13 @@
 package main
 
-import (
-	"context"
-
-	"github.com/gxd3v/quarry/server"
-)
+import "context"
 
 // App is bound to the frontend. It only hands out how to reach the Connect
 // API; everything else goes through RPC.
 type App struct {
-	ctx   context.Context
-	srv   *server.Server
-	bench bool
+	ctx     context.Context
+	backend *backend
+	bench   bool
 }
 
 type ServerInfo struct {
@@ -23,8 +19,9 @@ type ServerInfo struct {
 
 func (a *App) startup(ctx context.Context) { a.ctx = ctx }
 
-func (a *App) shutdown(context.Context) { a.srv.Close() }
+func (a *App) shutdown(context.Context) { a.backend.Close() }
 
 func (a *App) ServerInfo() ServerInfo {
-	return ServerInfo{URL: a.srv.URL, Token: a.srv.Token, Bench: a.bench}
+	srv := a.backend.srv
+	return ServerInfo{URL: srv.URL, Token: srv.Token, Bench: a.bench}
 }
