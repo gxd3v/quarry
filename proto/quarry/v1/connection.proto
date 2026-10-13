@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// ConnectionService manages saved connections and their live state.
+service ConnectionService {
+  rpc ListDrivers(ListDriversRequest) returns (ListDriversResponse);
+  rpc ListConnections(ListConnectionsRequest) returns (ListConnectionsResponse);
+  // SaveConnection validates and stores a connection; an empty id creates a new one.
+  rpc SaveConnection(SaveConnectionRequest) returns (SaveConnectionResponse);
+  rpc DeleteConnection(DeleteConnectionRequest) returns (DeleteConnectionResponse);
+  rpc TestConnection(TestConnectionRequest) returns (TestConnectionResponse);
+  rpc ParseURI(ParseURIRequest) returns (ParseURIResponse);
+  rpc Connect(ConnectRequest) returns (ConnectResponse);
+  rpc Disconnect(DisconnectRequest) returns (DisconnectResponse);
+  // WatchStatus sends the status of every connection, then each change. One
+  // stream serves all connections: the webview has few HTTP/1.1 sockets.
+  rpc WatchStatus(WatchStatusRequest) returns (stream WatchStatusResponse);
+}
+
+message ConnectionConfig {
+  string id = 1;
+  string name = 2;
+  // postgres | oracle | mongodb | redis
+  string kind = 3;
+  // local | dev | qa | prod
+  string env = 4;
+  string host = 5;
+  int32 port = 6;
+  string user = 7;
+  string database = 8;
+  bool read_only = 9;
+  string group = 10;
+  bool favorite = 11;
+  bool ask_password = 12;
+  map<string, string> options = 13;
+}
+
+enum ConnectionState {
+  CONNECTION_STATE_UNSPECIFIED = 0;
+  CONNECTION_STATE_DISCONNECTED = 1;
+  CONNECTION_STATE_CONNECTING = 2;
+  CONNECTION_STATE_CONNECTED = 3;
+  // Was connected and the server stopped answering; reconnects are attempted.
+  CONNECTION_STATE_LOST = 4;
+  // The last connect attempt failed.
+  CONNECTION_STATE_FAILED = 5;
+}
+
+message ConnectionStatus {
+  string id = 1;
+  ConnectionState state = 2;
+  // Last ping round trip, 0 when unknown.
+  int64 latency_ms = 3;
+  string error = 4;
+}
+
+message Connection {
+  ConnectionConfig config = 1;
+  ConnectionStatus status = 2;
+  // A password is stored in the keyring.
+  bool has_password = 3;
+}
+
+message DriverInfo {
+  string kind = 1;
+  // sql | mongo | redis
+  string language = 2;
+  int32 default_port = 3;
+}
+
+message ListDriversRequest {}
+
+message ListDriversResponse {
+  repeated DriverInfo drivers = 1;
+}
+
+message ListConnectionsRequest {}
+
+message ListConnectionsResponse {
+  repeated Connection connections = 1;
+}
+
+message SaveConnectionRequest {
+  ConnectionConfig config = 1;
+  // Stored in the keyring when set. Ignored when ask_password is true.
+  optional string password = 2;
+  // Removes the stored password.
+  bool forget_password = 3;
+}
+
+message SaveConnectionResponse {
+  Connection connection = 1;
+}
+
+message DeleteConnectionRequest {
+  string id = 1;
+}
+
+message DeleteConnectionResponse {}
+
+message TestConnectionRequest {
+  ConnectionConfig config = 1;
+  // When absent the stored password (if any) is used.
+  optional string password = 2;
+}
+
+message TestConnectionResponse {
+  int64 latency_ms = 1;
+}
+
+message ParseURIRequest {
+  string uri = 1;
+}
+
+message ParseURIResponse {
+  ConnectionConfig config = 1;
+  optional string password = 2;
+}
+
+message ConnectRequest {
+  string id = 1;
+  // Required for ask_password connections or when none is stored.
+  optional string password = 2;
+}
+
+message ConnectResponse {
+  ConnectionStatus status = 1;
+}
+
+message DisconnectRequest {
+  string id = 1;
+}
+
+message DisconnectResponse {}
+
+message WatchStatusRequest {}
+
+message WatchStatusResponse {
+  repeated ConnectionStatus statuses = 1;
+  // Ids removed since the last message.
+  repeated string deleted = 2;
+}

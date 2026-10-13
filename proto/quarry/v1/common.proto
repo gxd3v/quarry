@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// Value is a normalized cell value, mirroring the Go types produced by internal/driver.
+message Value {
+  oneof kind {
+    bool null = 1;
+    bool bool = 2;
+    int64 int = 3;
+    double float = 4;
+    // Exact decimal, kept as text.
+    string number = 5;
+    string text = 6;
+    bytes bytes = 7;
+    google.protobuf.Timestamp time = 8;
+    string json = 9;
+    ValueList array = 10;
+  }
+}
+
+message ValueList {
+  repeated Value values = 1;
+}
+
+message Row {
+  repeated Value values = 1;
+}
+
+message Column {
+  string name = 1;
+  string type = 2;
+}

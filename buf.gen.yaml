@@ -1,0 +1,12 @@
+version: v2
+clean: true
+plugins:
+  - local: ["go", "tool", "protoc-gen-go"]
+    out: gen
+    opt: paths=source_relative
+  - local: ["go", "tool", "protoc-gen-connect-go"]
+    out: gen
+    opt: paths=source_relative
+  - local: ["node", "frontend/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es"]
+    out: frontend/src/lib/gen
+    opt: target=ts

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "quarry/v1/common.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// DevService exists to validate the transport and the grid during phase A0.
+service DevService {
+  rpc StreamRows(StreamRowsRequest) returns (stream StreamRowsResponse);
+  // ReportBench receives the result of the frontend benchmark (quarry --bench-out).
+  rpc ReportBench(ReportBenchRequest) returns (ReportBenchResponse);
+}
+
+message StreamRowsRequest {
+  int64 rows = 1;
+  int32 columns = 2;
+  // Pause between batches, to check that batches arrive progressively.
+  int32 delay_ms = 3;
+}
+
+message StreamRowsResponse {
+  // Sent only in the first message.
+  repeated Column columns = 1;
+  repeated Row rows = 2;
+}
+
+message ReportBenchRequest {
+  // JSON document.
+  string report = 1;
+}
+
+message ReportBenchResponse {}

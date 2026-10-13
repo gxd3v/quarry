@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "quarry/v1/common.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// ExplorerService browses a live connection's object tree and metadata.
+service ExplorerService {
+  rpc Children(ChildrenRequest) returns (ChildrenResponse);
+  rpc Catalog(CatalogRequest) returns (CatalogResponse);
+  rpc Describe(DescribeRequest) returns (DescribeResponse);
+}
+
+message Scope {
+  string database = 1;
+  string schema = 2;
+}
+
+message Node {
+  // Stable identity, e.g. ["app", "public", "tables", "orders"].
+  repeated string path = 1;
+  // database | schema | folder | table | view | column | index | function |
+  // sequence | collection | key
+  string kind = 2;
+  string name = 3;
+  string detail = 4;
+  bool leaf = 5;
+}
+
+message ChildrenRequest {
+  string conn_id = 1;
+  // Absent for the roots.
+  Node parent = 2;
+}
+
+message ChildrenResponse {
+  repeated Node nodes = 1;
+}
+
+message CatalogObject {
+  string schema = 1;
+  string name = 2;
+  string kind = 3;
+  string detail = 4;
+  repeated Column columns = 5;
+}
+
+message CatalogRequest {
+  string conn_id = 1;
+  Scope scope = 2;
+}
+
+message CatalogResponse {
+  repeated CatalogObject objects = 1;
+}
+
+message ColumnInfo {
+  string name = 1;
+  string type = 2;
+  string default = 3;
+  string comment = 4;
+  bool nullable = 5;
+  bool primary_key = 6;
+}
+
+message DetailRow {
+  string name = 1;
+  string definition = 2;
+}
+
+message DescribeRequest {
+  string conn_id = 1;
+  Node node = 2;
+}
+
+message DescribeResponse {
+  repeated ColumnInfo columns = 1;
+  repeated DetailRow indexes = 2;
+  repeated DetailRow constraints = 3;
+  repeated DetailRow triggers = 4;
+  repeated DetailRow stats = 5;
+  string ddl = 6;
+}
