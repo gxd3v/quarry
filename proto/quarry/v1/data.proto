@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "quarry/v1/common.proto";
+import "quarry/v1/explorer.proto";
+import "quarry/v1/query.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// DataService backs the table view: browsing a table's rows with a filter and
+// server-side ordering, and editing them inline.
+service DataService {
+  // OpenData runs the table's data query in a query tab (see QueryService),
+  // with the same events as Run; more rows come with QueryService.Fetch.
+  rpc OpenData(OpenDataRequest) returns (stream RunEvent);
+  // RowKey returns the columns that identify a row, empty when the table
+  // cannot be edited.
+  rpc RowKey(RowKeyRequest) returns (RowKeyResponse);
+  // ApplyChanges writes all changes in one transaction.
+  rpc ApplyChanges(ApplyChangesRequest) returns (ApplyChangesResponse);
+}
+
+message OpenDataRequest {
+  string tab_id = 1;
+  Node node = 2;
+  // Backend expression: SQL WHERE body, Mongo JSON filter, Redis pattern.
+  string filter = 3;
+  // Column names, each optionally suffixed with " DESC".
+  repeated string order_by = 4;
+  int32 max_rows = 5;
+}
+
+message RowKeyRequest {
+  string conn_id = 1;
+  Node node = 2;
+}
+
+message RowKeyResponse {
+  repeated string columns = 1;
+}
+
+enum ChangeOp {
+  CHANGE_OP_UNSPECIFIED = 0;
+  CHANGE_OP_INSERT = 1;
+  CHANGE_OP_UPDATE = 2;
+  CHANGE_OP_DELETE = 3;
+}
+
+message RowChange {
+  ChangeOp op = 1;
+  // Key column values of the original row (update, delete).
+  map<string, Value> key = 2;
+  // New column values (insert, update). Text values are converted by the
+  // server to the column's type.
+  map<string, Value> values = 3;
+}
+
+message ApplyChangesRequest {
+  string conn_id = 1;
+  Node node = 2;
+  repeated RowChange changes = 3;
+  // Required on prod connections.
+  bool confirmed = 4;
+}
+
+message ApplyChangesResponse {}

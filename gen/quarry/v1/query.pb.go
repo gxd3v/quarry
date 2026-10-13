@@ -595,7 +595,12 @@ type RunRequest struct {
 	Start  int32                  `protobuf:"varint,4,opt,name=start,proto3" json:"start,omitempty"`
 	End    int32                  `protobuf:"varint,5,opt,name=end,proto3" json:"end,omitempty"`
 	// Rows streamed per result before pausing; 0 means the default.
-	MaxRows       int32 `protobuf:"varint,6,opt,name=max_rows,json=maxRows,proto3" json:"max_rows,omitempty"`
+	MaxRows int32 `protobuf:"varint,6,opt,name=max_rows,json=maxRows,proto3" json:"max_rows,omitempty"`
+	// Values for bind parameters (:name, $1), substituted as literals.
+	Params map[string]string `protobuf:"bytes,7,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// The user confirmed the risks reported by Inspect. Without it, a run that
+	// needs confirmation fails with FAILED_PRECONDITION before executing.
+	Confirmed     bool `protobuf:"varint,8,opt,name=confirmed,proto3" json:"confirmed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -672,6 +677,246 @@ func (x *RunRequest) GetMaxRows() int32 {
 	return 0
 }
 
+func (x *RunRequest) GetParams() map[string]string {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *RunRequest) GetConfirmed() bool {
+	if x != nil {
+		return x.Confirmed
+	}
+	return false
+}
+
+type InspectRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TabId         string                 `protobuf:"bytes,1,opt,name=tab_id,json=tabId,proto3" json:"tab_id,omitempty"`
+	Script        string                 `protobuf:"bytes,2,opt,name=script,proto3" json:"script,omitempty"`
+	Mode          RunMode                `protobuf:"varint,3,opt,name=mode,proto3,enum=quarry.v1.RunMode" json:"mode,omitempty"`
+	Start         int32                  `protobuf:"varint,4,opt,name=start,proto3" json:"start,omitempty"`
+	End           int32                  `protobuf:"varint,5,opt,name=end,proto3" json:"end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InspectRequest) Reset() {
+	*x = InspectRequest{}
+	mi := &file_quarry_v1_query_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InspectRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InspectRequest) ProtoMessage() {}
+
+func (x *InspectRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InspectRequest.ProtoReflect.Descriptor instead.
+func (*InspectRequest) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *InspectRequest) GetTabId() string {
+	if x != nil {
+		return x.TabId
+	}
+	return ""
+}
+
+func (x *InspectRequest) GetScript() string {
+	if x != nil {
+		return x.Script
+	}
+	return ""
+}
+
+func (x *InspectRequest) GetMode() RunMode {
+	if x != nil {
+		return x.Mode
+	}
+	return RunMode_RUN_MODE_UNSPECIFIED
+}
+
+func (x *InspectRequest) GetStart() int32 {
+	if x != nil {
+		return x.Start
+	}
+	return 0
+}
+
+func (x *InspectRequest) GetEnd() int32 {
+	if x != nil {
+		return x.End
+	}
+	return 0
+}
+
+type StatementCheck struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Range *StatementRange        `protobuf:"bytes,1,opt,name=range,proto3" json:"range,omitempty"`
+	// none | write | ddl | unbounded_write | destructive
+	Risk string `protobuf:"bytes,2,opt,name=risk,proto3" json:"risk,omitempty"`
+	// e.g. "DELETE", "DROP TABLE".
+	Verb          string `protobuf:"bytes,3,opt,name=verb,proto3" json:"verb,omitempty"`
+	Reason        string `protobuf:"bytes,4,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StatementCheck) Reset() {
+	*x = StatementCheck{}
+	mi := &file_quarry_v1_query_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StatementCheck) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StatementCheck) ProtoMessage() {}
+
+func (x *StatementCheck) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StatementCheck.ProtoReflect.Descriptor instead.
+func (*StatementCheck) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *StatementCheck) GetRange() *StatementRange {
+	if x != nil {
+		return x.Range
+	}
+	return nil
+}
+
+func (x *StatementCheck) GetRisk() string {
+	if x != nil {
+		return x.Risk
+	}
+	return ""
+}
+
+func (x *StatementCheck) GetVerb() string {
+	if x != nil {
+		return x.Verb
+	}
+	return ""
+}
+
+func (x *StatementCheck) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type InspectResponse struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Statements []*StatementCheck      `protobuf:"bytes,1,rep,name=statements,proto3" json:"statements,omitempty"`
+	// Distinct parameter names in order of first use.
+	Params []string `protobuf:"bytes,2,rep,name=params,proto3" json:"params,omitempty"`
+	// A Run needs confirmed=true: writes on a prod connection, or unbounded
+	// writes and destructive statements anywhere.
+	NeedsConfirmation bool `protobuf:"varint,3,opt,name=needs_confirmation,json=needsConfirmation,proto3" json:"needs_confirmation,omitempty"`
+	// The connection is read-only and some statement writes; the Run will fail.
+	Blocked       bool   `protobuf:"varint,4,opt,name=blocked,proto3" json:"blocked,omitempty"`
+	Env           string `protobuf:"bytes,5,opt,name=env,proto3" json:"env,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InspectResponse) Reset() {
+	*x = InspectResponse{}
+	mi := &file_quarry_v1_query_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InspectResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InspectResponse) ProtoMessage() {}
+
+func (x *InspectResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InspectResponse.ProtoReflect.Descriptor instead.
+func (*InspectResponse) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *InspectResponse) GetStatements() []*StatementCheck {
+	if x != nil {
+		return x.Statements
+	}
+	return nil
+}
+
+func (x *InspectResponse) GetParams() []string {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *InspectResponse) GetNeedsConfirmation() bool {
+	if x != nil {
+		return x.NeedsConfirmation
+	}
+	return false
+}
+
+func (x *InspectResponse) GetBlocked() bool {
+	if x != nil {
+		return x.Blocked
+	}
+	return false
+}
+
+func (x *InspectResponse) GetEnv() string {
+	if x != nil {
+		return x.Env
+	}
+	return ""
+}
+
 type FetchRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	TabId string                 `protobuf:"bytes,1,opt,name=tab_id,json=tabId,proto3" json:"tab_id,omitempty"`
@@ -683,7 +928,7 @@ type FetchRequest struct {
 
 func (x *FetchRequest) Reset() {
 	*x = FetchRequest{}
-	mi := &file_quarry_v1_query_proto_msgTypes[11]
+	mi := &file_quarry_v1_query_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -695,7 +940,7 @@ func (x *FetchRequest) String() string {
 func (*FetchRequest) ProtoMessage() {}
 
 func (x *FetchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[11]
+	mi := &file_quarry_v1_query_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -708,7 +953,7 @@ func (x *FetchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchRequest.ProtoReflect.Descriptor instead.
 func (*FetchRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{11}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *FetchRequest) GetTabId() string {
@@ -735,7 +980,7 @@ type RunStarted struct {
 
 func (x *RunStarted) Reset() {
 	*x = RunStarted{}
-	mi := &file_quarry_v1_query_proto_msgTypes[12]
+	mi := &file_quarry_v1_query_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -747,7 +992,7 @@ func (x *RunStarted) String() string {
 func (*RunStarted) ProtoMessage() {}
 
 func (x *RunStarted) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[12]
+	mi := &file_quarry_v1_query_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +1005,7 @@ func (x *RunStarted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunStarted.ProtoReflect.Descriptor instead.
 func (*RunStarted) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{12}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *RunStarted) GetRunId() string {
@@ -787,7 +1032,7 @@ type StatementStarted struct {
 
 func (x *StatementStarted) Reset() {
 	*x = StatementStarted{}
-	mi := &file_quarry_v1_query_proto_msgTypes[13]
+	mi := &file_quarry_v1_query_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -799,7 +1044,7 @@ func (x *StatementStarted) String() string {
 func (*StatementStarted) ProtoMessage() {}
 
 func (x *StatementStarted) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[13]
+	mi := &file_quarry_v1_query_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -812,7 +1057,7 @@ func (x *StatementStarted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatementStarted.ProtoReflect.Descriptor instead.
 func (*StatementStarted) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{13}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *StatementStarted) GetIndex() int32 {
@@ -838,7 +1083,7 @@ type ResultColumns struct {
 
 func (x *ResultColumns) Reset() {
 	*x = ResultColumns{}
-	mi := &file_quarry_v1_query_proto_msgTypes[14]
+	mi := &file_quarry_v1_query_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -850,7 +1095,7 @@ func (x *ResultColumns) String() string {
 func (*ResultColumns) ProtoMessage() {}
 
 func (x *ResultColumns) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[14]
+	mi := &file_quarry_v1_query_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -863,7 +1108,7 @@ func (x *ResultColumns) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResultColumns.ProtoReflect.Descriptor instead.
 func (*ResultColumns) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{14}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ResultColumns) GetColumns() []*Column {
@@ -882,7 +1127,7 @@ type RowBatch struct {
 
 func (x *RowBatch) Reset() {
 	*x = RowBatch{}
-	mi := &file_quarry_v1_query_proto_msgTypes[15]
+	mi := &file_quarry_v1_query_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -894,7 +1139,7 @@ func (x *RowBatch) String() string {
 func (*RowBatch) ProtoMessage() {}
 
 func (x *RowBatch) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[15]
+	mi := &file_quarry_v1_query_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -907,7 +1152,7 @@ func (x *RowBatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RowBatch.ProtoReflect.Descriptor instead.
 func (*RowBatch) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{15}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RowBatch) GetRows() []*Row {
@@ -933,7 +1178,7 @@ type StatementDone struct {
 
 func (x *StatementDone) Reset() {
 	*x = StatementDone{}
-	mi := &file_quarry_v1_query_proto_msgTypes[16]
+	mi := &file_quarry_v1_query_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -945,7 +1190,7 @@ func (x *StatementDone) String() string {
 func (*StatementDone) ProtoMessage() {}
 
 func (x *StatementDone) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[16]
+	mi := &file_quarry_v1_query_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -958,7 +1203,7 @@ func (x *StatementDone) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatementDone.ProtoReflect.Descriptor instead.
 func (*StatementDone) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{16}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *StatementDone) GetAffected() int64 {
@@ -1010,7 +1255,7 @@ type QueryError struct {
 
 func (x *QueryError) Reset() {
 	*x = QueryError{}
-	mi := &file_quarry_v1_query_proto_msgTypes[17]
+	mi := &file_quarry_v1_query_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1022,7 +1267,7 @@ func (x *QueryError) String() string {
 func (*QueryError) ProtoMessage() {}
 
 func (x *QueryError) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[17]
+	mi := &file_quarry_v1_query_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1035,7 +1280,7 @@ func (x *QueryError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryError.ProtoReflect.Descriptor instead.
 func (*QueryError) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{17}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *QueryError) GetMessage() string {
@@ -1083,7 +1328,7 @@ type ServerMessage struct {
 
 func (x *ServerMessage) Reset() {
 	*x = ServerMessage{}
-	mi := &file_quarry_v1_query_proto_msgTypes[18]
+	mi := &file_quarry_v1_query_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1095,7 +1340,7 @@ func (x *ServerMessage) String() string {
 func (*ServerMessage) ProtoMessage() {}
 
 func (x *ServerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[18]
+	mi := &file_quarry_v1_query_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1108,7 +1353,7 @@ func (x *ServerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
 func (*ServerMessage) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{18}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ServerMessage) GetSeverity() string {
@@ -1136,7 +1381,7 @@ type RunFinished struct {
 
 func (x *RunFinished) Reset() {
 	*x = RunFinished{}
-	mi := &file_quarry_v1_query_proto_msgTypes[19]
+	mi := &file_quarry_v1_query_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1148,7 +1393,7 @@ func (x *RunFinished) String() string {
 func (*RunFinished) ProtoMessage() {}
 
 func (x *RunFinished) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[19]
+	mi := &file_quarry_v1_query_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1161,7 +1406,7 @@ func (x *RunFinished) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunFinished.ProtoReflect.Descriptor instead.
 func (*RunFinished) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{19}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *RunFinished) GetElapsedMs() int64 {
@@ -1204,7 +1449,7 @@ type RunEvent struct {
 
 func (x *RunEvent) Reset() {
 	*x = RunEvent{}
-	mi := &file_quarry_v1_query_proto_msgTypes[20]
+	mi := &file_quarry_v1_query_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1216,7 +1461,7 @@ func (x *RunEvent) String() string {
 func (*RunEvent) ProtoMessage() {}
 
 func (x *RunEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[20]
+	mi := &file_quarry_v1_query_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1229,7 +1474,7 @@ func (x *RunEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RunEvent.ProtoReflect.Descriptor instead.
 func (*RunEvent) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{20}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *RunEvent) GetEvent() isRunEvent_Event {
@@ -1372,7 +1617,7 @@ type CancelRequest struct {
 
 func (x *CancelRequest) Reset() {
 	*x = CancelRequest{}
-	mi := &file_quarry_v1_query_proto_msgTypes[21]
+	mi := &file_quarry_v1_query_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1384,7 +1629,7 @@ func (x *CancelRequest) String() string {
 func (*CancelRequest) ProtoMessage() {}
 
 func (x *CancelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[21]
+	mi := &file_quarry_v1_query_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1397,7 +1642,7 @@ func (x *CancelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelRequest.ProtoReflect.Descriptor instead.
 func (*CancelRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{21}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *CancelRequest) GetTabId() string {
@@ -1415,7 +1660,7 @@ type CancelResponse struct {
 
 func (x *CancelResponse) Reset() {
 	*x = CancelResponse{}
-	mi := &file_quarry_v1_query_proto_msgTypes[22]
+	mi := &file_quarry_v1_query_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1427,7 +1672,7 @@ func (x *CancelResponse) String() string {
 func (*CancelResponse) ProtoMessage() {}
 
 func (x *CancelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[22]
+	mi := &file_quarry_v1_query_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1440,7 +1685,7 @@ func (x *CancelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelResponse.ProtoReflect.Descriptor instead.
 func (*CancelResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{22}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{25}
 }
 
 type SetAutoCommitRequest struct {
@@ -1453,7 +1698,7 @@ type SetAutoCommitRequest struct {
 
 func (x *SetAutoCommitRequest) Reset() {
 	*x = SetAutoCommitRequest{}
-	mi := &file_quarry_v1_query_proto_msgTypes[23]
+	mi := &file_quarry_v1_query_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1465,7 +1710,7 @@ func (x *SetAutoCommitRequest) String() string {
 func (*SetAutoCommitRequest) ProtoMessage() {}
 
 func (x *SetAutoCommitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[23]
+	mi := &file_quarry_v1_query_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1478,7 +1723,7 @@ func (x *SetAutoCommitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetAutoCommitRequest.ProtoReflect.Descriptor instead.
 func (*SetAutoCommitRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{23}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SetAutoCommitRequest) GetTabId() string {
@@ -1504,7 +1749,7 @@ type SetAutoCommitResponse struct {
 
 func (x *SetAutoCommitResponse) Reset() {
 	*x = SetAutoCommitResponse{}
-	mi := &file_quarry_v1_query_proto_msgTypes[24]
+	mi := &file_quarry_v1_query_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1516,7 +1761,7 @@ func (x *SetAutoCommitResponse) String() string {
 func (*SetAutoCommitResponse) ProtoMessage() {}
 
 func (x *SetAutoCommitResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[24]
+	mi := &file_quarry_v1_query_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1529,7 +1774,7 @@ func (x *SetAutoCommitResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetAutoCommitResponse.ProtoReflect.Descriptor instead.
 func (*SetAutoCommitResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{24}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *SetAutoCommitResponse) GetTx() *TxState {
@@ -1548,7 +1793,7 @@ type CommitRequest struct {
 
 func (x *CommitRequest) Reset() {
 	*x = CommitRequest{}
-	mi := &file_quarry_v1_query_proto_msgTypes[25]
+	mi := &file_quarry_v1_query_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1560,7 +1805,7 @@ func (x *CommitRequest) String() string {
 func (*CommitRequest) ProtoMessage() {}
 
 func (x *CommitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[25]
+	mi := &file_quarry_v1_query_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1573,7 +1818,7 @@ func (x *CommitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitRequest.ProtoReflect.Descriptor instead.
 func (*CommitRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{25}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CommitRequest) GetTabId() string {
@@ -1592,7 +1837,7 @@ type CommitResponse struct {
 
 func (x *CommitResponse) Reset() {
 	*x = CommitResponse{}
-	mi := &file_quarry_v1_query_proto_msgTypes[26]
+	mi := &file_quarry_v1_query_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1604,7 +1849,7 @@ func (x *CommitResponse) String() string {
 func (*CommitResponse) ProtoMessage() {}
 
 func (x *CommitResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[26]
+	mi := &file_quarry_v1_query_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1617,7 +1862,7 @@ func (x *CommitResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitResponse.ProtoReflect.Descriptor instead.
 func (*CommitResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{26}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *CommitResponse) GetTx() *TxState {
@@ -1636,7 +1881,7 @@ type RollbackRequest struct {
 
 func (x *RollbackRequest) Reset() {
 	*x = RollbackRequest{}
-	mi := &file_quarry_v1_query_proto_msgTypes[27]
+	mi := &file_quarry_v1_query_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1648,7 +1893,7 @@ func (x *RollbackRequest) String() string {
 func (*RollbackRequest) ProtoMessage() {}
 
 func (x *RollbackRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[27]
+	mi := &file_quarry_v1_query_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1661,7 +1906,7 @@ func (x *RollbackRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RollbackRequest.ProtoReflect.Descriptor instead.
 func (*RollbackRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{27}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *RollbackRequest) GetTabId() string {
@@ -1680,7 +1925,7 @@ type RollbackResponse struct {
 
 func (x *RollbackResponse) Reset() {
 	*x = RollbackResponse{}
-	mi := &file_quarry_v1_query_proto_msgTypes[28]
+	mi := &file_quarry_v1_query_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1692,7 +1937,7 @@ func (x *RollbackResponse) String() string {
 func (*RollbackResponse) ProtoMessage() {}
 
 func (x *RollbackResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[28]
+	mi := &file_quarry_v1_query_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1705,7 +1950,7 @@ func (x *RollbackResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RollbackResponse.ProtoReflect.Descriptor instead.
 func (*RollbackResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{28}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *RollbackResponse) GetTx() *TxState {
@@ -1726,7 +1971,7 @@ type CompleteRequest struct {
 
 func (x *CompleteRequest) Reset() {
 	*x = CompleteRequest{}
-	mi := &file_quarry_v1_query_proto_msgTypes[29]
+	mi := &file_quarry_v1_query_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1738,7 +1983,7 @@ func (x *CompleteRequest) String() string {
 func (*CompleteRequest) ProtoMessage() {}
 
 func (x *CompleteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[29]
+	mi := &file_quarry_v1_query_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1751,7 +1996,7 @@ func (x *CompleteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompleteRequest.ProtoReflect.Descriptor instead.
 func (*CompleteRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{29}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *CompleteRequest) GetTabId() string {
@@ -1790,7 +2035,7 @@ type CompletionItem struct {
 
 func (x *CompletionItem) Reset() {
 	*x = CompletionItem{}
-	mi := &file_quarry_v1_query_proto_msgTypes[30]
+	mi := &file_quarry_v1_query_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1802,7 +2047,7 @@ func (x *CompletionItem) String() string {
 func (*CompletionItem) ProtoMessage() {}
 
 func (x *CompletionItem) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[30]
+	mi := &file_quarry_v1_query_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1815,7 +2060,7 @@ func (x *CompletionItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompletionItem.ProtoReflect.Descriptor instead.
 func (*CompletionItem) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{30}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *CompletionItem) GetLabel() string {
@@ -1857,7 +2102,7 @@ type CompleteResponse struct {
 
 func (x *CompleteResponse) Reset() {
 	*x = CompleteResponse{}
-	mi := &file_quarry_v1_query_proto_msgTypes[31]
+	mi := &file_quarry_v1_query_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1869,7 +2114,7 @@ func (x *CompleteResponse) String() string {
 func (*CompleteResponse) ProtoMessage() {}
 
 func (x *CompleteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_query_proto_msgTypes[31]
+	mi := &file_quarry_v1_query_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1882,7 +2127,7 @@ func (x *CompleteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompleteResponse.ProtoReflect.Descriptor instead.
 func (*CompleteResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_query_proto_rawDescGZIP(), []int{31}
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *CompleteResponse) GetStart() int32 {
@@ -1942,7 +2187,7 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\n" +
 	"statements\x18\x01 \x03(\v2\x19.quarry.v1.StatementRangeR\n" +
 	"statements\x12\x18\n" +
-	"\acurrent\x18\x02 \x01(\x05R\acurrent\"\xa6\x01\n" +
+	"\acurrent\x18\x02 \x01(\x05R\acurrent\"\xba\x02\n" +
 	"\n" +
 	"RunRequest\x12\x15\n" +
 	"\x06tab_id\x18\x01 \x01(\tR\x05tabId\x12\x16\n" +
@@ -1950,7 +2195,31 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\x04mode\x18\x03 \x01(\x0e2\x12.quarry.v1.RunModeR\x04mode\x12\x14\n" +
 	"\x05start\x18\x04 \x01(\x05R\x05start\x12\x10\n" +
 	"\x03end\x18\x05 \x01(\x05R\x03end\x12\x19\n" +
-	"\bmax_rows\x18\x06 \x01(\x05R\amaxRows\"@\n" +
+	"\bmax_rows\x18\x06 \x01(\x05R\amaxRows\x129\n" +
+	"\x06params\x18\a \x03(\v2!.quarry.v1.RunRequest.ParamsEntryR\x06params\x12\x1c\n" +
+	"\tconfirmed\x18\b \x01(\bR\tconfirmed\x1a9\n" +
+	"\vParamsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8f\x01\n" +
+	"\x0eInspectRequest\x12\x15\n" +
+	"\x06tab_id\x18\x01 \x01(\tR\x05tabId\x12\x16\n" +
+	"\x06script\x18\x02 \x01(\tR\x06script\x12&\n" +
+	"\x04mode\x18\x03 \x01(\x0e2\x12.quarry.v1.RunModeR\x04mode\x12\x14\n" +
+	"\x05start\x18\x04 \x01(\x05R\x05start\x12\x10\n" +
+	"\x03end\x18\x05 \x01(\x05R\x03end\"\x81\x01\n" +
+	"\x0eStatementCheck\x12/\n" +
+	"\x05range\x18\x01 \x01(\v2\x19.quarry.v1.StatementRangeR\x05range\x12\x12\n" +
+	"\x04risk\x18\x02 \x01(\tR\x04risk\x12\x12\n" +
+	"\x04verb\x18\x03 \x01(\tR\x04verb\x12\x16\n" +
+	"\x06reason\x18\x04 \x01(\tR\x06reason\"\xbf\x01\n" +
+	"\x0fInspectResponse\x129\n" +
+	"\n" +
+	"statements\x18\x01 \x03(\v2\x19.quarry.v1.StatementCheckR\n" +
+	"statements\x12\x16\n" +
+	"\x06params\x18\x02 \x03(\tR\x06params\x12-\n" +
+	"\x12needs_confirmation\x18\x03 \x01(\bR\x11needsConfirmation\x12\x18\n" +
+	"\ablocked\x18\x04 \x01(\bR\ablocked\x12\x10\n" +
+	"\x03env\x18\x05 \x01(\tR\x03env\"@\n" +
 	"\fFetchRequest\x12\x15\n" +
 	"\x06tab_id\x18\x01 \x01(\tR\x05tabId\x12\x19\n" +
 	"\bmax_rows\x18\x02 \x01(\x05R\amaxRows\"C\n" +
@@ -2031,12 +2300,13 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\aRunMode\x12\x18\n" +
 	"\x14RUN_MODE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12RUN_MODE_STATEMENT\x10\x01\x12\x12\n" +
-	"\x0eRUN_MODE_RANGE\x10\x022\xe0\x05\n" +
+	"\x0eRUN_MODE_RANGE\x10\x022\xa2\x06\n" +
 	"\fQueryService\x12@\n" +
 	"\aOpenTab\x12\x19.quarry.v1.OpenTabRequest\x1a\x1a.quarry.v1.OpenTabResponse\x12=\n" +
 	"\x06Rebind\x12\x18.quarry.v1.RebindRequest\x1a\x19.quarry.v1.RebindResponse\x12C\n" +
 	"\bCloseTab\x12\x1a.quarry.v1.CloseTabRequest\x1a\x1b.quarry.v1.CloseTabResponse\x12@\n" +
-	"\aAnalyze\x12\x19.quarry.v1.AnalyzeRequest\x1a\x1a.quarry.v1.AnalyzeResponse\x123\n" +
+	"\aAnalyze\x12\x19.quarry.v1.AnalyzeRequest\x1a\x1a.quarry.v1.AnalyzeResponse\x12@\n" +
+	"\aInspect\x12\x19.quarry.v1.InspectRequest\x1a\x1a.quarry.v1.InspectResponse\x123\n" +
 	"\x03Run\x12\x15.quarry.v1.RunRequest\x1a\x13.quarry.v1.RunEvent0\x01\x127\n" +
 	"\x05Fetch\x12\x17.quarry.v1.FetchRequest\x1a\x13.quarry.v1.RunEvent0\x01\x12=\n" +
 	"\x06Cancel\x12\x18.quarry.v1.CancelRequest\x1a\x19.quarry.v1.CancelResponse\x12R\n" +
@@ -2058,7 +2328,7 @@ func file_quarry_v1_query_proto_rawDescGZIP() []byte {
 }
 
 var file_quarry_v1_query_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_quarry_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_quarry_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_quarry_v1_query_proto_goTypes = []any{
 	(RunMode)(0),                  // 0: quarry.v1.RunMode
 	(*TxState)(nil),               // 1: quarry.v1.TxState
@@ -2072,79 +2342,89 @@ var file_quarry_v1_query_proto_goTypes = []any{
 	(*AnalyzeRequest)(nil),        // 9: quarry.v1.AnalyzeRequest
 	(*AnalyzeResponse)(nil),       // 10: quarry.v1.AnalyzeResponse
 	(*RunRequest)(nil),            // 11: quarry.v1.RunRequest
-	(*FetchRequest)(nil),          // 12: quarry.v1.FetchRequest
-	(*RunStarted)(nil),            // 13: quarry.v1.RunStarted
-	(*StatementStarted)(nil),      // 14: quarry.v1.StatementStarted
-	(*ResultColumns)(nil),         // 15: quarry.v1.ResultColumns
-	(*RowBatch)(nil),              // 16: quarry.v1.RowBatch
-	(*StatementDone)(nil),         // 17: quarry.v1.StatementDone
-	(*QueryError)(nil),            // 18: quarry.v1.QueryError
-	(*ServerMessage)(nil),         // 19: quarry.v1.ServerMessage
-	(*RunFinished)(nil),           // 20: quarry.v1.RunFinished
-	(*RunEvent)(nil),              // 21: quarry.v1.RunEvent
-	(*CancelRequest)(nil),         // 22: quarry.v1.CancelRequest
-	(*CancelResponse)(nil),        // 23: quarry.v1.CancelResponse
-	(*SetAutoCommitRequest)(nil),  // 24: quarry.v1.SetAutoCommitRequest
-	(*SetAutoCommitResponse)(nil), // 25: quarry.v1.SetAutoCommitResponse
-	(*CommitRequest)(nil),         // 26: quarry.v1.CommitRequest
-	(*CommitResponse)(nil),        // 27: quarry.v1.CommitResponse
-	(*RollbackRequest)(nil),       // 28: quarry.v1.RollbackRequest
-	(*RollbackResponse)(nil),      // 29: quarry.v1.RollbackResponse
-	(*CompleteRequest)(nil),       // 30: quarry.v1.CompleteRequest
-	(*CompletionItem)(nil),        // 31: quarry.v1.CompletionItem
-	(*CompleteResponse)(nil),      // 32: quarry.v1.CompleteResponse
-	(*Scope)(nil),                 // 33: quarry.v1.Scope
-	(*Column)(nil),                // 34: quarry.v1.Column
-	(*Row)(nil),                   // 35: quarry.v1.Row
+	(*InspectRequest)(nil),        // 12: quarry.v1.InspectRequest
+	(*StatementCheck)(nil),        // 13: quarry.v1.StatementCheck
+	(*InspectResponse)(nil),       // 14: quarry.v1.InspectResponse
+	(*FetchRequest)(nil),          // 15: quarry.v1.FetchRequest
+	(*RunStarted)(nil),            // 16: quarry.v1.RunStarted
+	(*StatementStarted)(nil),      // 17: quarry.v1.StatementStarted
+	(*ResultColumns)(nil),         // 18: quarry.v1.ResultColumns
+	(*RowBatch)(nil),              // 19: quarry.v1.RowBatch
+	(*StatementDone)(nil),         // 20: quarry.v1.StatementDone
+	(*QueryError)(nil),            // 21: quarry.v1.QueryError
+	(*ServerMessage)(nil),         // 22: quarry.v1.ServerMessage
+	(*RunFinished)(nil),           // 23: quarry.v1.RunFinished
+	(*RunEvent)(nil),              // 24: quarry.v1.RunEvent
+	(*CancelRequest)(nil),         // 25: quarry.v1.CancelRequest
+	(*CancelResponse)(nil),        // 26: quarry.v1.CancelResponse
+	(*SetAutoCommitRequest)(nil),  // 27: quarry.v1.SetAutoCommitRequest
+	(*SetAutoCommitResponse)(nil), // 28: quarry.v1.SetAutoCommitResponse
+	(*CommitRequest)(nil),         // 29: quarry.v1.CommitRequest
+	(*CommitResponse)(nil),        // 30: quarry.v1.CommitResponse
+	(*RollbackRequest)(nil),       // 31: quarry.v1.RollbackRequest
+	(*RollbackResponse)(nil),      // 32: quarry.v1.RollbackResponse
+	(*CompleteRequest)(nil),       // 33: quarry.v1.CompleteRequest
+	(*CompletionItem)(nil),        // 34: quarry.v1.CompletionItem
+	(*CompleteResponse)(nil),      // 35: quarry.v1.CompleteResponse
+	nil,                           // 36: quarry.v1.RunRequest.ParamsEntry
+	(*Scope)(nil),                 // 37: quarry.v1.Scope
+	(*Column)(nil),                // 38: quarry.v1.Column
+	(*Row)(nil),                   // 39: quarry.v1.Row
 }
 var file_quarry_v1_query_proto_depIdxs = []int32{
-	33, // 0: quarry.v1.OpenTabRequest.scope:type_name -> quarry.v1.Scope
-	33, // 1: quarry.v1.RebindRequest.scope:type_name -> quarry.v1.Scope
+	37, // 0: quarry.v1.OpenTabRequest.scope:type_name -> quarry.v1.Scope
+	37, // 1: quarry.v1.RebindRequest.scope:type_name -> quarry.v1.Scope
 	8,  // 2: quarry.v1.AnalyzeResponse.statements:type_name -> quarry.v1.StatementRange
 	0,  // 3: quarry.v1.RunRequest.mode:type_name -> quarry.v1.RunMode
-	8,  // 4: quarry.v1.StatementStarted.range:type_name -> quarry.v1.StatementRange
-	34, // 5: quarry.v1.ResultColumns.columns:type_name -> quarry.v1.Column
-	35, // 6: quarry.v1.RowBatch.rows:type_name -> quarry.v1.Row
-	1,  // 7: quarry.v1.RunFinished.tx:type_name -> quarry.v1.TxState
-	13, // 8: quarry.v1.RunEvent.started:type_name -> quarry.v1.RunStarted
-	14, // 9: quarry.v1.RunEvent.statement:type_name -> quarry.v1.StatementStarted
-	15, // 10: quarry.v1.RunEvent.columns:type_name -> quarry.v1.ResultColumns
-	16, // 11: quarry.v1.RunEvent.rows:type_name -> quarry.v1.RowBatch
-	17, // 12: quarry.v1.RunEvent.done:type_name -> quarry.v1.StatementDone
-	18, // 13: quarry.v1.RunEvent.error:type_name -> quarry.v1.QueryError
-	19, // 14: quarry.v1.RunEvent.message:type_name -> quarry.v1.ServerMessage
-	20, // 15: quarry.v1.RunEvent.finished:type_name -> quarry.v1.RunFinished
-	1,  // 16: quarry.v1.SetAutoCommitResponse.tx:type_name -> quarry.v1.TxState
-	1,  // 17: quarry.v1.CommitResponse.tx:type_name -> quarry.v1.TxState
-	1,  // 18: quarry.v1.RollbackResponse.tx:type_name -> quarry.v1.TxState
-	31, // 19: quarry.v1.CompleteResponse.items:type_name -> quarry.v1.CompletionItem
-	2,  // 20: quarry.v1.QueryService.OpenTab:input_type -> quarry.v1.OpenTabRequest
-	4,  // 21: quarry.v1.QueryService.Rebind:input_type -> quarry.v1.RebindRequest
-	6,  // 22: quarry.v1.QueryService.CloseTab:input_type -> quarry.v1.CloseTabRequest
-	9,  // 23: quarry.v1.QueryService.Analyze:input_type -> quarry.v1.AnalyzeRequest
-	11, // 24: quarry.v1.QueryService.Run:input_type -> quarry.v1.RunRequest
-	12, // 25: quarry.v1.QueryService.Fetch:input_type -> quarry.v1.FetchRequest
-	22, // 26: quarry.v1.QueryService.Cancel:input_type -> quarry.v1.CancelRequest
-	24, // 27: quarry.v1.QueryService.SetAutoCommit:input_type -> quarry.v1.SetAutoCommitRequest
-	26, // 28: quarry.v1.QueryService.Commit:input_type -> quarry.v1.CommitRequest
-	28, // 29: quarry.v1.QueryService.Rollback:input_type -> quarry.v1.RollbackRequest
-	30, // 30: quarry.v1.QueryService.Complete:input_type -> quarry.v1.CompleteRequest
-	3,  // 31: quarry.v1.QueryService.OpenTab:output_type -> quarry.v1.OpenTabResponse
-	5,  // 32: quarry.v1.QueryService.Rebind:output_type -> quarry.v1.RebindResponse
-	7,  // 33: quarry.v1.QueryService.CloseTab:output_type -> quarry.v1.CloseTabResponse
-	10, // 34: quarry.v1.QueryService.Analyze:output_type -> quarry.v1.AnalyzeResponse
-	21, // 35: quarry.v1.QueryService.Run:output_type -> quarry.v1.RunEvent
-	21, // 36: quarry.v1.QueryService.Fetch:output_type -> quarry.v1.RunEvent
-	23, // 37: quarry.v1.QueryService.Cancel:output_type -> quarry.v1.CancelResponse
-	25, // 38: quarry.v1.QueryService.SetAutoCommit:output_type -> quarry.v1.SetAutoCommitResponse
-	27, // 39: quarry.v1.QueryService.Commit:output_type -> quarry.v1.CommitResponse
-	29, // 40: quarry.v1.QueryService.Rollback:output_type -> quarry.v1.RollbackResponse
-	32, // 41: quarry.v1.QueryService.Complete:output_type -> quarry.v1.CompleteResponse
-	31, // [31:42] is the sub-list for method output_type
-	20, // [20:31] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	36, // 4: quarry.v1.RunRequest.params:type_name -> quarry.v1.RunRequest.ParamsEntry
+	0,  // 5: quarry.v1.InspectRequest.mode:type_name -> quarry.v1.RunMode
+	8,  // 6: quarry.v1.StatementCheck.range:type_name -> quarry.v1.StatementRange
+	13, // 7: quarry.v1.InspectResponse.statements:type_name -> quarry.v1.StatementCheck
+	8,  // 8: quarry.v1.StatementStarted.range:type_name -> quarry.v1.StatementRange
+	38, // 9: quarry.v1.ResultColumns.columns:type_name -> quarry.v1.Column
+	39, // 10: quarry.v1.RowBatch.rows:type_name -> quarry.v1.Row
+	1,  // 11: quarry.v1.RunFinished.tx:type_name -> quarry.v1.TxState
+	16, // 12: quarry.v1.RunEvent.started:type_name -> quarry.v1.RunStarted
+	17, // 13: quarry.v1.RunEvent.statement:type_name -> quarry.v1.StatementStarted
+	18, // 14: quarry.v1.RunEvent.columns:type_name -> quarry.v1.ResultColumns
+	19, // 15: quarry.v1.RunEvent.rows:type_name -> quarry.v1.RowBatch
+	20, // 16: quarry.v1.RunEvent.done:type_name -> quarry.v1.StatementDone
+	21, // 17: quarry.v1.RunEvent.error:type_name -> quarry.v1.QueryError
+	22, // 18: quarry.v1.RunEvent.message:type_name -> quarry.v1.ServerMessage
+	23, // 19: quarry.v1.RunEvent.finished:type_name -> quarry.v1.RunFinished
+	1,  // 20: quarry.v1.SetAutoCommitResponse.tx:type_name -> quarry.v1.TxState
+	1,  // 21: quarry.v1.CommitResponse.tx:type_name -> quarry.v1.TxState
+	1,  // 22: quarry.v1.RollbackResponse.tx:type_name -> quarry.v1.TxState
+	34, // 23: quarry.v1.CompleteResponse.items:type_name -> quarry.v1.CompletionItem
+	2,  // 24: quarry.v1.QueryService.OpenTab:input_type -> quarry.v1.OpenTabRequest
+	4,  // 25: quarry.v1.QueryService.Rebind:input_type -> quarry.v1.RebindRequest
+	6,  // 26: quarry.v1.QueryService.CloseTab:input_type -> quarry.v1.CloseTabRequest
+	9,  // 27: quarry.v1.QueryService.Analyze:input_type -> quarry.v1.AnalyzeRequest
+	12, // 28: quarry.v1.QueryService.Inspect:input_type -> quarry.v1.InspectRequest
+	11, // 29: quarry.v1.QueryService.Run:input_type -> quarry.v1.RunRequest
+	15, // 30: quarry.v1.QueryService.Fetch:input_type -> quarry.v1.FetchRequest
+	25, // 31: quarry.v1.QueryService.Cancel:input_type -> quarry.v1.CancelRequest
+	27, // 32: quarry.v1.QueryService.SetAutoCommit:input_type -> quarry.v1.SetAutoCommitRequest
+	29, // 33: quarry.v1.QueryService.Commit:input_type -> quarry.v1.CommitRequest
+	31, // 34: quarry.v1.QueryService.Rollback:input_type -> quarry.v1.RollbackRequest
+	33, // 35: quarry.v1.QueryService.Complete:input_type -> quarry.v1.CompleteRequest
+	3,  // 36: quarry.v1.QueryService.OpenTab:output_type -> quarry.v1.OpenTabResponse
+	5,  // 37: quarry.v1.QueryService.Rebind:output_type -> quarry.v1.RebindResponse
+	7,  // 38: quarry.v1.QueryService.CloseTab:output_type -> quarry.v1.CloseTabResponse
+	10, // 39: quarry.v1.QueryService.Analyze:output_type -> quarry.v1.AnalyzeResponse
+	14, // 40: quarry.v1.QueryService.Inspect:output_type -> quarry.v1.InspectResponse
+	24, // 41: quarry.v1.QueryService.Run:output_type -> quarry.v1.RunEvent
+	24, // 42: quarry.v1.QueryService.Fetch:output_type -> quarry.v1.RunEvent
+	26, // 43: quarry.v1.QueryService.Cancel:output_type -> quarry.v1.CancelResponse
+	28, // 44: quarry.v1.QueryService.SetAutoCommit:output_type -> quarry.v1.SetAutoCommitResponse
+	30, // 45: quarry.v1.QueryService.Commit:output_type -> quarry.v1.CommitResponse
+	32, // 46: quarry.v1.QueryService.Rollback:output_type -> quarry.v1.RollbackResponse
+	35, // 47: quarry.v1.QueryService.Complete:output_type -> quarry.v1.CompleteResponse
+	36, // [36:48] is the sub-list for method output_type
+	24, // [24:36] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_quarry_v1_query_proto_init() }
@@ -2154,7 +2434,7 @@ func file_quarry_v1_query_proto_init() {
 	}
 	file_quarry_v1_common_proto_init()
 	file_quarry_v1_explorer_proto_init()
-	file_quarry_v1_query_proto_msgTypes[20].OneofWrappers = []any{
+	file_quarry_v1_query_proto_msgTypes[23].OneofWrappers = []any{
 		(*RunEvent_Started)(nil),
 		(*RunEvent_Statement)(nil),
 		(*RunEvent_Columns)(nil),
@@ -2170,7 +2450,7 @@ func file_quarry_v1_query_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_quarry_v1_query_proto_rawDesc), len(file_quarry_v1_query_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   32,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

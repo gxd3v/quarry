@@ -19,6 +19,9 @@ service QueryService {
   rpc CloseTab(CloseTabRequest) returns (CloseTabResponse);
   // Analyze splits a script into statements and finds the one at the cursor.
   rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse);
+  // Inspect reports what a Run with the same arguments would execute: the
+  // risk of each statement and the bind parameters that need values.
+  rpc Inspect(InspectRequest) returns (InspectResponse);
   // Run executes statements; closing the stream cancels the run. The last
   // result stays open when it has more rows, to be continued with Fetch.
   rpc Run(RunRequest) returns (stream RunEvent);
@@ -100,6 +103,40 @@ message RunRequest {
   int32 end = 5;
   // Rows streamed per result before pausing; 0 means the default.
   int32 max_rows = 6;
+  // Values for bind parameters (:name, $1), substituted as literals.
+  map<string, string> params = 7;
+  // The user confirmed the risks reported by Inspect. Without it, a run that
+  // needs confirmation fails with FAILED_PRECONDITION before executing.
+  bool confirmed = 8;
+}
+
+message InspectRequest {
+  string tab_id = 1;
+  string script = 2;
+  RunMode mode = 3;
+  int32 start = 4;
+  int32 end = 5;
+}
+
+message StatementCheck {
+  StatementRange range = 1;
+  // none | write | ddl | unbounded_write | destructive
+  string risk = 2;
+  // e.g. "DELETE", "DROP TABLE".
+  string verb = 3;
+  string reason = 4;
+}
+
+message InspectResponse {
+  repeated StatementCheck statements = 1;
+  // Distinct parameter names in order of first use.
+  repeated string params = 2;
+  // A Run needs confirmed=true: writes on a prod connection, or unbounded
+  // writes and destructive statements anywhere.
+  bool needs_confirmation = 3;
+  // The connection is read-only and some statement writes; the Run will fail.
+  bool blocked = 4;
+  string env = 5;
 }
 
 message FetchRequest {

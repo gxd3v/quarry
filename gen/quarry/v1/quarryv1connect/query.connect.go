@@ -41,6 +41,8 @@ const (
 	QueryServiceCloseTabProcedure = "/quarry.v1.QueryService/CloseTab"
 	// QueryServiceAnalyzeProcedure is the fully-qualified name of the QueryService's Analyze RPC.
 	QueryServiceAnalyzeProcedure = "/quarry.v1.QueryService/Analyze"
+	// QueryServiceInspectProcedure is the fully-qualified name of the QueryService's Inspect RPC.
+	QueryServiceInspectProcedure = "/quarry.v1.QueryService/Inspect"
 	// QueryServiceRunProcedure is the fully-qualified name of the QueryService's Run RPC.
 	QueryServiceRunProcedure = "/quarry.v1.QueryService/Run"
 	// QueryServiceFetchProcedure is the fully-qualified name of the QueryService's Fetch RPC.
@@ -66,6 +68,9 @@ type QueryServiceClient interface {
 	CloseTab(context.Context, *connect.Request[v1.CloseTabRequest]) (*connect.Response[v1.CloseTabResponse], error)
 	// Analyze splits a script into statements and finds the one at the cursor.
 	Analyze(context.Context, *connect.Request[v1.AnalyzeRequest]) (*connect.Response[v1.AnalyzeResponse], error)
+	// Inspect reports what a Run with the same arguments would execute: the
+	// risk of each statement and the bind parameters that need values.
+	Inspect(context.Context, *connect.Request[v1.InspectRequest]) (*connect.Response[v1.InspectResponse], error)
 	// Run executes statements; closing the stream cancels the run. The last
 	// result stays open when it has more rows, to be continued with Fetch.
 	Run(context.Context, *connect.Request[v1.RunRequest]) (*connect.ServerStreamForClient[v1.RunEvent], error)
@@ -113,6 +118,12 @@ func NewQueryServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			httpClient,
 			baseURL+QueryServiceAnalyzeProcedure,
 			connect.WithSchema(queryServiceMethods.ByName("Analyze")),
+			connect.WithClientOptions(opts...),
+		),
+		inspect: connect.NewClient[v1.InspectRequest, v1.InspectResponse](
+			httpClient,
+			baseURL+QueryServiceInspectProcedure,
+			connect.WithSchema(queryServiceMethods.ByName("Inspect")),
 			connect.WithClientOptions(opts...),
 		),
 		run: connect.NewClient[v1.RunRequest, v1.RunEvent](
@@ -166,6 +177,7 @@ type queryServiceClient struct {
 	rebind        *connect.Client[v1.RebindRequest, v1.RebindResponse]
 	closeTab      *connect.Client[v1.CloseTabRequest, v1.CloseTabResponse]
 	analyze       *connect.Client[v1.AnalyzeRequest, v1.AnalyzeResponse]
+	inspect       *connect.Client[v1.InspectRequest, v1.InspectResponse]
 	run           *connect.Client[v1.RunRequest, v1.RunEvent]
 	fetch         *connect.Client[v1.FetchRequest, v1.RunEvent]
 	cancel        *connect.Client[v1.CancelRequest, v1.CancelResponse]
@@ -193,6 +205,11 @@ func (c *queryServiceClient) CloseTab(ctx context.Context, req *connect.Request[
 // Analyze calls quarry.v1.QueryService.Analyze.
 func (c *queryServiceClient) Analyze(ctx context.Context, req *connect.Request[v1.AnalyzeRequest]) (*connect.Response[v1.AnalyzeResponse], error) {
 	return c.analyze.CallUnary(ctx, req)
+}
+
+// Inspect calls quarry.v1.QueryService.Inspect.
+func (c *queryServiceClient) Inspect(ctx context.Context, req *connect.Request[v1.InspectRequest]) (*connect.Response[v1.InspectResponse], error) {
+	return c.inspect.CallUnary(ctx, req)
 }
 
 // Run calls quarry.v1.QueryService.Run.
@@ -238,6 +255,9 @@ type QueryServiceHandler interface {
 	CloseTab(context.Context, *connect.Request[v1.CloseTabRequest]) (*connect.Response[v1.CloseTabResponse], error)
 	// Analyze splits a script into statements and finds the one at the cursor.
 	Analyze(context.Context, *connect.Request[v1.AnalyzeRequest]) (*connect.Response[v1.AnalyzeResponse], error)
+	// Inspect reports what a Run with the same arguments would execute: the
+	// risk of each statement and the bind parameters that need values.
+	Inspect(context.Context, *connect.Request[v1.InspectRequest]) (*connect.Response[v1.InspectResponse], error)
 	// Run executes statements; closing the stream cancels the run. The last
 	// result stays open when it has more rows, to be continued with Fetch.
 	Run(context.Context, *connect.Request[v1.RunRequest], *connect.ServerStream[v1.RunEvent]) error
@@ -281,6 +301,12 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 		QueryServiceAnalyzeProcedure,
 		svc.Analyze,
 		connect.WithSchema(queryServiceMethods.ByName("Analyze")),
+		connect.WithHandlerOptions(opts...),
+	)
+	queryServiceInspectHandler := connect.NewUnaryHandler(
+		QueryServiceInspectProcedure,
+		svc.Inspect,
+		connect.WithSchema(queryServiceMethods.ByName("Inspect")),
 		connect.WithHandlerOptions(opts...),
 	)
 	queryServiceRunHandler := connect.NewServerStreamHandler(
@@ -335,6 +361,8 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 			queryServiceCloseTabHandler.ServeHTTP(w, r)
 		case QueryServiceAnalyzeProcedure:
 			queryServiceAnalyzeHandler.ServeHTTP(w, r)
+		case QueryServiceInspectProcedure:
+			queryServiceInspectHandler.ServeHTTP(w, r)
 		case QueryServiceRunProcedure:
 			queryServiceRunHandler.ServeHTTP(w, r)
 		case QueryServiceFetchProcedure:
@@ -372,6 +400,10 @@ func (UnimplementedQueryServiceHandler) CloseTab(context.Context, *connect.Reque
 
 func (UnimplementedQueryServiceHandler) Analyze(context.Context, *connect.Request[v1.AnalyzeRequest]) (*connect.Response[v1.AnalyzeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.QueryService.Analyze is not implemented"))
+}
+
+func (UnimplementedQueryServiceHandler) Inspect(context.Context, *connect.Request[v1.InspectRequest]) (*connect.Response[v1.InspectResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.QueryService.Inspect is not implemented"))
 }
 
 func (UnimplementedQueryServiceHandler) Run(context.Context, *connect.Request[v1.RunRequest], *connect.ServerStream[v1.RunEvent]) error {

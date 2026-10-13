@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "quarry/v1/explorer.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// ExportService streams a query's full result to a file on its own session,
+// so the editor tab stays free.
+service ExportService {
+  // Export reports progress while writing; closing the stream cancels it and
+  // removes the partial file.
+  rpc Export(ExportRequest) returns (stream ExportResponse);
+}
+
+message DataSource {
+  Node node = 1;
+  string filter = 2;
+  repeated string order_by = 3;
+}
+
+message ExportOptions {
+  // csv | tsv | json | ndjson | sql | markdown
+  string format = 1;
+  // CSV only; empty means ",".
+  string delimiter = 2;
+  bool header = 3;
+  string null_text = 4;
+  bool quote_all = 5;
+  bool crlf = 6;
+  bool bom = 7;
+  // SQL INSERT target table; empty means the data source's table or "t".
+  string table = 8;
+  int32 batch_rows = 9;
+}
+
+message ExportRequest {
+  string conn_id = 1;
+  Scope scope = 2;
+  oneof source {
+    // One statement that returns rows.
+    string sql = 3;
+    DataSource data = 4;
+  }
+  // Absolute path of the file to write.
+  string path = 5;
+  ExportOptions options = 6;
+}
+
+message ExportResponse {
+  int64 rows = 1;
+  bool done = 2;
+}
