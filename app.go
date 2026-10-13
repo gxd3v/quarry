@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"sync/atomic"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -12,6 +14,7 @@ type App struct {
 	ctx     context.Context
 	backend *backend
 	bench   bool
+	closing atomic.Bool
 }
 
 type ServerInfo struct {
@@ -24,6 +27,26 @@ type ServerInfo struct {
 func (a *App) startup(ctx context.Context) { a.ctx = ctx }
 
 func (a *App) shutdown(context.Context) { a.backend.Close() }
+
+// closeGrace bounds how long the window waits for the frontend to save.
+const closeGrace = 3 * time.Second
+
+// beforeClose holds the first close request so the frontend can save its
+// session; it answers with ConfirmClose, or the window closes after closeGrace.
+func (a *App) beforeClose(ctx context.Context) (prevent bool) {
+	if a.bench || !a.closing.CompareAndSwap(false, true) {
+		return false
+	}
+	runtime.EventsEmit(ctx, "quarry:before-close")
+	time.AfterFunc(closeGrace, func() { runtime.Quit(ctx) })
+	return true
+}
+
+// ConfirmClose is called by the frontend once its state is saved.
+func (a *App) ConfirmClose() {
+	a.closing.Store(true)
+	runtime.Quit(a.ctx)
+}
 
 func (a *App) ServerInfo() ServerInfo {
 	srv := a.backend.srv
