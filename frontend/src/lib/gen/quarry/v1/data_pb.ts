@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file quarry/v1/data.proto.
  */
 export const file_quarry_v1_data: GenFile = /*@__PURE__*/
-  fileDesc("ChRxdWFycnkvdjEvZGF0YS5wcm90bxIJcXVhcnJ5LnYxInQKD09wZW5EYXRhUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlEg4KBmZpbHRlchgDIAEoCRIQCghvcmRlcl9ieRgEIAMoCRIQCghtYXhfcm93cxgFIAEoBSI/Cg1Sb3dLZXlSZXF1ZXN0Eg8KB2Nvbm5faWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlIiEKDlJvd0tleVJlc3BvbnNlEg8KB2NvbHVtbnMYASADKAkiiQIKCVJvd0NoYW5nZRIfCgJvcBgBIAEoDjITLnF1YXJyeS52MS5DaGFuZ2VPcBIqCgNrZXkYAiADKAsyHS5xdWFycnkudjEuUm93Q2hhbmdlLktleUVudHJ5EjAKBnZhbHVlcxgDIAMoCzIgLnF1YXJyeS52MS5Sb3dDaGFuZ2UuVmFsdWVzRW50cnkaPAoIS2V5RW50cnkSCwoDa2V5GAEgASgJEh8KBXZhbHVlGAIgASgLMhAucXVhcnJ5LnYxLlZhbHVlOgI4ARo/CgtWYWx1ZXNFbnRyeRILCgNrZXkYASABKAkSHwoFdmFsdWUYAiABKAsyEC5xdWFycnkudjEuVmFsdWU6AjgBIn8KE0FwcGx5Q2hhbmdlc1JlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSJQoHY2hhbmdlcxgDIAMoCzIULnF1YXJyeS52MS5Sb3dDaGFuZ2USEQoJY29uZmlybWVkGAQgASgIIhYKFEFwcGx5Q2hhbmdlc1Jlc3BvbnNlKmcKCENoYW5nZU9wEhkKFUNIQU5HRV9PUF9VTlNQRUNJRklFRBAAEhQKEENIQU5HRV9PUF9JTlNFUlQQARIUChBDSEFOR0VfT1BfVVBEQVRFEAISFAoQQ0hBTkdFX09QX0RFTEVURRADMtwBCgtEYXRhU2VydmljZRI9CghPcGVuRGF0YRIaLnF1YXJyeS52MS5PcGVuRGF0YVJlcXVlc3QaEy5xdWFycnkudjEuUnVuRXZlbnQwARI9CgZSb3dLZXkSGC5xdWFycnkudjEuUm93S2V5UmVxdWVzdBoZLnF1YXJyeS52MS5Sb3dLZXlSZXNwb25zZRJPCgxBcHBseUNoYW5nZXMSHi5xdWFycnkudjEuQXBwbHlDaGFuZ2VzUmVxdWVzdBofLnF1YXJyeS52MS5BcHBseUNoYW5nZXNSZXNwb25zZUIwWi5naXRodWIuY29tL2d4ZDN2L3F1YXJyeS9nZW4vcXVhcnJ5L3YxO3F1YXJyeXYxYgZwcm90bzM", [file_quarry_v1_common, file_quarry_v1_explorer, file_quarry_v1_query]);
+  fileDesc("ChRxdWFycnkvdjEvZGF0YS5wcm90bxIJcXVhcnJ5LnYxInQKD09wZW5EYXRhUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlEg4KBmZpbHRlchgDIAEoCRIQCghvcmRlcl9ieRgEIAMoCRIQCghtYXhfcm93cxgFIAEoBSI/Cg1Sb3dLZXlSZXF1ZXN0Eg8KB2Nvbm5faWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlIiEKDlJvd0tleVJlc3BvbnNlEg8KB2NvbHVtbnMYASADKAkiiQIKCVJvd0NoYW5nZRIfCgJvcBgBIAEoDjITLnF1YXJyeS52MS5DaGFuZ2VPcBIqCgNrZXkYAiADKAsyHS5xdWFycnkudjEuUm93Q2hhbmdlLktleUVudHJ5EjAKBnZhbHVlcxgDIAMoCzIgLnF1YXJyeS52MS5Sb3dDaGFuZ2UuVmFsdWVzRW50cnkaPAoIS2V5RW50cnkSCwoDa2V5GAEgASgJEh8KBXZhbHVlGAIgASgLMhAucXVhcnJ5LnYxLlZhbHVlOgI4ARo/CgtWYWx1ZXNFbnRyeRILCgNrZXkYASABKAkSHwoFdmFsdWUYAiABKAsyEC5xdWFycnkudjEuVmFsdWU6AjgBIn8KE0FwcGx5Q2hhbmdlc1JlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSJQoHY2hhbmdlcxgDIAMoCzIULnF1YXJyeS52MS5Sb3dDaGFuZ2USEQoJY29uZmlybWVkGAQgASgIIhYKFEFwcGx5Q2hhbmdlc1Jlc3BvbnNlImIKDVNldFRUTFJlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSDgoGdHRsX21zGAMgASgDEhEKCWNvbmZpcm1lZBgEIAEoCCIQCg5TZXRUVExSZXNwb25zZSpnCghDaGFuZ2VPcBIZChVDSEFOR0VfT1BfVU5TUEVDSUZJRUQQABIUChBDSEFOR0VfT1BfSU5TRVJUEAESFAoQQ0hBTkdFX09QX1VQREFURRACEhQKEENIQU5HRV9PUF9ERUxFVEUQAzKbAgoLRGF0YVNlcnZpY2USPQoIT3BlbkRhdGESGi5xdWFycnkudjEuT3BlbkRhdGFSZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESPQoGUm93S2V5EhgucXVhcnJ5LnYxLlJvd0tleVJlcXVlc3QaGS5xdWFycnkudjEuUm93S2V5UmVzcG9uc2USTwoMQXBwbHlDaGFuZ2VzEh4ucXVhcnJ5LnYxLkFwcGx5Q2hhbmdlc1JlcXVlc3QaHy5xdWFycnkudjEuQXBwbHlDaGFuZ2VzUmVzcG9uc2USPQoGU2V0VFRMEhgucXVhcnJ5LnYxLlNldFRUTFJlcXVlc3QaGS5xdWFycnkudjEuU2V0VFRMUmVzcG9uc2VCMFouZ2l0aHViLmNvbS9neGQzdi9xdWFycnkvZ2VuL3F1YXJyeS92MTtxdWFycnl2MWIGcHJvdG8z", [file_quarry_v1_common, file_quarry_v1_explorer, file_quarry_v1_query]);
 
 /**
  * @generated from message quarry.v1.OpenDataRequest
@@ -178,6 +178,53 @@ export const ApplyChangesResponseSchema: GenMessage<ApplyChangesResponse> = /*@_
   messageDesc(file_quarry_v1_data, 5);
 
 /**
+ * @generated from message quarry.v1.SetTTLRequest
+ */
+export type SetTTLRequest = Message<"quarry.v1.SetTTLRequest"> & {
+  /**
+   * @generated from field: string conn_id = 1;
+   */
+  connId: string;
+
+  /**
+   * @generated from field: quarry.v1.Node node = 2;
+   */
+  node?: Node | undefined;
+
+  /**
+   * @generated from field: int64 ttl_ms = 3;
+   */
+  ttlMs: bigint;
+
+  /**
+   * Required on prod connections.
+   *
+   * @generated from field: bool confirmed = 4;
+   */
+  confirmed: boolean;
+};
+
+/**
+ * Describes the message quarry.v1.SetTTLRequest.
+ * Use `create(SetTTLRequestSchema)` to create a new message.
+ */
+export const SetTTLRequestSchema: GenMessage<SetTTLRequest> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_data, 6);
+
+/**
+ * @generated from message quarry.v1.SetTTLResponse
+ */
+export type SetTTLResponse = Message<"quarry.v1.SetTTLResponse"> & {
+};
+
+/**
+ * Describes the message quarry.v1.SetTTLResponse.
+ * Use `create(SetTTLResponseSchema)` to create a new message.
+ */
+export const SetTTLResponseSchema: GenMessage<SetTTLResponse> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_data, 7);
+
+/**
  * @generated from enum quarry.v1.ChangeOp
  */
 export enum ChangeOp {
@@ -246,6 +293,16 @@ export const DataService: GenService<{
     methodKind: "unary";
     input: typeof ApplyChangesRequestSchema;
     output: typeof ApplyChangesResponseSchema;
+  },
+  /**
+   * SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
+   *
+   * @generated from rpc quarry.v1.DataService.SetTTL
+   */
+  setTTL: {
+    methodKind: "unary";
+    input: typeof SetTTLRequestSchema;
+    output: typeof SetTTLResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_quarry_v1_data, 0);
