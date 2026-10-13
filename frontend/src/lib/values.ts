@@ -13,9 +13,31 @@ const NUMERIC_TYPE =
 
 // formatValue renders a cell as single-line display text, or null for SQL NULL.
 // The result never contains C0 control characters, which ResultBuffer relies on.
-export function formatValue(v: Value | undefined): string | null {
+// When the display text loses information (clipped, control characters
+// replaced, long bytes), onLossy receives the full value.
+export function formatValue(v: Value | undefined, onLossy?: (full: string | Uint8Array) => void): string | null {
   const s = rawText(v, MAX_CELL_CHARS)
-  return s === null ? null : displayText(s)
+  if (s === null) return null
+  const d = displayText(s)
+  if (onLossy) {
+    const k = v!.kind
+    if (k.case === 'bytes') {
+      if (k.value.length > MAX_BYTES_SHOWN) onLossy(k.value.slice())
+    } else if (k.case === 'json') {
+      if (d !== s || s.length > MAX_CELL_CHARS) onLossy(k.value)
+    } else if (d !== s) {
+      onLossy(s)
+    }
+  }
+  return d
+}
+
+// bytesHex renders bytes in full in PostgreSQL's hex format.
+export function bytesHex(b: Uint8Array): string {
+  const parts = new Array<string>(b.length + 1)
+  parts[0] = '\\x'
+  for (let i = 0; i < b.length; i++) parts[i + 1] = HEX[b[i]]
+  return parts.join('')
 }
 
 export function isNumericType(type: string): boolean {

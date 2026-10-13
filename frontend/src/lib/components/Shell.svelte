@@ -1,100 +1,96 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { run } from '../app/actions'
+  import { closeTab, guard, pickAndNewScript, run, saveTab } from '../app/actions'
   import { connections } from '../app/connections.svelte'
-  import { loadLayout, saveLayout, clampLayout } from '../app/layout'
+  import { clampLayout } from '../app/layout'
   import { menu } from '../app/menu.svelte'
   import { notify } from '../app/notify.svelte'
-  import { tabs } from '../app/tabs.svelte'
+  import { settings } from '../app/settings.svelte'
+  import { editorHost, HISTORY, tabs } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
-  import { editorHost } from '../app/tabs.svelte'
+  import { workspace } from '../app/workspace.svelte'
+  import { COPY_FORMATS } from '../grid/copy'
   import { keymap, label } from '../keymap'
+  import { clipboard } from '../ui/clipboard'
   import ContextMenu from '../ui/ContextMenu.svelte'
   import { startDrag } from '../ui/drag'
+  import CellViewer from './CellViewer.svelte'
+  import CommandPalette from './CommandPalette.svelte'
   import ConnectionDialog from './ConnectionDialog.svelte'
   import ConnectionPicker from './ConnectionPicker.svelte'
   import ContextBar from './ContextBar.svelte'
   import Explorer from './Explorer.svelte'
+  import GotoObject from './GotoObject.svelte'
   import PromptDialogs from './PromptDialogs.svelte'
   import ResultsPanel from './ResultsPanel.svelte'
   import ScopePicker from './ScopePicker.svelte'
   import ScriptEditor from './ScriptEditor.svelte'
+  import ShortcutsDialog from './ShortcutsDialog.svelte'
   import StatusBar from './StatusBar.svelte'
   import TabBar from './TabBar.svelte'
   import Toasts from './Toasts.svelte'
 
-  let layout = $state(loadLayout())
   let center = $state<HTMLElement>()
   let explorerRef = $state<ReturnType<typeof Explorer>>()
   let resultsRef = $state<ReturnType<typeof ResultsPanel>>()
 
+  const layout = $derived(ui.layout)
+
   function dragExplorer(e: PointerEvent) {
     const w0 = layout.explorer
-    startDrag(
-      e,
-      (dx) => (layout = clampLayout({ ...layout, explorer: w0 + dx })),
-      () => saveLayout(layout),
-    )
+    startDrag(e, (dx) => (ui.layout = clampLayout({ ...ui.layout, explorer: w0 + dx })))
   }
 
   function dragEditor(e: PointerEvent) {
     const h = center?.getBoundingClientRect().height ?? 1
     const f0 = layout.editor
-    startDrag(
-      e,
-      (_, dy) => (layout = clampLayout({ ...layout, editor: f0 + dy / h })),
-      () => saveLayout(layout),
-    )
+    startDrag(e, (_, dy) => (ui.layout = clampLayout({ ...ui.layout, editor: f0 + dy / h })))
   }
 
   function resizeKey(e: KeyboardEvent, which: 'explorer' | 'editor') {
     const dir = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0
     if (!dir) return
     e.preventDefault()
-    layout = clampLayout(which === 'explorer' ? { ...layout, explorer: layout.explorer + dir * 20 } : { ...layout, editor: layout.editor + dir * 0.03 })
-    saveLayout(layout)
+    const l = ui.layout
+    ui.layout = clampLayout(which === 'explorer' ? { ...l, explorer: l.explorer + dir * 20 } : { ...l, editor: l.editor + dir * 0.03 })
   }
 
-  // Global shortcuts go first, unless a modal dialog or menu owns the keyboard.
+  // Global shortcuts go first, unless a modal dialog or menu owns the keyboard
+  // (or Escape should close the completion popup).
   function onkeydown(e: KeyboardEvent) {
     if (document.querySelector('dialog[open]') || menu.current) return
+    if (e.key === 'Escape' && document.querySelector('.cm-tooltip-autocomplete')) return
     if (keymap.handle(e)) {
       e.preventDefault()
       e.stopPropagation()
     }
   }
 
+  const withTab = (f: (t: NonNullable<typeof tabs.active>) => unknown) => () => {
+    const t = tabs.active
+    if (!t) return false
+    f(t)
+  }
+
+  // The grid of the active tab's shown result.
+  const shownGrid = () => resultsRef?.shownGrid() ?? null
+
   onMount(() => {
     const off = keymap.register(
-      { id: 'tab.new', title: 'New script', run: () => void (ui.picking = true) },
-      {
-        id: 'tab.close',
-        title: 'Close tab',
-        run: () => {
-          if (!tabs.active) return false
-          tabs.close(tabs.active).catch((err: unknown) => notify.error(err, 'Close tab'))
-        },
-      },
-      { id: 'tab.next', title: 'Next tab', run: () => tabs.step(1) },
-      { id: 'tab.prev', title: 'Previous tab', run: () => tabs.step(-1) },
-      {
-        id: 'run.statement',
-        title: 'Run statement or selection',
-        run: () => {
-          if (!tabs.active) return false
-          void run(tabs.active, tabs.target(tabs.active, false))
-        },
-      },
-      {
-        id: 'run.script',
-        title: 'Run script',
-        run: () => {
-          if (!tabs.active) return false
-          void run(tabs.active, tabs.target(tabs.active, true))
-        },
-      },
+      { id: 'tab.new', category: 'Tab', title: 'New script…', run: () => void pickAndNewScript() },
+      { id: 'tab.close', category: 'Tab', title: 'Close tab', run: withTab(closeTab) },
+      { id: 'tab.next', category: 'Tab', title: 'Next tab', run: () => tabs.step(1) },
+      { id: 'tab.prev', category: 'Tab', title: 'Previous tab', run: () => tabs.step(-1) },
+      { id: 'tab.changeConnection', category: 'Tab', title: 'Change connection or scope…', run: withTab(() => (ui.scoping = true)) },
+      { id: 'file.newScratch', category: 'File', title: 'New scratch', run: () => guard('New scratch', () => workspace.newScratch()) },
+      { id: 'file.open', category: 'File', title: 'Open file…', run: () => guard('Open file', () => workspace.openFile()) },
+      { id: 'file.save', category: 'File', title: 'Save', run: withTab((t) => saveTab(t)) },
+      { id: 'file.saveAs', category: 'File', title: 'Save as…', run: withTab((t) => saveTab(t, true)) },
+      { id: 'run.statement', category: 'Run', title: 'Run statement or selection', run: withTab((t) => run(t, tabs.target(t, false))) },
+      { id: 'run.script', category: 'Run', title: 'Run script', run: withTab((t) => run(t, tabs.target(t, true))) },
       {
         id: 'run.cancel',
+        category: 'Run',
         title: 'Cancel run',
         run: () => {
           const t = tabs.active
@@ -102,33 +98,94 @@
           void tabs.cancel(t)
         },
       },
-      { id: 'connection.new', title: 'New connection', run: () => void (ui.editing = '') },
-      { id: 'focus.explorer', title: 'Focus explorer', run: () => explorerRef?.focus() },
+      { id: 'connection.new', category: 'Connection', title: 'New connection…', run: () => void (ui.editing = '') },
+      { id: 'palette.commands', category: 'View', title: 'Command palette', run: () => void (ui.palette = 'commands') },
+      { id: 'palette.objects', category: 'Go', title: 'Go to object…', run: withTab(() => (ui.palette = 'objects')) },
+      { id: 'keymap.edit', category: 'Preferences', title: 'Keyboard shortcuts', run: () => void (ui.shortcuts = true) },
+      {
+        id: 'results.history',
+        category: 'View',
+        title: 'Query history',
+        run: withTab((t) => {
+          t.view = HISTORY
+          setTimeout(() => resultsRef?.focus(), 0)
+        }),
+      },
+      {
+        id: 'results.viewCell',
+        category: 'Results',
+        title: 'View selected cell',
+        run: () => {
+          const g = shownGrid()
+          const at = g?.grid.active()
+          if (!g || !at) return false
+          g.open(at.row, at.col)
+        },
+      },
+      ...COPY_FORMATS.map((f) => ({
+        id: `results.copy.${f.format}`,
+        category: 'Results',
+        title: `Copy selection as ${f.label}`,
+        run: () => {
+          const g = shownGrid()
+          if (!g?.grid.active()) return false
+          void g.grid.copy(f.format)
+        },
+      })),
+      { id: 'focus.explorer', category: 'View', title: 'Focus explorer', run: () => explorerRef?.focus() },
       {
         id: 'focus.editor',
+        category: 'View',
         title: 'Focus editor',
         run: () => {
           if (!editorHost.view) return false
           editorHost.view.focus()
         },
       },
-      { id: 'focus.results', title: 'Focus results', run: () => resultsRef?.focus() },
+      { id: 'focus.results', category: 'View', title: 'Focus results', run: () => resultsRef?.focus() },
     )
     window.addEventListener('keydown', onkeydown, true)
     // Dev builds expose the stores to tooling (smoke tests over CDP).
-    if (import.meta.env.DEV) Object.assign(window, { __quarry: { tabs, editorHost, connections, keymap } })
+    if (import.meta.env.DEV) {
+      Object.assign(window, { __quarry: { tabs, editorHost, connections, keymap, workspace, settings, ui, clipboard, shownGrid } })
+    }
+
+    const flush = () => void workspace.flush()
+    const hidden = () => {
+      if (document.visibilityState === 'hidden') flush()
+    }
+    window.addEventListener('beforeunload', flush)
+    document.addEventListener('visibilitychange', hidden)
 
     const watch = new AbortController()
-    connections.load().catch(() => {})
+    settings.load().catch((err: unknown) => notify.error(err, 'Load settings'))
+    connections
+      .load()
+      .then(() => workspace.restore())
+      .catch(() => {})
     void connections.watch(watch.signal)
     return () => {
       off()
       window.removeEventListener('keydown', onkeydown, true)
+      window.removeEventListener('beforeunload', flush)
+      document.removeEventListener('visibilitychange', hidden)
       watch.abort()
     }
   })
 
-  const hint = (id: string) => label(keymap.keysFor(id)[0] ?? '')
+  // Save the session whenever what it records changes; edits and cursor
+  // moves schedule it from the editor.
+  $effect(() => {
+    void tabs.activeKey
+    for (const t of tabs.tabs) void [t.connId, t.scope.database, t.scope.schema, t.path, t.title, t.dirty]
+    void [layout.explorer, layout.editor, layout.scratches]
+    workspace.schedule()
+  })
+
+  const hint = (id: string) => {
+    void settings.keys
+    return label(keymap.keysFor(id)[0] ?? '')
+  }
 </script>
 
 <div class="shell" style:grid-template-columns="{layout.explorer}px 5px minmax(0, 1fr)">
@@ -172,13 +229,16 @@
         <h1>Quarry</h1>
         <p>Every script runs on exactly one connection. Pick one to start.</p>
         <div class="actions">
-          <button class="btn primary" type="button" onclick={() => (ui.picking = true)}>New script <span class="kbd">{hint('tab.new')}</span></button>
+          <button class="btn primary" type="button" onclick={() => pickAndNewScript()}>New script <span class="kbd">{hint('tab.new')}</span></button>
+          <button class="btn" type="button" onclick={() => guard('Open file', () => workspace.openFile())}>Open file <span class="kbd">{hint('file.open')}</span></button>
           <button class="btn" type="button" onclick={() => (ui.editing = '')}>New connection <span class="kbd">{hint('connection.new')}</span></button>
         </div>
         <dl>
           <dt>{hint('run.statement')}</dt><dd>Run the statement at the cursor or the selection</dd>
           <dt>{hint('run.script')}</dt><dd>Run the whole script</dd>
-          <dt>Esc</dt><dd>Stop the running statement</dd>
+          <dt>{hint('file.newScratch')} · {hint('file.save')}</dt><dd>New scratch, save</dd>
+          <dt>{hint('palette.commands')}</dt><dd>Command palette</dd>
+          <dt>{hint('palette.objects')}</dt><dd>Go to a table, view or function</dd>
           <dt>{hint('tab.close')} · {hint('tab.next')}</dt><dd>Close and switch tabs</dd>
           <dt>Alt+1 · Alt+2 · Alt+3</dt><dd>Focus explorer, editor, results</dd>
         </dl>
@@ -192,17 +252,22 @@
 {#if ui.editing !== null}
   <ConnectionDialog id={ui.editing} onclose={() => (ui.editing = null)} />
 {/if}
-{#if ui.picking}
-  <ConnectionPicker
-    onclose={() => (ui.picking = false)}
-    onnew={() => {
-      ui.picking = false
-      ui.editing = ''
-    }}
-  />
+{#if ui.pick}
+  <ConnectionPicker request={ui.pick} onnew={() => (ui.editing = '')} />
 {/if}
 {#if ui.scoping && tabs.active}
   <ScopePicker tab={tabs.active} onclose={() => (ui.scoping = false)} />
+{/if}
+{#if ui.palette === 'commands'}
+  <CommandPalette onclose={() => (ui.palette = null)} />
+{:else if ui.palette === 'objects' && tabs.active}
+  <GotoObject tab={tabs.active} onclose={() => (ui.palette = null)} />
+{/if}
+{#if ui.shortcuts}
+  <ShortcutsDialog onclose={() => (ui.shortcuts = false)} />
+{/if}
+{#if ui.cell}
+  <CellViewer cell={ui.cell} onclose={() => (ui.cell = null)} />
 {/if}
 <PromptDialogs />
 <ContextMenu />

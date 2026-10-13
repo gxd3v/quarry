@@ -1,13 +1,16 @@
 <script lang="ts">
+  import { closeTab as close, pickAndNewScript, saveTab } from '../app/actions'
   import { connections } from '../app/connections.svelte'
   import { menu } from '../app/menu.svelte'
-  import { notify } from '../app/notify.svelte'
+  import { settings } from '../app/settings.svelte'
   import { tabs, type Tab } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
+  import { keymap, label } from '../keymap'
   import Icon from '../ui/Icon.svelte'
 
-  function close(t: Tab) {
-    tabs.close(t).catch((err: unknown) => notify.error(err, 'Close tab'))
+  const hint = (id: string) => {
+    void settings.keys
+    return label(keymap.keysFor(id)[0] ?? '')
   }
 
   function onauxclick(e: MouseEvent, t: Tab) {
@@ -19,7 +22,10 @@
 
   function oncontextmenu(e: MouseEvent, t: Tab) {
     menu.open(e, [
-      { label: 'Close', hint: 'Ctrl+W', run: () => close(t) },
+      { label: 'Save', icon: 'save', hint: hint('file.save'), run: () => saveTab(t) },
+      { label: 'Save as…', hint: hint('file.saveAs'), run: () => saveTab(t, true) },
+      'separator',
+      { label: 'Close', hint: hint('tab.close'), run: () => close(t) },
       { label: 'Close others', run: () => tabs.tabs.filter((x) => x !== t).forEach(close) },
       'separator',
       { label: 'Change connection…', run: () => ((tabs.activeKey = t.key), (ui.scoping = true)) },
@@ -38,7 +44,7 @@
         tabindex="0"
         aria-selected={t.key === tabs.activeKey}
         data-env={env}
-        title="{t.title} @ {connections.name(t.connId)}"
+        title="{t.path || t.title} @ {connections.name(t.connId)}{t.dirty ? ' (unsaved)' : ''}"
         onmousedown={(e) => {
           if (e.button === 0) tabs.activate(t)
           else if (e.button === 1) e.preventDefault()
@@ -50,22 +56,25 @@
         oncontextmenu={(e) => oncontextmenu(e, t)}
       >
         <span class="env-dot" data-env={env}></span>
+        {#if t.scratch}<span class="scratch" title="Scratch"><Icon name="scratch" size={12} /></span>{/if}
         <span class="title">{t.title}</span>
         <span class="conn">@{connections.name(t.connId)}</span>
         {#if t.busy}<span class="spinner small"></span>{/if}
         {#if t.tx.inTx}<span class="tx" title="Open transaction">●</span>{/if}
         <button
           class="close"
+          class:dirty={t.dirty}
           type="button"
           tabindex="-1"
-          title="Close (Ctrl+W)"
+          title="Close ({hint('tab.close')})"
           onmousedown={(e) => e.stopPropagation()}
-          onclick={() => close(t)}><Icon name="close" size={11} /></button
+          onclick={() => close(t)}
+          ><span class="dot" aria-label="Unsaved changes">●</span><Icon name="close" size={11} /></button
         >
       </div>
     {/each}
   </div>
-  <button class="icon-btn new" type="button" title="New script (Ctrl+T)" onclick={() => (ui.picking = true)}>
+  <button class="icon-btn new" type="button" title="New script ({hint('tab.new')})" onclick={() => pickAndNewScript()}>
     <Icon name="plus" />
   </button>
 </div>
@@ -166,8 +175,27 @@
   }
 
   .tab:hover .close,
-  .tab.active .close {
+  .tab.active .close,
+  .close.dirty {
     opacity: 1;
+  }
+
+  .close .dot {
+    display: none;
+    color: var(--peach);
+    font-size: 10px;
+  }
+
+  .close.dirty:not(:hover) .dot {
+    display: inline;
+  }
+
+  .close.dirty:not(:hover) :global(.icon) {
+    display: none;
+  }
+
+  .scratch {
+    color: var(--overlay1);
   }
 
   .close:hover {

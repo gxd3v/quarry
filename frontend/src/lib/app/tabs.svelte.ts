@@ -1,7 +1,8 @@
-import type { EditorState, TransactionSpec } from '@codemirror/state'
+import { Text, type EditorState, type TransactionSpec } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { queryClient } from '../api/clients'
+import { queryClient, workspaceClient } from '../api/clients'
 import { errorMessage, isAbort, needsConfirmation, notConnected, tabBusy, unknownTab } from '../api/errors'
+import type { CompleteReply } from '../editor/complete'
 import { createScriptState, errorPos, setError, setStatement } from '../editor/script'
 import { statementAt, type Range } from '../editor/statements'
 import { RunMode } from '../gen/quarry/v1/query_pb'
@@ -18,9 +19,27 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // Messages view in the results panel.
 export const MESSAGES = -1
 
+// Results panel view showing the connection's query history.
+export const HISTORY = -2
+
+export interface TabOptions {
+  // File or scratch path; '' for an untitled script.
+  path?: string
+  title?: string
+  scratch?: boolean
+  // Content last saved, which decides the dirty marker; defaults to the text.
+  saved?: string
+  cursor?: number
+}
+
 export class Tab {
   readonly key: number
-  readonly title: string
+  title = $state('')
+  path = $state('')
+  scratch = $state(false)
+  // The editor content differs from what was last saved.
+  dirty = $state(false)
+  savedDoc: Text
   connId = $state('')
   scope = $state<ScopeLike>({ database: '', schema: '' })
   language = $state('sql')
@@ -43,12 +62,16 @@ export class Tab {
   analyzed: { doc: EditorState['doc']; ranges: Range[] } | null = null
   #frame = 0
 
-  constructor(key: number, connId: string, scope: ScopeLike, text: string) {
+  constructor(key: number, connId: string, scope: ScopeLike, text: string, opts: TabOptions = {}) {
     this.key = key
-    this.title = `Script ${key}`
+    this.path = opts.path ?? ''
+    this.title = opts.title || `Script ${key}`
+    this.scratch = opts.scratch ?? false
     this.connId = connId
     this.scope = scope
-    this.editor = createScriptState(text)
+    this.editor = createScriptState(text, opts.cursor ?? 0)
+    this.savedDoc = opts.saved === undefined ? this.editor.doc : Text.of(opts.saved.split(/\r\n?|\n/))
+    this.dirty = !sameDoc(this.editor.doc, this.savedDoc)
   }
 
   touch() {
@@ -58,6 +81,10 @@ export class Tab {
       this.version++
     })
   }
+}
+
+function sameDoc(a: Text, b: Text): boolean {
+  return a === b || (a.length === b.length && a.eq(b))
 }
 
 export interface RunTarget {
@@ -75,12 +102,29 @@ class Tabs {
   readonly active: Tab | null = $derived(this.tabs.find((t) => t.key === this.activeKey) ?? null)
   #seq = 0
 
-  open(connId: string, scope: ScopeLike = { database: '', schema: '' }, text = ''): Tab {
-    const tab = new Tab(++this.#seq, connId, scope, text)
+  open(connId: string, scope: ScopeLike = { database: '', schema: '' }, text = '', opts: TabOptions = {}): Tab {
+    const tab = new Tab(++this.#seq, connId, scope, text, opts)
     this.tabs.push(tab)
     this.activeKey = tab.key
     this.#server(tab).catch((err: unknown) => notify.error(err, 'Open tab'))
     return tab
+  }
+
+  byPath(path: string): Tab | undefined {
+    const norm = (p: string) => p.replaceAll('\\', '/').toLowerCase()
+    return this.tabs.find((t) => t.path && norm(t.path) === norm(path))
+  }
+
+  // docChanged refreshes the dirty marker after an edit.
+  docChanged(tab: Tab, doc = this.state(tab).doc) {
+    const dirty = !sameDoc(doc, tab.savedDoc)
+    if (tab.dirty !== dirty) tab.dirty = dirty
+  }
+
+  // markSaved records doc as the saved content.
+  markSaved(tab: Tab, doc: Text) {
+    tab.savedDoc = doc
+    this.docChanged(tab)
   }
 
   activate(tab: Tab) {
@@ -121,8 +165,13 @@ class Tabs {
   }
 
   update(tab: Tab, spec: TransactionSpec) {
-    if (editorHost.shown === tab && editorHost.view) editorHost.view.dispatch(spec)
-    else tab.editor = tab.editor.update(spec).state
+    if (editorHost.shown === tab && editorHost.view) {
+      editorHost.view.dispatch(spec)
+      return
+    }
+    const tr = tab.editor.update(spec)
+    tab.editor = tr.state
+    if (tr.docChanged) this.docChanged(tab)
   }
 
   // target computes what Ctrl+Enter (whole=false) or Ctrl+Shift+Enter runs.
@@ -158,21 +207,40 @@ class Tabs {
     tab.tx = { supported: true, autoCommit: true, inTx: false }
     tab.analyzed = null
     if (!tab.serverId) await this.#server(tab)
+    if (tab.path) {
+      await workspaceClient().bind({ path: tab.path, binding: { connId, scope: { database: scope.database, schema: scope.schema } } })
+    }
+  }
+
+  // complete asks the server for completions; it never connects, so it
+  // cannot prompt for a password while typing.
+  async complete(tab: Tab, script: string, cursor: number, signal: AbortSignal): Promise<CompleteReply | null> {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const id = await this.#server(tab)
+      try {
+        const res = await queryClient().complete({ tabId: id, script, cursor }, { signal })
+        return { start: res.start, end: res.end, items: res.items }
+      } catch (err) {
+        if (!unknownTab(err) || attempt > 0) throw err
+        if (tab.serverId === id) tab.serverId = null
+      }
+    }
+    return null
   }
 
   async run(tab: Tab, target: RunTarget) {
     this.#abort(tab)
     const ctrl = new AbortController()
     tab.controller = ctrl
-    const model = new RunModel()
+    const st = this.state(tab)
+    const script = st.doc.toString()
+    const doc = st.doc
+    const model = new RunModel(undefined, script)
     tab.run = model
     tab.view = 0
     tab.busy = 'run'
     tab.canceling = false
     tab.startedAt = performance.now()
-    const st = this.state(tab)
-    const script = st.doc.toString()
-    const doc = st.doc
     if (errorPos(st) >= 0) this.update(tab, { effects: setError.of(null) })
     tab.touch()
 

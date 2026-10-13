@@ -1,15 +1,16 @@
+// Panel layout, saved with the session (Session.layout_json).
 export interface Layout {
   // Explorer width in px.
   explorer: number
   // Editor share of the center column's height.
   editor: number
+  // Whether the explorer's Scratches section is expanded.
+  scratches: boolean
 }
 
-export const DEFAULT_LAYOUT: Layout = { explorer: 280, editor: 0.45 }
+export const DEFAULT_LAYOUT: Layout = { explorer: 280, editor: 0.45, scratches: true }
 export const EXPLORER_MIN = 160
 export const EXPLORER_MAX = 720
-
-const KEY = 'quarry.layout'
 
 export function clampLayout(l: Layout): Layout {
   const explorer = Number.isFinite(l.explorer) ? l.explorer : DEFAULT_LAYOUT.explorer
@@ -17,32 +18,18 @@ export function clampLayout(l: Layout): Layout {
   return {
     explorer: Math.round(Math.min(EXPLORER_MAX, Math.max(EXPLORER_MIN, explorer))),
     editor: Math.min(0.9, Math.max(0.1, editor)),
+    scratches: typeof l.scratches === 'boolean' ? l.scratches : DEFAULT_LAYOUT.scratches,
   }
 }
 
-export function parseLayout(raw: string | null): Layout {
+export function parseLayout(raw: string | null | undefined): Layout {
   if (!raw) return { ...DEFAULT_LAYOUT }
   try {
     const v = JSON.parse(raw) as Partial<Layout>
+    if (!v || typeof v !== 'object') return { ...DEFAULT_LAYOUT }
     return clampLayout({ ...DEFAULT_LAYOUT, ...v })
   } catch {
     return { ...DEFAULT_LAYOUT }
-  }
-}
-
-export function loadLayout(): Layout {
-  try {
-    return parseLayout(localStorage.getItem(KEY))
-  } catch {
-    return { ...DEFAULT_LAYOUT }
-  }
-}
-
-export function saveLayout(l: Layout) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(clampLayout(l)))
-  } catch {
-    // Storage may be unavailable; sizes then last for the session only.
   }
 }
 

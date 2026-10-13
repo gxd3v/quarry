@@ -1,7 +1,11 @@
 <script lang="ts">
   import { guard } from '../app/actions'
-  import { MESSAGES, tabs, type Tab } from '../app/tabs.svelte'
+  import { connections } from '../app/connections.svelte'
+  import { HISTORY, MESSAGES, tabs, type Tab } from '../app/tabs.svelte'
+  import { ui } from '../app/ui.svelte'
+  import { guessTable, type CopyOptions } from '../grid/copy'
   import Grid from '../grid/Grid.svelte'
+  import HistoryView from './HistoryView.svelte'
 
   interface Props {
     tab: Tab
@@ -29,18 +33,32 @@
     }
   })
 
-  const view = $derived(tab.view === MESSAGES || tab.view >= snap.results.length ? MESSAGES : tab.view)
-  const current = $derived(view === MESSAGES ? null : snap.results[view])
+  const view = $derived(tab.view === HISTORY ? HISTORY : tab.view === MESSAGES || tab.view >= snap.results.length ? MESSAGES : tab.view)
+  const current = $derived(view < 0 ? null : snap.results[view])
 
   let panel = $state<HTMLElement>()
+  let grid = $state<ReturnType<typeof Grid>>()
 
   export function focus() {
-    ;(panel?.querySelector('.grid') as HTMLElement | null)?.focus() ?? panel?.focus()
+    ;(panel?.querySelector('.grid, .history .list') as HTMLElement | null)?.focus() ?? panel?.focus()
+  }
+
+  // The grid of the shown result, if any.
+  export function shownGrid(): { grid: ReturnType<typeof Grid>; open: (row: number, col: number) => void } | null {
+    return grid && current ? { grid, open: openCell } : null
+  }
+
+  function openCell(row: number, col: number) {
+    if (current) ui.cell = { buffer: current.r.buffer, row, col }
+  }
+
+  function copyOptions(): CopyOptions {
+    return { table: guessTable(current?.r.sql ?? ''), dialect: connections.config(tab.connId)?.kind ?? '' }
   }
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-    const ids = [...snap.results.keys(), MESSAGES]
+    const ids = [...snap.results.keys(), MESSAGES, HISTORY]
     const i = ids.indexOf(view)
     const next = ids[(i + (e.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length]
     tab.view = next
@@ -81,12 +99,25 @@
       Messages
       {#if snap.errors}<span class="err-dot" title="{snap.errors} error(s)"></span>{/if}
     </button>
+    <button
+      type="button"
+      role="tab"
+      data-view={HISTORY}
+      aria-selected={view === HISTORY}
+      tabindex={view === HISTORY ? 0 : -1}
+      class:active={view === HISTORY}
+      onclick={() => (tab.view = HISTORY)}
+    >
+      History
+    </button>
   </div>
 
   <div class="body">
-    {#if current}
+    {#if view === HISTORY}
+      <HistoryView {tab} />
+    {:else if current}
       <div class="grid-wrap">
-        <Grid buffer={current.r.buffer} version={tab.version} />
+        <Grid bind:this={grid} buffer={current.r.buffer} version={tab.version} oncell={openCell} {copyOptions} />
       </div>
       <footer>
         <span><b>{count(current.rows)}</b> {current.rows === 1 ? 'row' : 'rows'}</span>

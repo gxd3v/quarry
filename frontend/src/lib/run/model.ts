@@ -14,6 +14,8 @@ export interface ResultSet {
   hasMore: boolean
   elapsedMs: number
   tag: string
+  // The statement's text, when known.
+  sql: string
 }
 
 export type MessageKind = 'summary' | 'notice' | 'error' | 'info'
@@ -54,9 +56,11 @@ export class RunModel {
   #open: ResultSet | null = null
   #fetching = false
   readonly #limit: number
+  readonly #script: string
 
-  constructor(limit = MAX_RESULT_ROWS) {
+  constructor(limit = MAX_RESULT_ROWS, script = '') {
     this.#limit = limit
+    this.#script = script
   }
 
   // The result still open for Fetch, if any.
@@ -98,6 +102,7 @@ export class RunModel {
           hasMore: false,
           elapsedMs: 0,
           tag: '',
+          sql: this.range ? this.#script.slice(this.range.start, this.range.end) : '',
         }
         this.results.push(r)
         this.#open = r

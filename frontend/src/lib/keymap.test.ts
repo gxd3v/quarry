@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chordOf, Keymap, label, type KeyLike } from './keymap'
+import { chordOf, cleanOverrides, effectiveBindings, Keymap, label, normalizeChord, type KeyLike } from './keymap'
 
 const key = (key: string, mods: Partial<KeyLike> = {}): KeyLike => ({
   key,
@@ -46,5 +46,51 @@ describe('Keymap', () => {
     expect(km.keysFor('tab.new')).toEqual(['Mod+T'])
     off()
     expect(km.handle(key('t', { ctrlKey: true }))).toBe(false)
+  })
+})
+
+describe('overrides', () => {
+  const defaults = { 'Mod+T': 'tab.new', 'Mod+W': 'tab.close', 'Mod+PageDown': 'tab.next', 'Mod+Tab': 'tab.next' }
+
+  it('replace an action default chords and steal taken chords', () => {
+    const b = effectiveBindings(defaults, { 'tab.next': 'Mod+T' })
+    expect(Object.fromEntries(b)).toEqual({ 'Mod+W': 'tab.close', 'Mod+T': 'tab.next' })
+    expect(Object.fromEntries(effectiveBindings(defaults, { 'tab.close': '' }))).toEqual({
+      'Mod+T': 'tab.new',
+      'Mod+PageDown': 'tab.next',
+      'Mod+Tab': 'tab.next',
+    })
+  })
+
+  it('apply to a keymap and report conflicts', () => {
+    const km = new Keymap(defaults)
+    let changes = 0
+    km.onChange(() => changes++)
+    km.setOverrides({ 'tab.new': 'Mod+Shift+K' })
+    expect(changes).toBe(1)
+    expect(km.keysFor('tab.new')).toEqual(['Mod+Shift+K'])
+    expect(km.defaultsFor('tab.new')).toEqual(['Mod+T'])
+    expect(km.boundTo('Mod+T')).toBeUndefined()
+    expect(km.boundTo('Mod+W')).toBe('tab.close')
+    expect(km.keysFor('tab.next')).toEqual(['Mod+PageDown', 'Mod+Tab'])
+    km.setOverrides({})
+    expect(km.keysFor('tab.new')).toEqual(['Mod+T'])
+  })
+
+  it('parse hand-written chords', () => {
+    expect(normalizeChord('ctrl+shift+k')).toBe('Mod+Shift+K')
+    expect(normalizeChord('Shift + Mod + enter')).toBe('Mod+Shift+Enter')
+    expect(normalizeChord('alt+1')).toBe('Alt+1')
+    expect(normalizeChord('esc')).toBe('Escape')
+    expect(normalizeChord('ctrl+')).toBe('')
+    expect(normalizeChord('a+b')).toBe('')
+  })
+
+  it('clean settings', () => {
+    expect(cleanOverrides(null)).toEqual({})
+    expect(cleanOverrides([1])).toEqual({})
+    expect(
+      cleanOverrides({ 'tab.new': 'ctrl+shift+k', 'tab.close': '', 'tab.next': 5, bad: 'x+y', same: 'Mod+W' }, { 'Mod+W': 'same' }),
+    ).toEqual({ 'tab.new': 'Mod+Shift+K', 'tab.close': '' })
   })
 })

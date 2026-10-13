@@ -1,10 +1,12 @@
+import { autocompletion } from '@codemirror/autocomplete'
 import { EditorState, RangeSetBuilder, StateEffect, StateField, type Extension } from '@codemirror/state'
 import { Decoration, EditorView, gutter, GutterMarker, type DecorationSet, type ViewUpdate } from '@codemirror/view'
+import { completionSource, type CompleteFetcher } from './complete'
 import { baseExtensions } from './setup'
 
 // Script editors live one per tab as EditorStates swapped into one view.
-// The app listens to their updates through these hooks.
-export const scriptHooks: { onUpdate?: (u: ViewUpdate) => void } = {}
+// The app listens to their updates and serves completions through these hooks.
+export const scriptHooks: { onUpdate?: (u: ViewUpdate) => void; complete?: CompleteFetcher } = {}
 
 export interface Span {
   from: number
@@ -110,6 +112,12 @@ const scriptTheme = EditorView.theme({
 
 const extensions: Extension[] = [
   baseExtensions(),
+  autocompletion({
+    override: [completionSource(() => scriptHooks.complete)],
+    activateOnTypingDelay: 120,
+    maxRenderedOptions: 60,
+    icons: true,
+  }),
   errorGutter,
   statementField,
   errorField,
@@ -117,6 +125,8 @@ const extensions: Extension[] = [
   EditorView.updateListener.of((u) => scriptHooks.onUpdate?.(u)),
 ]
 
-export function createScriptState(doc = ''): EditorState {
-  return EditorState.create({ doc, extensions })
+export function createScriptState(doc = '', cursor = 0): EditorState {
+  const state = EditorState.create({ doc, extensions })
+  if (!cursor) return state
+  return state.update({ selection: { anchor: Math.min(Math.max(0, cursor), state.doc.length) } }).state
 }

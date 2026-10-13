@@ -2,6 +2,7 @@
   import { EditorView } from '@codemirror/view'
   import { untrack } from 'svelte'
   import { editorHost, tabs, type Tab } from '../app/tabs.svelte'
+  import { workspace } from '../app/workspace.svelte'
   import { scriptHooks } from '../editor/script'
 
   interface Props {
@@ -21,9 +22,15 @@
     const view = new EditorView({ parent: host, state: first.editor })
     editorHost.view = view
     editorHost.shown = first
+    scriptHooks.complete = (script, cursor, signal) => {
+      const t = editorHost.shown
+      return t ? tabs.complete(t, script, cursor, signal) : Promise.resolve(null)
+    }
     scriptHooks.onUpdate = (u) => {
       const t = editorHost.shown
       if (!t || (!u.docChanged && !u.selectionSet)) return
+      if (u.docChanged) tabs.docChanged(t, u.state.doc)
+      workspace.schedule()
       // Cursor moves reuse the last analysis; edits ask the server again.
       if (!u.docChanged) tabs.highlight(t)
       clearTimeout(timer)
@@ -35,6 +42,7 @@
     return () => {
       clearTimeout(timer)
       scriptHooks.onUpdate = undefined
+      scriptHooks.complete = undefined
       if (editorHost.shown) editorHost.shown.editor = view.state
       editorHost.view = null
       editorHost.shown = null

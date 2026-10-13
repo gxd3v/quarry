@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { flatten, groupKey, nodeKey, orderConnections, type ChildrenState, type ConnEntry, type TreeNode } from './tree'
+import { dragName, flatten, groupKey, nodeKey, orderConnections, type ChildrenState, type ConnEntry, type TreeNode } from './tree'
 
 const conn = (id: string, group = '', favorite = false): ConnEntry => ({ id, name: id, env: 'dev', group, favorite })
 const node = (path: string[], kind = 'table', leaf = false): TreeNode => ({ path, kind, name: path.at(-1)!, detail: '', leaf })
@@ -57,5 +57,17 @@ describe('flatten', () => {
       children: (key) => (key === k ? { loading: true, error: 'boom' } : src.children(key)),
     })
     expect(rows.find((r) => r.key === k)).toMatchObject({ loading: true, error: 'boom', expanded: false })
+  })
+})
+
+describe('dragName', () => {
+  const node = (path: string[], kind: string, name = path[path.length - 1]) => ({ path, kind, name, detail: '', leaf: true })
+  it('qualifies objects and quotes when needed', () => {
+    expect(dragName(node(['app', 'public', 'tables', 'orders'], 'table'))).toBe('public.orders')
+    expect(dragName(node(['app', 'Sales', 'views', 'Top Items'], 'view'))).toBe('"Sales"."Top Items"')
+    expect(dragName(node(['app', 'public', 'functions', 'f(integer)'], 'function', 'f'))).toBe('public.f')
+    expect(dragName(node(['app', 'public', 'tables', 'orders', 'columns', 'user'], 'column'))).toBe('"user"')
+    expect(dragName(node(['app', 'public'], 'schema'))).toBe('public')
+    expect(dragName(node(['app', 'public', 'tables'], 'folder', 'Tables'))).toBe('')
   })
 })

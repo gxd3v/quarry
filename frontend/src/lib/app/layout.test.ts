@@ -5,9 +5,14 @@ describe('layout', () => {
   it('parses and clamps stored sizes', () => {
     expect(parseLayout(null)).toEqual(DEFAULT_LAYOUT)
     expect(parseLayout('not json')).toEqual(DEFAULT_LAYOUT)
-    expect(parseLayout('{"explorer": 5000, "editor": 0.02}')).toEqual({ explorer: 720, editor: 0.1 })
+    expect(parseLayout('null')).toEqual(DEFAULT_LAYOUT)
+    expect(parseLayout('{"explorer": 5000, "editor": 0.02}')).toEqual({ explorer: 720, editor: 0.1, scratches: true })
     expect(parseLayout('{"explorer": "x"}')).toEqual(DEFAULT_LAYOUT)
-    expect(parseLayout('{"explorer": 300.4}')).toEqual({ explorer: 300, editor: DEFAULT_LAYOUT.editor })
+    expect(parseLayout('{"explorer": 300.4, "scratches": false}')).toEqual({
+      explorer: 300,
+      editor: DEFAULT_LAYOUT.editor,
+      scratches: false,
+    })
   })
 
   it('cycles and picks the tab after a close', () => {

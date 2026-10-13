@@ -25,6 +25,13 @@
     unplug: 'M4.5 5h7v3a3.5 3.5 0 0 1-7 0zM8 11.5V14M2.5 2.5l11 11',
     script: 'M4 2h6l3 3v9H4zM6.5 7.5h4M6.5 10h4',
     alert: 'M8 2l6.5 11h-13zM8 6.5v3M8 11.2v.3',
+    copy: 'M5.5 5.5h7v8h-7zM3.5 10.5v-8h7',
+    history: 'M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v2.5H5M8 5v3.2l2 1.3',
+    keyboard: 'M1.5 4.5h13v7h-13zM4 7h1M7 7h1M10 7h2M4.5 9.5h7',
+    save: 'M3 2.5h8l2.5 2.5v8.5H3zM5.5 2.5v3h4v-3M5 13.5V9.5h6v4',
+    open: 'M2 4.5V12.5h10.5L14.5 7H4.5L2 12.5M2 4.5h4l1.5 1.5H12V7',
+    scratch: 'M4 2h6l3 3v9H4zM6 11l1.5-4L9 9.5l1-1.5',
+    command: 'M3.5 4.5l3.5 3.5-3.5 3.5M8.5 12h4',
   }
 </script>
 

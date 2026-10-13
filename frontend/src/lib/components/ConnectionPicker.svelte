@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { newScript } from '../app/actions'
   import { connections, ConnectionState } from '../app/connections.svelte'
+  import type { ConnectionRequest } from '../app/ui.svelte'
   import Modal from '../ui/Modal.svelte'
   import PickerList, { type PickItem } from '../ui/PickerList.svelte'
 
   interface Props {
-    onclose: () => void
+    request: ConnectionRequest
     onnew: () => void
   }
 
-  let { onclose, onnew }: Props = $props()
+  let { request, onnew }: Props = $props()
 
   // Connected first, then favorites, then by name.
   const items: PickItem[] = $derived(
@@ -26,18 +26,18 @@
   )
 </script>
 
-<Modal title="New script on…" width={420} {onclose}>
+<Modal title={request.title} width={420} onclose={() => request.resolve(null)}>
   {#if items.length}
-    <PickerList
-      {items}
-      placeholder="Connection"
-      onpick={(it) => {
-        onclose()
-        newScript(it.key)
-      }}
-    />
+    <PickerList {items} placeholder="Connection" onpick={(it) => request.resolve(it.key)} />
   {:else}
     <p>No connections yet.</p>
-    <button class="btn primary" type="button" onclick={onnew}>New connection</button>
+    <button
+      class="btn primary"
+      type="button"
+      onclick={() => {
+        request.resolve(null)
+        onnew()
+      }}>New connection</button
+    >
   {/if}
 </Modal>

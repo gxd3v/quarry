@@ -1,9 +1,24 @@
 <script lang="ts">
-  import { connectAndExpand, deleteConnection, disconnect, editConnection, newScript, openObject } from '../app/actions'
+  import {
+    connectAndExpand,
+    deleteConnection,
+    disconnect,
+    editConnection,
+    guard,
+    moveToGroup,
+    newScript,
+    openObject,
+    renameGroup,
+    setFavorite,
+  } from '../app/actions'
   import { connections, ConnectionState, stateLabel } from '../app/connections.svelte'
   import { explorer, type Row } from '../app/explorer.svelte'
   import { menu, type MenuEntry } from '../app/menu.svelte'
+  import { tabs } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
+  import { workspace } from '../app/workspace.svelte'
+  import { dragName } from '../explorer/tree'
+  import type { FileInfo } from '../gen/quarry/v1/workspace_pb'
   import { scopeOfPath } from '../sql'
   import Icon from '../ui/Icon.svelte'
 
@@ -39,18 +54,30 @@
   }
 
   function items(r: Row): MenuEntry[] {
-    if (r.type === 'group') return [{ label: r.expanded ? 'Collapse' : 'Expand', run: () => explorer.toggleGroup(r.name) }]
+    if (r.type === 'group') {
+      return [
+        { label: r.expanded ? 'Collapse' : 'Expand', run: () => explorer.toggleGroup(r.name) },
+        'separator',
+        { label: 'Rename group…', icon: 'edit', run: () => void renameGroup(r.name) },
+      ]
+    }
     if (r.type === 'conn') {
       const id = r.conn.id
       const state = connections.state(id)
       const live = state === ConnectionState.CONNECTED || state === ConnectionState.LOST
       return [
-        { label: 'New script', icon: 'script', hint: 'Ctrl+T', run: () => newScript(id) },
+        { label: 'New script', icon: 'script', run: () => newScript(id) },
+        { label: 'New scratch', icon: 'scratch', run: () => guard('New scratch', () => workspace.newScratch(id)) },
         'separator',
         live
           ? { label: 'Disconnect', icon: 'unplug', run: () => disconnect(id) }
           : { label: 'Connect', icon: 'connection', run: () => connectAndExpand(id) },
         { label: 'Refresh', icon: 'refresh', hint: 'F5', disabled: !live, run: () => refresh(r) },
+        'separator',
+        r.conn.favorite
+          ? { label: 'Remove from favorites', icon: 'star', run: () => void setFavorite(id, false) }
+          : { label: 'Add to favorites', icon: 'star', run: () => void setFavorite(id, true) },
+        { label: 'Move to group…', icon: 'folder', run: () => void moveToGroup(id) },
         'separator',
         { label: 'Edit…', icon: 'edit', run: () => editConnection(id) },
         { label: 'Delete…', icon: 'trash', danger: true, run: () => deleteConnection(id) },
@@ -78,6 +105,43 @@
     explorer.selected = r.key
     const list = items(r)
     if (list.length) menu.open(e, list)
+  }
+
+  function ondragstart(e: DragEvent, r: Row) {
+    const name = r.type === 'node' ? dragName(r.node) : ''
+    if (!name || !e.dataTransfer) {
+      e.preventDefault()
+      return
+    }
+    e.dataTransfer.setData('text/plain', name)
+    e.dataTransfer.effectAllowed = 'copy'
+  }
+
+  // --- scratches ---
+
+  $effect(() => {
+    void workspace.loadScratches()
+  })
+
+  function openScratch(f: FileInfo) {
+    guard(`Open ${f.name}`, () => workspace.openPath(f.path))
+  }
+
+  function scratchMenu(e: MouseEvent, f: FileInfo) {
+    menu.open(e, [
+      { label: 'Open', icon: 'open', run: () => openScratch(f) },
+      'separator',
+      { label: 'Delete…', icon: 'trash', danger: true, run: () => void workspace.deleteScratch(f) },
+    ])
+  }
+
+  function ago(f: FileInfo): string {
+    if (!f.modified) return ''
+    const s = Math.max(0, Date.now() / 1000 - Number(f.modified.seconds))
+    if (s < 60) return 'now'
+    if (s < 3600) return `${Math.floor(s / 60)} min`
+    if (s < 86400) return `${Math.floor(s / 3600)} h`
+    return `${Math.floor(s / 86400)} d`
   }
 
   function parentOf(i: number): number {
@@ -192,6 +256,8 @@
         tabindex="-1"
         data-i={i}
         style:padding-left="{6 + r.depth * 14}px"
+        draggable={r.type === 'node' && !!dragName(r.node)}
+        ondragstart={(e) => ondragstart(e, r)}
         onclick={() => (explorer.selected = r.key)}
         ondblclick={() => activate(r)}
         oncontextmenu={(e) => oncontextmenu(e, r)}
@@ -267,6 +333,56 @@
       </div>
     {/each}
   </div>
+
+  <section class="scratches">
+    <header>
+      <button class="section" type="button" onclick={() => (ui.layout.scratches = !ui.layout.scratches)}>
+        <span class="twisty" class:open={ui.layout.scratches}><Icon name="chevron" size={11} /></span>
+        <span class="title">Scratches</span>
+        <span class="n">{workspace.scratches.length || ''}</span>
+      </button>
+      <button class="icon-btn" type="button" title="New scratch" onclick={() => guard('New scratch', () => workspace.newScratch())}>
+        <Icon name="plus" />
+      </button>
+    </header>
+    {#if ui.layout.scratches}
+      <div class="slist">
+        {#each workspace.scratches as f (f.path)}
+          {@const open = tabs.byPath(f.path)}
+          <div
+            class="srow"
+            class:current={!!open && open.key === tabs.activeKey}
+            role="button"
+            tabindex="0"
+            title={f.path}
+            onclick={() => openScratch(f)}
+            onkeydown={(e) => {
+              if (e.key === 'Enter') openScratch(f)
+              else if (e.key === 'Delete') void workspace.deleteScratch(f)
+            }}
+            oncontextmenu={(e) => scratchMenu(e, f)}
+          >
+            <span class="kind"><Icon name="scratch" size={13} /></span>
+            <span class="name">{f.name}</span>
+            {#if open?.dirty}<span class="dirty">●</span>{/if}
+            <span class="detail">{ago(f)}</span>
+            <button
+              class="del"
+              type="button"
+              tabindex="-1"
+              title="Delete"
+              onclick={(e) => {
+                e.stopPropagation()
+                void workspace.deleteScratch(f)
+              }}><Icon name="trash" size={12} /></button
+            >
+          </div>
+        {:else}
+          <p class="none">No scratches yet.</p>
+        {/each}
+      </div>
+    {/if}
+  </section>
 </aside>
 
 <style>
@@ -489,5 +605,93 @@
 
   .empty .err {
     color: var(--red);
+  }
+
+  .scratches {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    max-height: 35%;
+    border-top: 1px solid var(--surface0);
+  }
+
+  .scratches header {
+    height: 30px;
+    padding-left: 4px;
+  }
+
+  .section {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .n {
+    color: var(--overlay0);
+    font-size: 11px;
+  }
+
+  .slist {
+    overflow: auto;
+    padding-bottom: 6px;
+  }
+
+  .srow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 6px 0 24px;
+    cursor: pointer;
+    white-space: nowrap;
+    outline: none;
+  }
+
+  .srow:hover,
+  .srow:focus-visible {
+    background: color-mix(in srgb, var(--surface0) 55%, transparent);
+  }
+
+  .srow.current .name {
+    color: var(--accent);
+  }
+
+  .dirty {
+    color: var(--peach);
+    font-size: 10px;
+  }
+
+  .srow .detail {
+    margin-left: auto;
+  }
+
+  .del {
+    display: inline-flex;
+    padding: 2px;
+    background: none;
+    border: none;
+    border-radius: 3px;
+    color: var(--overlay0);
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  .srow:hover .del {
+    opacity: 1;
+  }
+
+  .del:hover {
+    color: var(--red);
+    background: var(--surface0);
+  }
+
+  .none {
+    margin: 4px 12px 8px 24px;
+    color: var(--overlay0);
+    font-size: 12px;
   }
 </style>

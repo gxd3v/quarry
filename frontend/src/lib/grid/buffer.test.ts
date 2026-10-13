@@ -75,3 +75,57 @@ describe('ResultBuffer', () => {
     expect(b.row(99_999)).toEqual(['1999', 'name 1999', null])
   })
 })
+
+describe('ResultBuffer full values', () => {
+  const bytes = (b: Uint8Array): Value => create(ValueSchema, { kind: { case: 'bytes', value: b } })
+  const json = (s: string): Value => create(ValueSchema, { kind: { case: 'json', value: s } })
+
+  it('keeps the full value of lossy cells only', () => {
+    const b = new ResultBuffer(cols)
+    const long = 'x'.repeat(2000)
+    b.appendRows([
+      create(RowSchema, { values: [int(1n), text(long), text('a\nb')] }),
+      create(RowSchema, { values: [int(2n), text('short'), nul()] }),
+    ])
+    expect(b.row(0)[1]!.length).toBe(500)
+    expect(b.full(0, 1)).toBe(long)
+    expect(b.full(0, 2)).toBe('a\nb')
+    expect(b.full(0, 0)).toBeUndefined()
+    expect(b.full(1, 1)).toBeUndefined()
+    expect(b.fullCount).toBe(2)
+    expect(b.text(0, 1)).toBe(long)
+    expect(b.text(1, 1)).toBe('short')
+    expect(b.text(1, 2)).toBeNull()
+    expect(b.slice(0, 5, 1, 2)).toEqual([
+      [long, 'a\nb'],
+      ['short', null],
+    ])
+  })
+
+  it('keeps long bytes and long JSON documents', () => {
+    const b = new ResultBuffer([
+      { name: 'b', type: 'bytea' },
+      { name: 'j', type: 'jsonb' },
+    ])
+    const big = new Uint8Array(100).map((_, i) => i)
+    const doc = JSON.stringify({ items: Array.from({ length: 200 }, (_, i) => ({ id: i })) }, null, 2)
+    b.appendRows([
+      create(RowSchema, { values: [bytes(big), json(doc)] }),
+      create(RowSchema, { values: [bytes(new Uint8Array([1, 2])), json('{"a": 1}')] }),
+    ])
+    expect(b.full(0, 0)).toEqual(big)
+    expect(b.text(0, 0)).toBe('\\x' +Array.from(big, (x) => x.toString(16).padStart(2, '0')).join(''))
+    expect(b.full(0, 1)).toBe(doc)
+    expect(b.full(1, 0)).toBeUndefined()
+    expect(b.full(1, 1)).toBeUndefined()
+    expect(b.text(1, 1)).toBe('{"a":1}')
+  })
+
+  it('learns column kinds from the first non-NULL value', () => {
+    const b = new ResultBuffer(cols)
+    b.appendRows([create(RowSchema, { values: [nul(), text('a'), nul()] })])
+    expect(b.columns.map((c) => c.kind)).toEqual([undefined, 'text', undefined])
+    b.appendRows([create(RowSchema, { values: [int(1n), nul(), nul()] })])
+    expect(b.columns.map((c) => c.kind)).toEqual(['int', 'text', undefined])
+  })
+})

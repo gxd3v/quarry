@@ -21,6 +21,7 @@
     <span class="muted">No script open</span>
   {/if}
   <span class="flash">{notify.status}</span>
+  {#if tab?.path}<span class="path" title={tab.path}>{tab.path}</span>{/if}
 </footer>
 
 <style>
@@ -75,5 +76,13 @@
   .flash {
     margin-left: auto;
     color: var(--subtext1);
+  }
+
+  .path {
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--overlay0);
+    direction: rtl;
   }
 </style>

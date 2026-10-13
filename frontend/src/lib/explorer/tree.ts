@@ -1,5 +1,6 @@
 // Flattening of the explorer tree into visible rows. Pure, so the store can
 // stay a thin reactive wrapper.
+import { quoteIdent } from '../sql'
 
 export interface TreeNode {
   path: string[]
@@ -132,4 +133,18 @@ export function flatten(conns: readonly ConnEntry[], src: TreeSource, filter = '
     }
   }
   return rows
+}
+
+const QUALIFIED = new Set(['table', 'view', 'sequence', 'function', 'collection'])
+const BARE = new Set(['database', 'schema', 'column', 'index', 'key'])
+
+// dragName is the text a node inserts when dropped into the editor: the
+// schema-qualified name of objects, the plain name of columns and the like,
+// quoted where PostgreSQL needs it. '' when the node is not draggable.
+export function dragName(n: TreeNode): string {
+  if (QUALIFIED.has(n.kind)) {
+    const schema = n.path.length >= 4 ? n.path[1] : ''
+    return schema ? `${quoteIdent(schema)}.${quoteIdent(n.name)}` : quoteIdent(n.name)
+  }
+  return BARE.has(n.kind) ? quoteIdent(n.name) : ''
 }
