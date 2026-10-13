@@ -1,12 +1,18 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"path/filepath"
+
+	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/gxd3v/quarry/gen/quarry/v1/quarryv1connect"
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
+	"github.com/gxd3v/quarry/internal/driver/redis"
 	"github.com/gxd3v/quarry/internal/store"
 	"github.com/gxd3v/quarry/internal/workspace"
 	"github.com/gxd3v/quarry/server"
@@ -30,6 +36,8 @@ type backend struct {
 
 func startBackend(dev service.Dev) (*backend, error) {
 	driver.Register(postgres.New())
+	driver.Register(redis.New())
+	goredis.SetLogger(redisLog{})
 
 	connFile, err := store.ConnectionsFile()
 	if err != nil {
@@ -83,4 +91,11 @@ func (b *backend) Close() {
 	b.shells.Close()
 	b.query.Close()
 	b.conns.Close()
+}
+
+// redisLog sends go-redis' internal messages to the app log instead of stderr.
+type redisLog struct{}
+
+func (redisLog) Printf(_ context.Context, format string, v ...any) {
+	slog.Debug("redis: " + fmt.Sprintf(format, v...))
 }
