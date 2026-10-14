@@ -9,12 +9,14 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	goruntime "runtime"
 	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
@@ -74,12 +76,19 @@ func main() {
 		MinWidth:         800,
 		MinHeight:        500,
 		AssetServer:      &assetserver.Options{Assets: assets},
-		BackgroundColour: &options.RGBA{R: 0x1e, G: 0x1e, B: 0x2e, A: 0xff},
-		OnStartup:        app.startup,
-		OnShutdown:       app.shutdown,
-		OnBeforeClose:    app.beforeClose,
-		Bind:             []any{app},
-		Windows:          &windows.Options{Theme: windows.Dark},
+		BackgroundColour: &options.RGBA{R: 0x11, G: 0x11, B: 0x1b, A: 0xff},
+		// The frontend draws the title bar (tabs, window buttons); macOS keeps
+		// its traffic lights over it.
+		Frameless:     goruntime.GOOS != "darwin",
+		OnStartup:     app.startup,
+		OnShutdown:    app.shutdown,
+		OnBeforeClose: app.beforeClose,
+		Bind:          []any{app},
+		Windows:       &windows.Options{Theme: windows.Dark},
+		Mac: &mac.Options{
+			TitleBar:   mac.TitleBarHiddenInset(),
+			Appearance: mac.NSAppearanceNameDarkAqua,
+		},
 	})
 	if err != nil {
 		slog.Error("run", "err", err)
