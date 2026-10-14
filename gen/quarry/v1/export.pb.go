@@ -202,8 +202,10 @@ type ExportRequest struct {
 	//	*ExportRequest_Data
 	Source isExportRequest_Source `protobuf_oneof:"source"`
 	// Absolute path of the file to write.
-	Path          string         `protobuf:"bytes,5,opt,name=path,proto3" json:"path,omitempty"`
-	Options       *ExportOptions `protobuf:"bytes,6,opt,name=options,proto3" json:"options,omitempty"`
+	Path    string         `protobuf:"bytes,5,opt,name=path,proto3" json:"path,omitempty"`
+	Options *ExportOptions `protobuf:"bytes,6,opt,name=options,proto3" json:"options,omitempty"`
+	// Values of the statement's bind parameters, as in RunRequest.
+	Params        map[string]string `protobuf:"bytes,7,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -287,6 +289,13 @@ func (x *ExportRequest) GetPath() string {
 func (x *ExportRequest) GetOptions() *ExportOptions {
 	if x != nil {
 		return x.Options
+	}
+	return nil
+}
+
+func (x *ExportRequest) GetParams() map[string]string {
+	if x != nil {
+		return x.Params
 	}
 	return nil
 }
@@ -380,14 +389,18 @@ const file_quarry_v1_export_proto_rawDesc = "" +
 	"\x03bom\x18\a \x01(\bR\x03bom\x12\x14\n" +
 	"\x05table\x18\b \x01(\tR\x05table\x12\x1d\n" +
 	"\n" +
-	"batch_rows\x18\t \x01(\x05R\tbatchRows\"\xe3\x01\n" +
+	"batch_rows\x18\t \x01(\x05R\tbatchRows\"\xdc\x02\n" +
 	"\rExportRequest\x12\x17\n" +
 	"\aconn_id\x18\x01 \x01(\tR\x06connId\x12&\n" +
 	"\x05scope\x18\x02 \x01(\v2\x10.quarry.v1.ScopeR\x05scope\x12\x12\n" +
 	"\x03sql\x18\x03 \x01(\tH\x00R\x03sql\x12+\n" +
 	"\x04data\x18\x04 \x01(\v2\x15.quarry.v1.DataSourceH\x00R\x04data\x12\x12\n" +
 	"\x04path\x18\x05 \x01(\tR\x04path\x122\n" +
-	"\aoptions\x18\x06 \x01(\v2\x18.quarry.v1.ExportOptionsR\aoptionsB\b\n" +
+	"\aoptions\x18\x06 \x01(\v2\x18.quarry.v1.ExportOptionsR\aoptions\x12<\n" +
+	"\x06params\x18\a \x03(\v2$.quarry.v1.ExportRequest.ParamsEntryR\x06params\x1a9\n" +
+	"\vParamsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\b\n" +
 	"\x06source\"8\n" +
 	"\x0eExportResponse\x12\x12\n" +
 	"\x04rows\x18\x01 \x01(\x03R\x04rows\x12\x12\n" +
@@ -407,27 +420,29 @@ func file_quarry_v1_export_proto_rawDescGZIP() []byte {
 	return file_quarry_v1_export_proto_rawDescData
 }
 
-var file_quarry_v1_export_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_quarry_v1_export_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_quarry_v1_export_proto_goTypes = []any{
 	(*DataSource)(nil),     // 0: quarry.v1.DataSource
 	(*ExportOptions)(nil),  // 1: quarry.v1.ExportOptions
 	(*ExportRequest)(nil),  // 2: quarry.v1.ExportRequest
 	(*ExportResponse)(nil), // 3: quarry.v1.ExportResponse
-	(*Node)(nil),           // 4: quarry.v1.Node
-	(*Scope)(nil),          // 5: quarry.v1.Scope
+	nil,                    // 4: quarry.v1.ExportRequest.ParamsEntry
+	(*Node)(nil),           // 5: quarry.v1.Node
+	(*Scope)(nil),          // 6: quarry.v1.Scope
 }
 var file_quarry_v1_export_proto_depIdxs = []int32{
-	4, // 0: quarry.v1.DataSource.node:type_name -> quarry.v1.Node
-	5, // 1: quarry.v1.ExportRequest.scope:type_name -> quarry.v1.Scope
+	5, // 0: quarry.v1.DataSource.node:type_name -> quarry.v1.Node
+	6, // 1: quarry.v1.ExportRequest.scope:type_name -> quarry.v1.Scope
 	0, // 2: quarry.v1.ExportRequest.data:type_name -> quarry.v1.DataSource
 	1, // 3: quarry.v1.ExportRequest.options:type_name -> quarry.v1.ExportOptions
-	2, // 4: quarry.v1.ExportService.Export:input_type -> quarry.v1.ExportRequest
-	3, // 5: quarry.v1.ExportService.Export:output_type -> quarry.v1.ExportResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	4, // 4: quarry.v1.ExportRequest.params:type_name -> quarry.v1.ExportRequest.ParamsEntry
+	2, // 5: quarry.v1.ExportService.Export:input_type -> quarry.v1.ExportRequest
+	3, // 6: quarry.v1.ExportService.Export:output_type -> quarry.v1.ExportResponse
+	6, // [6:7] is the sub-list for method output_type
+	5, // [5:6] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_quarry_v1_export_proto_init() }
@@ -446,7 +461,7 @@ func file_quarry_v1_export_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_quarry_v1_export_proto_rawDesc), len(file_quarry_v1_export_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

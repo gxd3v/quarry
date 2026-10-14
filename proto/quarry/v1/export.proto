@@ -46,6 +46,8 @@ message ExportRequest {
   // Absolute path of the file to write.
   string path = 5;
   ExportOptions options = 6;
+  // Values of the statement's bind parameters, as in RunRequest.
+  map<string, string> params = 7;
 }
 
 message ExportResponse {
