@@ -58,6 +58,7 @@ export class TerminalSession {
   #shellId = ''
   #controller: AbortController | null = null
   #askPassword: () => Promise<string | null>
+  #retheme = () => (this.term.options.theme = themeFromCSS(cssVar))
 
   constructor(connId: string, scope: ScopeLike, askPassword: () => Promise<string | null>) {
     this.connId = connId
@@ -76,6 +77,7 @@ export class TerminalSession {
     this.term.open(this.element)
     this.term.onData((d) => this.#input(encoder.encode(d)))
     this.term.onBinary((d) => this.#input(Uint8Array.from(d, (c) => c.charCodeAt(0) & 0xff)))
+    window.addEventListener('quarry:theme', this.#retheme)
     this.term.onResize(({ cols, rows }) => {
       if (this.#shellId) shellClient().shellResize({ shellId: this.#shellId, cols, rows }).catch(() => {})
     })
@@ -143,6 +145,7 @@ export class TerminalSession {
   dispose() {
     this.#controller?.abort()
     this.#controller = null
+    window.removeEventListener('quarry:theme', this.#retheme)
     this.term.dispose()
     this.element.remove()
   }

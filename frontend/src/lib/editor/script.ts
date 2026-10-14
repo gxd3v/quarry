@@ -97,13 +97,13 @@ export function errorPos(state: EditorState): number {
 }
 
 const scriptTheme = EditorView.theme({
-  '.cm-current-statement': { backgroundColor: 'rgb(49 50 68 / 0.35)' },
-  '.cm-current-statement.cm-activeLine': { backgroundColor: 'rgb(69 71 90 / 0.45)' },
+  '.cm-current-statement': { backgroundColor: 'color-mix(in srgb, var(--surface0) 35%, transparent)' },
+  '.cm-current-statement.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--surface1) 45%, transparent)' },
   '.cm-error-mark': {
     textDecoration: 'underline wavy var(--red)',
     textDecorationSkipInk: 'none',
     textUnderlineOffset: '3px',
-    backgroundColor: 'rgb(243 139 168 / 0.12)',
+    backgroundColor: 'color-mix(in srgb, var(--red) 12%, transparent)',
   },
   '.cm-error-gutter': { width: '12px' },
   '.cm-error-gutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },

@@ -699,7 +699,7 @@
   }
 
   .row.odd {
-    background: rgb(24 24 37 / 0.55);
+    background: color-mix(in srgb, var(--mantle) 55%, transparent);
   }
 
   .row:hover {
@@ -732,8 +732,8 @@
     top: 0;
     left: 0;
     pointer-events: none;
-    background: rgb(203 166 247 / 0.1);
-    outline: 1px solid rgb(203 166 247 / 0.45);
+    background: color-mix(in srgb, var(--mauve) 10%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--mauve) 45%, transparent);
     outline-offset: -1px;
   }
 
@@ -812,7 +812,7 @@
     left: 0;
     height: 22px;
     pointer-events: none;
-    background: rgb(203 166 247 / 0.14);
+    background: color-mix(in srgb, var(--mauve) 14%, transparent);
     outline: 1px solid var(--accent);
     outline-offset: -1px;
   }

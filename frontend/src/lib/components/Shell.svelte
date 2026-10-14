@@ -14,6 +14,7 @@
   import { workspace } from '../app/workspace.svelte'
   import { COPY_FORMATS } from '../grid/copy'
   import { chordOf, keymap, label, TERMINAL_ACTIONS } from '../keymap'
+  import { THEME_LABELS, THEMES } from '../theme/themes'
   import { clipboard } from '../ui/clipboard'
   import ContextMenu from '../ui/ContextMenu.svelte'
   import { startDrag } from '../ui/drag'
@@ -196,6 +197,12 @@
       { id: 'palette.commands', category: 'View', title: 'Command palette', run: () => void (ui.palette = 'commands') },
       { id: 'palette.objects', category: 'Go', title: 'Go to object…', run: withTab(() => (ui.palette = 'objects')) },
       { id: 'keymap.edit', category: 'Preferences', title: 'Keyboard shortcuts', run: () => void (ui.shortcuts = true) },
+      ...THEMES.map((t) => ({
+        id: `theme.${t}`,
+        category: 'Preferences',
+        title: `Theme: ${THEME_LABELS[t]}`,
+        run: () => guard('Change theme', () => settings.setTheme(t)),
+      })),
       {
         id: 'results.history',
         category: 'View',
