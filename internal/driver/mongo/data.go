@@ -134,8 +134,8 @@ func (c *conn) RowKey(ctx context.Context, target *driver.Node) ([]string, error
 // Keys and values are values as this driver returns them (see normalize),
 // or as typed by the user:
 //
-//   - Key holds "_id". A string _id also matches an ObjectId or UUID with
-//     that text, so ids shown as hex strings find their document; the
+//   - Key holds "_id". A string _id also matches an ObjectId, UUID or number
+//     with that text, so ids shown as text find their document; the
 //     document must exist and be unique, or nothing is saved. Other fields
 //     are not checked: the last writer wins for them.
 //   - OpUpdate sets the changed top-level fields with $set; nil removes the
@@ -300,7 +300,7 @@ func (e *editor) lookup(ctx context.Context, key map[string]any) (bson.Raw, stri
 	case 1:
 		return docs[0], desc, nil
 	}
-	return nil, desc, fmt.Errorf("document %s is ambiguous (an ObjectId and a string share that text); no changes were saved", desc)
+	return nil, desc, fmt.Errorf("document %s is ambiguous (documents of different _id types share that text); no changes were saved", desc)
 }
 
 func keyText(v any) string {
@@ -327,6 +327,12 @@ func idCandidates(v any) (bson.A, error) {
 			if b, err := parseUUID(v); err == nil {
 				out = append(out, bson.Binary{Subtype: bson.TypeBinaryUUID, Data: b})
 			}
+		}
+		// Numbers match across int, long and double by value.
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			out = append(out, n)
+		} else if f, err := strconv.ParseFloat(v, 64); err == nil && !math.IsInf(f, 0) && !math.IsNaN(f) {
+			out = append(out, f)
 		}
 		return out, nil
 	case []byte:

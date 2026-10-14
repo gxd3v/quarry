@@ -265,6 +265,14 @@ func TestITEdit(t *testing.T) {
 		t.Fatalf("after apply %v", rows)
 	}
 
+	// Keys typed as text (as the grid sends them) find numeric ids.
+	if err := ed.Apply(ctx, node, []driver.RowChange{{Op: driver.OpUpdate, Key: map[string]any{"_id": "3"}, Values: map[string]any{"a": "by text"}}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, rows := run(t, s, "db.e.find({_id: 3})"); rows[0][a] != "by text" {
+		t.Fatalf("text key: %v", rows)
+	}
+
 	// A change to a row that no longer exists rolls everything back.
 	err = ed.Apply(ctx, node, []driver.RowChange{
 		{Op: driver.OpUpdate, Key: map[string]any{"_id": int64(1)}, Values: map[string]any{"a": "lost"}},
