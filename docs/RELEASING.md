@@ -16,7 +16,9 @@ A tag dispara o workflow `.github/workflows/release.yml`, que faz o seguinte:
 | `macos` | `quarry-macos-universal.zip` com o `Quarry.app` universal (amd64 e arm64) |
 | `publish` | `SHA256SUMS` e os manifestos preenchidos com a versão e os checksums (`scripts/render-manifests.sh`); cria uma **release em rascunho** com tudo |
 
-A versão vem da tag e fica embutida com `-ldflags "-X main.version=…"`. `quarry -version` mostra-a, e é com ela que a app procura atualizações. As builds de desenvolvimento (`dev`) nunca procuram.
+A versão vem da tag e fica embutida com `-ldflags "-X main.version=…"`. `quarry -version` mostra-a.
+
+A app procura releases novas a cada 30 s e instala-as com "Update and restart". Para isso, cada release precisa do `SHA256SUMS` e dos assets com estes nomes exatos, que o workflow já gera. As builds de desenvolvimento (`dev`) não procuram atualizações. Para testar contra um servidor falso, a variável `QUARRY_UPDATE_URL` substitui o endpoint do GitHub.
 
 Revê o rascunho no GitHub e publica-o. A verificação de atualizações da app lê `releases/latest`, que ignora rascunhos e pré-releases.
 

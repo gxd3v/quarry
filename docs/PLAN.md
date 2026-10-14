@@ -279,7 +279,12 @@ Notas: no WSLg o WebKitGTK não tinha acesso a `/dev/dri` (render por software),
 **A6 · Polimento e distribuição (v1.0).** Aceite com a v1.0 publicada (deb/rpm/AppImage, AUR, Homebrew, Scoop, winget).
 - [x] Backend: SSH tunnel, EXPLAIN (PG/Oracle/Mongo), LISTEN/NOTIFY, import CSV, importers de conexões.
 - [x] UI: campos SSH, EXPLAIN visual, painel de notificações, import CSV, importar conexões, formatador SQL (sql-formatter), temas Catppuccin.
-- [x] Auto-update: verificação diária da última release no GitHub, com aviso e link (a app não se substitui; ver `internal/update`).
+- [x] Auto-update (`internal/update`):
+  - verificação a cada 30 s com pedidos condicionais (ETag), dentro do limite anónimo do GitHub;
+  - aviso discreto e diálogo com as release notes;
+  - "Update and restart": descarrega, verifica contra o `SHA256SUMS`, troca o executável, AppImage ou `.app` (no Windows em Program Files corre o instalador NSIS em silêncio) e reabre a app;
+  - a app nova espera que a antiga feche (`-wait-pid`), restaura a sessão e reabre as conexões que estavam abertas;
+  - instalações por deb, rpm ou Homebrew ficam com o gestor de pacotes.
 - [ ] Migração para Wails v3: adiada, a 2026-10-14 o v3 ainda está em beta (v3.0.0-beta.29).
 - [x] Empacotamento: workflow `release.yml` (deb, rpm, AppImage, zip e instalador NSIS, app macOS universal) e manifestos AUR/Homebrew/Scoop/winget; ver `docs/RELEASING.md`.
 - [ ] Publicar a v1.0: precisa de licença, das contas dos gestores de pacotes e da tua aprovação.
