@@ -12,6 +12,7 @@ interface AppBinding {
   SaveScriptDialog(defaultName: string): Promise<string>
   SaveExportDialog(defaultName: string, format: string): Promise<string>
   OpenFileDialog(title: string, kind: string, pattern: string): Promise<string>
+  CheckForUpdate(): Promise<UpdateInfo>
   // Shows a file in the system file manager.
   RevealPath(path: string): Promise<void>
   // Lets the window close after the frontend saved its state.
@@ -21,6 +22,14 @@ interface AppBinding {
 // Minimal shape of the Wails v2 runtime events API.
 interface Runtime {
   EventsOn(name: string, cb: (...args: unknown[]) => void): () => void
+  BrowserOpenURL(url: string): void
+}
+
+export interface UpdateInfo {
+  current: string
+  latest: string
+  url: string
+  newer: boolean
 }
 
 declare global {
@@ -79,6 +88,17 @@ export async function openFileDialog(title: string, kind = '', pattern = ''): Pr
   const a = app()
   if (!a?.OpenFileDialog) throw new Error('file dialogs need the desktop app')
   return a.OpenFileDialog(title, kind, pattern)
+}
+
+// checkForUpdate asks the backend about newer releases; null outside the app.
+export async function checkForUpdate(): Promise<UpdateInfo | null> {
+  return (await app()?.CheckForUpdate?.()) ?? null
+}
+
+// openURL opens a link in the system browser.
+export function openURL(url: string) {
+  if (typeof window !== 'undefined' && window.runtime?.BrowserOpenURL) window.runtime.BrowserOpenURL(url)
+  else window.open(url, '_blank', 'noopener')
 }
 
 // canReveal reports whether revealPath works here (desktop app only).
