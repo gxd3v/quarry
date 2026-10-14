@@ -123,9 +123,9 @@
     margin-top: 8px;
     max-height: min(460px, 60vh);
     overflow: auto;
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
-    background: var(--crust);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-field);
   }
 
   .row {
@@ -134,7 +134,7 @@
     gap: 8px;
     min-height: 32px;
     padding: 0 10px;
-    border-bottom: 1px solid var(--surface0);
+    border-bottom: 1px solid var(--line);
   }
 
   .row:last-child {
@@ -160,7 +160,7 @@
     padding: 2px 4px;
     background: none;
     border: 1px dashed transparent;
-    border-radius: 4px;
+    border-radius: var(--radius);
     cursor: pointer;
   }
 
@@ -170,14 +170,14 @@
 
   .kbd {
     padding: 1px 5px;
-    border: 1px solid var(--surface1);
-    border-radius: 4px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
     color: var(--subtext1);
   }
 
   .none,
   .hint {
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
   }
 
@@ -210,7 +210,7 @@
 
   .foot {
     margin-right: auto;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
   }
 </style>

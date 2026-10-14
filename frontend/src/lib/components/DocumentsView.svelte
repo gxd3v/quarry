@@ -70,10 +70,10 @@
   }
 
   .doc {
-    border: 1px solid var(--surface0);
+    border: 1px solid var(--line);
     border-radius: 6px;
     padding: 4px 10px 6px;
-    background: var(--mantle);
+    background: var(--bg-side);
   }
 
   .doc.new {

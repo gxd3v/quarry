@@ -89,7 +89,7 @@
   }
 
   .size {
-    color: var(--overlay1);
+    color: var(--text-3);
   }
 
   .spacer {
@@ -98,8 +98,8 @@
 
   .modes {
     display: inline-flex;
-    border: 1px solid var(--surface1);
-    border-radius: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
     overflow: hidden;
   }
 
@@ -108,7 +108,7 @@
     padding: 0 8px;
     background: none;
     border: none;
-    color: var(--subtext0);
+    color: var(--text-2);
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
@@ -123,7 +123,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .btn.small {
@@ -138,9 +138,9 @@
     min-height: 120px;
     overflow: auto;
     padding: 10px 12px;
-    background: var(--crust);
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
+    background: var(--bg-field);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.5;
@@ -155,7 +155,7 @@
   }
 
   .null {
-    color: var(--overlay0);
+    color: var(--text-3);
     font-style: italic;
   }
 

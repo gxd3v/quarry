@@ -102,19 +102,20 @@
 <style>
   .ttl {
     margin-right: 8px;
-    padding: 1px 8px;
-    border: 1px solid var(--surface1);
-    border-radius: 10px;
-    background: var(--crust);
-    color: var(--subtext0);
+    height: 22px;
+    padding: 0 9px;
+    border: none;
+    border-radius: 11px;
+    background: var(--bg-hover);
+    color: var(--text-2);
     font-family: var(--font-mono);
     font-size: 11px;
     cursor: pointer;
   }
 
   .ttl:hover {
-    color: var(--text);
-    border-color: var(--accent);
+    color: var(--text-1);
+    background: var(--bg-active);
   }
 
   .table-view {
@@ -122,61 +123,67 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    background: var(--base);
+    background: var(--bg-main);
   }
 
   .subtabs {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     gap: 2px;
-    height: 30px;
-    padding: 0 6px;
-    background: var(--mantle);
-    border-bottom: 1px solid var(--surface0);
+    height: 38px;
+    padding: 0 8px;
+    background: var(--bg-main);
+    border-bottom: 1px solid var(--line);
     overflow-x: auto;
     scrollbar-width: none;
-  }
-
-  .what {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 10px 0 4px;
-    color: var(--overlay1);
-    font-size: 12px;
-    white-space: nowrap;
-  }
-
-  .what b {
-    color: var(--blue);
-    font-weight: 600;
   }
 
   .subtabs button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    height: 26px;
     padding: 0 10px;
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--overlay1);
+    border-radius: var(--radius);
+    color: var(--text-3);
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
+    transition:
+      background 0.12s,
+      color 0.12s;
   }
 
   .subtabs button:hover {
-    color: var(--subtext1);
+    color: var(--text-1);
+    background: var(--bg-hover);
   }
 
   .subtabs button.active {
-    color: var(--text);
-    border-bottom-color: var(--accent);
+    color: var(--text-1);
+    background: var(--bg-active);
   }
 
   .subtabs button:focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--ring);
+  }
+
+  .what {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 12px 0 6px;
+    color: var(--text-3);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .what b {
+    color: var(--text-1);
+    font-weight: 600;
   }
 
   .dot {

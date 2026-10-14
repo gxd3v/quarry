@@ -397,11 +397,11 @@
   .toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 8px;
-    background: var(--mantle);
-    border-bottom: 1px solid var(--surface0);
+    gap: 6px;
+    height: 44px;
+    padding: 0 10px;
+    background: var(--bg-main);
+    border-bottom: 1px solid var(--line);
   }
 
   .filter {
@@ -410,26 +410,31 @@
     align-items: center;
     gap: 6px;
     min-width: 0;
-    height: 24px;
-    padding: 0 4px 0 8px;
-    background: var(--crust);
-    border: 1px solid var(--surface1);
-    border-radius: 5px;
+    height: 28px;
+    padding: 0 4px 0 10px;
+    background: var(--bg-hover);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    transition:
+      border-color 0.12s,
+      box-shadow 0.12s;
   }
 
   .filter:focus-within {
-    border-color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    box-shadow: var(--ring);
   }
 
   .filter.active {
-    border-color: var(--yellow);
+    border-color: color-mix(in srgb, var(--yellow) 55%, transparent);
   }
 
   .kw {
-    color: var(--mauve);
+    color: var(--text-3);
     font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: 0.03em;
   }
 
   .filter-input,
@@ -439,9 +444,14 @@
     background: none;
     border: none;
     outline: none;
-    color: var(--text);
+    color: var(--text-1);
     font-family: var(--font-mono);
     font-size: 12px;
+  }
+
+  .filter-input::placeholder,
+  .quick-input::placeholder {
+    color: var(--text-3);
   }
 
   .order {
@@ -449,47 +459,57 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--overlay1);
+    color: var(--text-3);
     font-family: var(--font-mono);
     font-size: 11px;
   }
 
   .seg {
-    display: flex;
-    border: 1px solid var(--surface1);
-    border-radius: 5px;
-    overflow: hidden;
+    display: inline-flex;
+    flex: none;
+    padding: 2px;
+    border-radius: var(--radius);
+    background: var(--bg-hover);
   }
 
   .seg button {
-    padding: 2px 8px;
+    height: 22px;
+    padding: 0 9px;
     border: 0;
-    background: var(--crust);
-    color: var(--subtext0);
+    border-radius: var(--radius-s);
+    background: none;
+    color: var(--text-3);
     cursor: pointer;
     font-size: 12px;
   }
 
+  .seg button:hover {
+    color: var(--text-1);
+  }
+
   .seg button.on {
-    background: color-mix(in srgb, var(--accent) 18%, var(--crust));
-    color: var(--text);
+    background: var(--bg-raised);
+    color: var(--text-1);
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
   }
 
   .quick {
     display: flex;
     align-items: center;
     gap: 6px;
-    width: 180px;
-    height: 24px;
-    padding: 0 8px;
-    color: var(--overlay0);
-    background: var(--crust);
-    border: 1px solid var(--surface1);
-    border-radius: 5px;
+    width: 190px;
+    height: 28px;
+    padding: 0 9px;
+    color: var(--text-3);
+    background: var(--bg-hover);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
   }
 
   .quick:focus-within {
-    border-color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    box-shadow: var(--ring);
   }
 
   .banner {
@@ -516,25 +536,26 @@
     gap: 8px;
     margin: 0;
     padding: 12px;
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 
   footer {
     display: flex;
     align-items: center;
     gap: 12px;
-    height: 32px;
-    padding: 0 10px;
-    background: var(--mantle);
-    border-top: 1px solid var(--surface0);
-    color: var(--subtext0);
+    height: 34px;
+    padding: 0 10px 0 14px;
+    background: var(--bg-main);
+    border-top: 1px solid var(--line);
+    color: var(--text-2);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
   footer b {
-    color: var(--text);
+    color: var(--text-1);
+    font-weight: 600;
   }
 
   .spacer {
@@ -542,7 +563,7 @@
   }
 
   .muted {
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 
   .warn {
@@ -560,7 +581,7 @@
     max-width: 280px;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--overlay1);
+    color: var(--text-3);
   }
 
   .pending {

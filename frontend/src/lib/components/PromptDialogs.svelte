@@ -175,9 +175,9 @@
     gap: 2px 10px;
     align-items: baseline;
     padding: 6px 8px;
-    background: var(--crust);
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
+    background: var(--bg-field);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
   }
 
   .verb {
@@ -192,7 +192,7 @@
   }
 
   .detail {
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .review code {
@@ -226,7 +226,7 @@
   .label {
     display: block;
     margin-bottom: 6px;
-    color: var(--subtext0);
+    color: var(--text-2);
     font-size: 12px;
   }
 
@@ -237,7 +237,7 @@
 
   .hint {
     margin: 8px 0 0;
-    color: var(--overlay1);
+    color: var(--text-3);
     font-size: 12px;
   }
 
@@ -251,7 +251,7 @@
     display: inline-block;
     margin: 0 0 8px;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: var(--radius);
     background: var(--env-prod);
     color: var(--crust);
     font-weight: 700;

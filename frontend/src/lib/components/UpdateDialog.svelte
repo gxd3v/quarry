@@ -74,7 +74,7 @@
 <style>
   .meta {
     margin: 0 0 10px;
-    color: var(--subtext0);
+    color: var(--text-2);
     font-size: 12px;
   }
 
@@ -82,9 +82,9 @@
     max-height: 320px;
     overflow: auto;
     padding: 8px 12px;
-    border: 1px solid var(--surface0);
+    border: 1px solid var(--line);
     border-radius: 6px;
-    background: var(--mantle);
+    background: var(--bg-side);
     line-height: 1.5;
   }
 
@@ -115,7 +115,7 @@
   }
 
   .muted {
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .progress {
@@ -123,7 +123,7 @@
     align-items: center;
     gap: 10px;
     margin-top: 12px;
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .bar {
@@ -147,7 +147,7 @@
   .error {
     margin: 10px 0 0;
     padding: 6px 10px;
-    border-radius: 5px;
+    border-radius: var(--radius);
     color: var(--red);
     background: color-mix(in srgb, var(--red) 10%, transparent);
   }

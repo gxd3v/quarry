@@ -172,7 +172,7 @@
     align-items: center;
     gap: 8px;
     padding: 6px 8px;
-    border-bottom: 1px solid var(--surface0);
+    border-bottom: 1px solid var(--line);
   }
 
   .filter {
@@ -183,10 +183,10 @@
     max-width: 360px;
     height: 24px;
     padding: 0 8px;
-    color: var(--overlay0);
-    background: var(--crust);
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
+    color: var(--text-3);
+    background: var(--bg-field);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
   }
 
   .filter:focus-within {
@@ -204,7 +204,7 @@
 
   .count {
     margin-left: auto;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
   }
 
@@ -246,13 +246,13 @@
   }
 
   .at {
-    color: var(--overlay1);
+    color: var(--text-3);
     font-variant-numeric: tabular-nums;
   }
 
   .ms,
   .rows {
-    color: var(--subtext0);
+    color: var(--text-2);
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
@@ -275,7 +275,7 @@
   .empty,
   .error {
     margin: 8px 12px;
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 
   .error {
@@ -284,9 +284,9 @@
 
   footer {
     padding: 4px 10px;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 11px;
-    border-top: 1px solid var(--surface0);
-    background: var(--mantle);
+    border-top: 1px solid var(--line);
+    background: var(--bg-side);
   }
 </style>

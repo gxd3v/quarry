@@ -578,7 +578,7 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background: var(--base);
+    background: var(--bg-main);
     font-family: var(--font-mono);
     font-size: 12px;
     outline: none;
@@ -594,8 +594,8 @@
     position: sticky;
     top: 0;
     z-index: 2;
-    background: var(--mantle);
-    border-bottom: 1px solid var(--surface1);
+    background: var(--bg-main);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .corner {
@@ -603,8 +603,8 @@
     left: 0;
     z-index: 1;
     height: 100%;
-    background: var(--mantle);
-    border-right: 1px solid var(--surface0);
+    background: var(--bg-main);
+    border-right: 1px solid var(--line);
   }
 
   .hcell {
@@ -617,7 +617,7 @@
     justify-content: center;
     gap: 1px;
     overflow: hidden;
-    border-right: 1px solid var(--border);
+    border-right: 1px solid var(--line);
     white-space: nowrap;
   }
 
@@ -626,7 +626,8 @@
   }
 
   .name {
-    color: var(--text);
+    color: var(--text-1);
+    font-family: var(--font-ui);
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -634,8 +635,8 @@
   }
 
   .type {
-    color: var(--faint);
-    font-size: 11px;
+    color: var(--text-3);
+    font-size: 10.5px;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
@@ -651,7 +652,7 @@
   }
 
   .resize:hover {
-    background: var(--surface1);
+    background: color-mix(in srgb, var(--accent) 50%, transparent);
   }
 
   .gutter {
@@ -681,15 +682,15 @@
   .gcell {
     padding-right: 8px;
     text-align: right;
-    color: var(--faint);
-    background: var(--mantle);
-    border-right: 1px solid var(--surface0);
+    color: var(--overlay0);
+    background: var(--bg-main);
+    border-right: 1px solid var(--line);
     cursor: default;
   }
 
   .gcell.sel {
-    color: var(--subtext1);
-    background: var(--surface0);
+    color: var(--text-1);
+    background: var(--bg-active);
   }
 
   .row {
@@ -699,11 +700,11 @@
   }
 
   .row.odd {
-    background: color-mix(in srgb, var(--mantle) 55%, transparent);
+    background: color-mix(in srgb, var(--text) 2.5%, transparent);
   }
 
   .row:hover {
-    background: var(--surface0);
+    background: var(--bg-hover);
   }
 
   .cell {
@@ -714,7 +715,7 @@
     overflow: hidden;
     white-space: pre;
     text-overflow: ellipsis;
-    border-right: 1px solid var(--border);
+    border-right: 1px solid color-mix(in srgb, var(--text) 4%, transparent);
     cursor: default;
   }
 
@@ -742,7 +743,7 @@
   }
 
   .hcell.sortable:hover {
-    background: var(--surface0);
+    background: var(--bg-hover);
   }
 
   .sort {

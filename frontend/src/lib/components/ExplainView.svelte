@@ -128,7 +128,7 @@
   .error {
     margin: 12px;
     padding: 6px 10px;
-    border-radius: 5px;
+    border-radius: var(--radius);
     color: var(--red);
     background: color-mix(in srgb, var(--red) 10%, transparent);
     white-space: pre-wrap;
@@ -140,7 +140,7 @@
     gap: 14px;
     padding: 6px 10px;
     border-bottom: 1px solid var(--border);
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .kind {
@@ -186,8 +186,8 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    background: var(--mantle);
-    color: var(--subtext0);
+    background: var(--bg-side);
+    color: var(--text-2);
     font-family: var(--font-ui);
   }
 
@@ -271,7 +271,7 @@
     overflow: auto;
     border-left: 1px solid var(--border);
     padding: 8px 12px;
-    background: var(--mantle);
+    background: var(--bg-side);
   }
 
   .props h3 {
@@ -293,7 +293,7 @@
   }
 
   dt {
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   dd {

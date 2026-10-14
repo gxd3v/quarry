@@ -247,7 +247,7 @@
   }
 
   label > span {
-    color: var(--subtext0);
+    color: var(--text-2);
     font-size: 12px;
   }
 
@@ -265,7 +265,7 @@
   .preview {
     max-height: 320px;
     overflow: auto;
-    border: 1px solid var(--surface0);
+    border: 1px solid var(--line);
     border-radius: 6px;
   }
 
@@ -278,8 +278,8 @@
   th,
   td {
     padding: 3px 8px;
-    border-right: 1px solid var(--surface0);
-    border-bottom: 1px solid var(--surface0);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
     white-space: nowrap;
     max-width: 240px;
     overflow: hidden;
@@ -290,12 +290,12 @@
   th {
     position: sticky;
     top: 0;
-    background: var(--mantle);
+    background: var(--bg-side);
     vertical-align: top;
   }
 
   .src {
-    color: var(--subtext0);
+    color: var(--text-2);
     font-weight: normal;
     margin-bottom: 3px;
   }
@@ -313,7 +313,7 @@
   .muted,
   .hint,
   .note {
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .note {
@@ -327,7 +327,7 @@
   .error {
     margin: 10px 0 0;
     padding: 6px 10px;
-    border-radius: 5px;
+    border-radius: var(--radius);
     color: var(--red);
     background: color-mix(in srgb, var(--red) 10%, transparent);
     white-space: pre-wrap;

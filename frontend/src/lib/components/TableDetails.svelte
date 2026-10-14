@@ -122,9 +122,9 @@
     position: sticky;
     top: 0;
     padding: 6px 10px;
-    background: var(--mantle);
-    border-bottom: 1px solid var(--surface1);
-    color: var(--subtext0);
+    background: var(--bg-side);
+    border-bottom: 1px solid var(--line-strong);
+    color: var(--text-2);
     font-weight: 600;
     text-align: left;
     white-space: nowrap;
@@ -132,7 +132,7 @@
 
   td {
     padding: 4px 10px;
-    border-bottom: 1px solid var(--surface0);
+    border-bottom: 1px solid var(--line);
     vertical-align: top;
   }
 
@@ -141,7 +141,7 @@
   }
 
   .n {
-    color: var(--overlay0);
+    color: var(--text-3);
     text-align: right;
     width: 1%;
   }
@@ -177,7 +177,7 @@
   }
 
   .comment {
-    color: var(--overlay1);
+    color: var(--text-3);
   }
 
   .ddl-bar {
@@ -185,8 +185,8 @@
     justify-content: flex-end;
     gap: 6px;
     padding: 4px 8px;
-    background: var(--mantle);
-    border-bottom: 1px solid var(--surface0);
+    background: var(--bg-side);
+    border-bottom: 1px solid var(--line);
   }
 
   .ddl {
@@ -202,7 +202,7 @@
 
   .muted {
     padding: 10px;
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 
   .error {

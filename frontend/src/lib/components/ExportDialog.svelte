@@ -134,7 +134,7 @@
 
   .export > label,
   .label {
-    color: var(--subtext0);
+    color: var(--text-2);
     font-size: 12px;
   }
 
@@ -149,7 +149,7 @@
 
   .source .k {
     flex: none;
-    color: var(--overlay1);
+    color: var(--text-3);
   }
 
   .source code {
@@ -193,7 +193,7 @@
 
   .note {
     margin-right: auto;
-    color: var(--overlay1);
+    color: var(--text-3);
     font-size: 11px;
   }
 </style>

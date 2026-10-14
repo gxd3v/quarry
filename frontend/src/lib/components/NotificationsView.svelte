@@ -74,7 +74,7 @@
 
   .state.stopped,
   .count {
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .channels {
@@ -121,7 +121,7 @@
 
   .empty {
     padding: 10px;
-    color: var(--subtext0);
+    color: var(--text-2);
     font-family: var(--font-ui);
   }
 

@@ -240,17 +240,18 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    background: var(--base);
+    background: var(--bg-main);
     outline: none;
   }
 
   .subtabs {
     display: flex;
+    align-items: center;
     gap: 2px;
-    height: 30px;
-    padding: 0 6px;
-    background: var(--mantle);
-    border-bottom: 1px solid var(--surface0);
+    height: 38px;
+    padding: 0 8px;
+    background: var(--bg-main);
+    border-bottom: 1px solid var(--line);
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -259,31 +260,40 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    height: 26px;
     padding: 0 10px;
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--overlay1);
+    border-radius: var(--radius);
+    color: var(--text-3);
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
+    transition:
+      background 0.12s,
+      color 0.12s;
   }
 
   .subtabs button:hover {
-    color: var(--subtext1);
+    color: var(--text-1);
+    background: var(--bg-hover);
   }
 
   .subtabs button.active {
-    color: var(--text);
-    border-bottom-color: var(--accent);
+    color: var(--text-1);
+    background: var(--bg-active);
   }
 
   .subtabs button:focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: var(--ring);
   }
 
   .count {
-    color: var(--overlay0);
+    padding: 0 6px;
+    border-radius: 8px;
+    background: var(--bg-hover);
+    color: var(--text-3);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
   }
@@ -318,21 +328,22 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    height: 30px;
-    padding: 0 10px;
-    background: var(--mantle);
-    border-top: 1px solid var(--surface0);
-    color: var(--subtext0);
+    height: 34px;
+    padding: 0 10px 0 14px;
+    background: var(--bg-main);
+    border-top: 1px solid var(--line);
+    color: var(--text-2);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
   }
 
   footer b {
-    color: var(--text);
+    color: var(--text-1);
+    font-weight: 600;
   }
 
   .muted {
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 
   .warn {
@@ -346,12 +357,6 @@
   .export {
     margin-left: auto;
     order: 1;
-  }
-
-  .btn.small {
-    height: 22px;
-    padding: 0 8px;
-    font-size: 12px;
   }
 
   .messages {
@@ -379,7 +384,7 @@
 
   .msg.info,
   .msg.total {
-    color: var(--overlay1);
+    color: var(--text-3);
   }
 
   .msg.notice .sev {
@@ -415,7 +420,7 @@
 
   .empty {
     margin: 0;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-family: var(--font-ui);
     font-size: 13px;
   }

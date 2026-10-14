@@ -125,7 +125,7 @@
 <style>
   .hint {
     margin: 8px 0 0;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
   }
 </style>

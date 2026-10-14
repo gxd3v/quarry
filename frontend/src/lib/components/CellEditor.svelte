@@ -75,7 +75,7 @@
   }
 
   .size {
-    color: var(--overlay1);
+    color: var(--text-3);
   }
 
   .spacer {
@@ -92,7 +92,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .value {
@@ -102,9 +102,9 @@
     max-height: 60vh;
     padding: 10px 12px;
     resize: vertical;
-    background: var(--crust);
-    border: 1px solid var(--surface1);
-    border-radius: 5px;
+    background: var(--bg-field);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
     color: var(--text);
     font-family: var(--font-mono);
     font-size: 12px;
@@ -117,12 +117,12 @@
   }
 
   .value:disabled {
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 
   .hint {
     margin-right: auto;
-    color: var(--overlay1);
+    color: var(--text-3);
     font-size: 12px;
   }
 </style>

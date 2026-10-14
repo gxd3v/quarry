@@ -50,7 +50,7 @@
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
-    background: var(--crust);
+    background: var(--bg-field);
   }
 
   .bar {
@@ -59,7 +59,7 @@
     gap: 8px;
     padding: 4px 10px;
     border-bottom: 1px solid var(--border);
-    background: var(--mantle);
+    background: var(--bg-side);
     min-width: 0;
   }
 
@@ -69,7 +69,7 @@
 
   .scope,
   .state {
-    color: var(--subtext0);
+    color: var(--text-2);
   }
 
   .state.failed {

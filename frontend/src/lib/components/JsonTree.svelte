@@ -93,7 +93,7 @@
 
   .children {
     padding-left: 16px;
-    border-left: 1px solid var(--surface0);
+    border-left: 1px solid var(--line);
     margin-left: 6px;
   }
 
@@ -121,7 +121,7 @@
   }
 
   .collapsed {
-    color: var(--subtext0);
+    color: var(--text-2);
     overflow: hidden;
     text-overflow: ellipsis;
   }
