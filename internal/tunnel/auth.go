@@ -14,17 +14,23 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+
+	"github.com/gxd3v/quarry/internal/driver"
 )
 
 var (
-	// ErrAuth means every authentication method was refused.
-	ErrAuth = errors.New("ssh: authentication failed")
+	// ErrAuth means every authentication method was refused. It wraps
+	// driver.ErrAuth.
+	ErrAuth = fmt.Errorf("ssh: %w", driver.ErrAuth)
 	// ErrPassphrase means KeyFile is encrypted and Passphrase is missing or
 	// wrong; the UI may prompt and retry.
 	ErrPassphrase = errors.New("ssh: key passphrase required")
 )
 
 const windowsAgentPipe = `\\.\pipe\openssh-ssh-agent`
+
+// agentDial is replaced in tests so they never touch the user's agent.
+var agentDial = dialAgent
 
 type namedSigner struct {
 	name   string
@@ -114,7 +120,7 @@ func (a *auth) methods() ([]ssh.AuthMethod, []string, func()) {
 		if !a.useAgent {
 			return
 		}
-		conn, err := dialAgent()
+		conn, err := agentDial()
 		if err != nil {
 			return
 		}
@@ -169,6 +175,12 @@ func dialAgent() (io.ReadWriteCloser, error) {
 		return os.OpenFile(sock, os.O_RDWR, 0)
 	}
 	return net.DialTimeout("unix", sock, 2*time.Second)
+}
+
+// isAuthErr reports whether a handshake failed because every auth method was
+// refused; x/crypto/ssh has no typed error for it.
+func isAuthErr(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "ssh: unable to authenticate")
 }
 
 func authError(h hop, tried []string) error {

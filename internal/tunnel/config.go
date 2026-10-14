@@ -5,6 +5,7 @@
 package tunnel
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -43,10 +44,15 @@ type Config struct {
 
 	KeepAlive time.Duration // default 30s; negative disables
 	Timeout   time.Duration // dial and handshake timeout, default 15s
+
+	dial func(ctx context.Context, network, addr string) (net.Conn, error) // tests
 }
 
-// FromOptions builds a Config from a connection's Options. ok is false when
-// no SSH host is configured. An unparsable ssh_port makes Open fail.
+// FromOptions builds a Config from a connection's Options: ssh_host,
+// ssh_port, ssh_user, ssh_key, ssh_known_hosts, ssh_jump (comma separated),
+// ssh_agent and ssh_accept_new (trust unknown hosts, like OpenSSH's
+// StrictHostKeyChecking=accept-new). ok is false when no SSH host is
+// configured. An unparsable ssh_port makes Open fail.
 func FromOptions(opts map[string]string) (cfg Config, ok bool) {
 	get := func(k string) string { return strings.TrimSpace(opts[k]) }
 	cfg.Host = get("ssh_host")
@@ -69,6 +75,9 @@ func FromOptions(opts map[string]string) (cfg Config, ok bool) {
 		}
 	}
 	cfg.UseAgent, _ = strconv.ParseBool(get("ssh_agent"))
+	if accept, _ := strconv.ParseBool(get("ssh_accept_new")); accept {
+		cfg.Accept = func(string, net.Addr, ssh.PublicKey) bool { return true }
+	}
 	return cfg, true
 }
 
@@ -133,6 +142,9 @@ func (c *Config) withDefaults() Config {
 	}
 	if d.Timeout <= 0 {
 		d.Timeout = 15 * time.Second
+	}
+	if d.dial == nil {
+		d.dial = (&net.Dialer{Timeout: d.Timeout}).DialContext
 	}
 	return d
 }

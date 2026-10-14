@@ -4,10 +4,13 @@ package connection
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"maps"
+	"net"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -18,6 +21,7 @@ import (
 	quarryv1 "github.com/gxd3v/quarry/gen/quarry/v1"
 	"github.com/gxd3v/quarry/internal/driver"
 	"github.com/gxd3v/quarry/internal/store"
+	"github.com/gxd3v/quarry/internal/tunnel"
 	"github.com/gxd3v/quarry/service"
 )
 
@@ -74,7 +78,17 @@ type state struct {
 
 type liveConn struct {
 	conn driver.Conn
+	tun  *tunnel.Tunnel     // SSH tunnel conn goes through, or nil
 	stop context.CancelFunc // stops the ping loop
+}
+
+// close closes the connection, then its tunnel.
+func (lc *liveConn) close() error {
+	err := lc.conn.Close()
+	if lc.tun != nil {
+		err = errors.Join(err, lc.tun.Close())
+	}
+	return err
 }
 
 // attempt is an open in progress; concurrent Connect calls wait on it.
@@ -132,18 +146,18 @@ func (m *Manager) Close() error {
 		return nil
 	}
 	m.closed = true
-	var conns []driver.Conn
+	var conns []*liveConn
 	for _, st := range m.states {
-		if c := teardown(st); c != nil {
-			conns = append(conns, c)
+		if lc := teardown(st); lc != nil {
+			conns = append(conns, lc)
 		}
 	}
 	m.mu.Unlock()
 	m.cancel()
 	m.wg.Wait()
 	var errs []error
-	for _, c := range conns {
-		errs = append(errs, c.Close())
+	for _, lc := range conns {
+		errs = append(errs, lc.close())
 	}
 	return errors.Join(errs...)
 }
@@ -266,7 +280,7 @@ func (m *Manager) save(cfg driver.Config, password *string, forget bool) (driver
 
 	m.mu.Lock()
 	m.cfgs = next
-	var stale driver.Conn
+	var stale *liveConn
 	if i < 0 {
 		st := &state{}
 		m.states[cfg.ID] = st
@@ -277,7 +291,7 @@ func (m *Manager) save(cfg driver.Config, password *string, forget bool) (driver
 	}
 	m.mu.Unlock()
 	if stale != nil {
-		stale.Close()
+		stale.close()
 	}
 	cfg.Options = maps.Clone(cfg.Options)
 	return cfg, nil
@@ -332,10 +346,12 @@ func (m *Manager) remove(id uuid.UUID) error {
 	}
 	m.mu.Unlock()
 	if stale != nil {
-		stale.Close()
+		stale.close()
 	}
 	// Best effort: ids are never reused, so a leftover secret is harmless.
 	m.secrets.Delete(id)
+	m.secrets.Delete(sshSecretID(id, sshPassword))
+	m.secrets.Delete(sshSecretID(id, sshPassphrase))
 	return nil
 }
 
@@ -441,15 +457,15 @@ func (m *Manager) open(ctx context.Context, a *attempt, cfg driver.Config, d dri
 	defer m.wg.Done()
 	defer a.cancel()
 	defer close(a.done)
-	c, latency, err := openConn(ctx, d, cfg, pw)
+	lc, latency, err := m.dial(ctx, d, cfg, pw)
 
 	m.mu.Lock()
 	st := m.states[cfg.ID]
 	if st == nil || st.pending != a {
 		// Disconnected, deleted, changed or closed meanwhile.
 		m.mu.Unlock()
-		if c != nil {
-			c.Close()
+		if lc != nil {
+			lc.close()
 		}
 		a.code, a.err = connect.CodeAborted, errors.New("connection attempt was cancelled")
 		return
@@ -463,15 +479,80 @@ func (m *Manager) open(ctx context.Context, a *attempt, cfg driver.Config, d dri
 		return
 	}
 	lctx, stop := context.WithCancel(m.ctx)
-	lc := &liveConn{conn: c, stop: stop}
+	lc.stop = stop
 	st.live = lc
 	a.status = newStatus(cfg.ID, quarryv1.ConnectionState_CONNECTION_STATE_CONNECTED, latency, nil)
 	m.setStatus(st, a.status)
-	if p, ok := c.(pinger); ok {
+	if p, ok := lc.conn.(pinger); ok {
 		m.wg.Add(1)
 		go m.pingLoop(lctx, cfg.ID, lc, p)
 	}
 	m.mu.Unlock()
+}
+
+// dial opens cfg, through an SSH tunnel when its options ask for one. The
+// returned liveConn has no stop func yet.
+func (m *Manager) dial(ctx context.Context, d driver.Driver, cfg driver.Config, pw string) (*liveConn, time.Duration, error) {
+	tun, err := m.tunnel(ctx, &cfg)
+	if err != nil {
+		return nil, 0, err
+	}
+	c, latency, err := openConn(ctx, d, cfg, pw)
+	if err != nil {
+		if tun != nil {
+			tun.Close()
+		}
+		return nil, 0, err
+	}
+	return &liveConn{conn: c, tun: tun}, latency, nil
+}
+
+// tunnel opens the SSH tunnel cfg's options ask for, if any, and points cfg
+// at its local end. Unknown host keys are trusted only with ssh_accept_new.
+func (m *Manager) tunnel(ctx context.Context, cfg *driver.Config) (*tunnel.Tunnel, error) {
+	tc, ok := tunnel.FromOptions(cfg.Options)
+	if !ok {
+		return nil, nil
+	}
+	if cfg.ID != uuid.Nil() {
+		tc.Password = m.sshSecret(cfg.ID, sshPassword)
+		tc.Passphrase = m.sshSecret(cfg.ID, sshPassphrase)
+	}
+	t, err := tunnel.Open(ctx, tc, net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)))
+	if errors.Is(err, tunnel.ErrHostKeyUnknown) {
+		return nil, fmt.Errorf("%w; set the ssh_accept_new option to trust it on first use", err)
+	}
+	if err != nil {
+		return nil, err
+	}
+	cfg.Host, cfg.Port = "127.0.0.1", t.Port()
+	return t, nil
+}
+
+const (
+	sshPassword   = "password"
+	sshPassphrase = "passphrase"
+)
+
+// sshSecretID derives the Secrets ID under which a connection's SSH password
+// or key passphrase is kept: a version 8 UUID hashed from the connection ID.
+func sshSecretID(id uuid.UUID, kind string) uuid.UUID {
+	h := sha256.Sum256(append([]byte("quarry ssh "+kind+":"), id[:]...))
+	var u uuid.UUID
+	copy(u[:], h[:])
+	u[6] = u[6]&0x0f | 0x80
+	u[8] = u[8]&0x3f | 0x80
+	return u
+}
+
+// sshSecret returns the stored SSH secret, or "" so that key and agent auth
+// still run when there is none or the keyring is unavailable.
+func (m *Manager) sshSecret(id uuid.UUID, kind string) string {
+	s, err := m.secrets.Get(sshSecretID(id, kind))
+	if err != nil {
+		return ""
+	}
+	return s
 }
 
 // openConn opens and, when supported, pings a connection. The latency is the
@@ -538,24 +619,24 @@ func (m *Manager) disconnect(id uuid.UUID) error {
 	m.mu.Unlock()
 	if stale != nil {
 		// Detached either way; a failing Close has nothing left to report.
-		stale.Close()
+		stale.close()
 	}
 	return nil
 }
 
 // teardown detaches the live connection (returned for closing outside the
 // lock) and aborts a pending open. Callers set the new status.
-func teardown(st *state) driver.Conn {
+func teardown(st *state) *liveConn {
 	if a := st.pending; a != nil {
 		a.cancel()
 		st.pending = nil
 	}
-	if lc := st.live; lc != nil {
+	lc := st.live
+	if lc != nil {
 		lc.stop()
 		st.live = nil
-		return lc.conn
 	}
-	return nil
+	return lc
 }
 
 // test opens a throwaway connection and returns its latency.
@@ -571,14 +652,14 @@ func (m *Manager) test(ctx context.Context, cfg driver.Config, given *string) (t
 	if err != nil {
 		return 0, err
 	}
-	c, latency, err := openConn(ctx, d, cfg, pw)
+	lc, latency, err := m.dial(ctx, d, cfg, pw)
 	if err != nil {
 		if ctx.Err() != nil {
 			return 0, ctxError(ctx.Err())
 		}
 		return 0, connect.NewError(openCode(err), err)
 	}
-	c.Close()
+	lc.close()
 	return latency, nil
 }
 
@@ -625,8 +706,12 @@ func parseID(s string) (uuid.UUID, error) {
 }
 
 // openCode classifies a driver Open failure: rejected credentials are
-// Unauthenticated so the UI asks for the password again.
+// Unauthenticated so the UI asks for the password again; a refused SSH login
+// is PermissionDenied, since that password is not the one asked for.
 func openCode(err error) connect.Code {
+	if errors.Is(err, tunnel.ErrAuth) {
+		return connect.CodePermissionDenied
+	}
 	if errors.Is(err, driver.ErrAuth) {
 		return connect.CodeUnauthenticated
 	}
