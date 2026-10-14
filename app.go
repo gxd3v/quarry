@@ -87,5 +87,16 @@ func (a *App) SaveExportDialog(name, format string) (string, error) {
 	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{Title: "Export to", DefaultFilename: name, Filters: filters})
 }
 
+// OpenFileDialog asks for a file to read; pattern is like "*.csv;*.txt" and
+// may be empty. "" means cancelled.
+func (a *App) OpenFileDialog(title, kind, pattern string) (string, error) {
+	var filters []runtime.FileFilter
+	if pattern != "" {
+		filters = append(filters, runtime.FileFilter{DisplayName: kind, Pattern: pattern})
+	}
+	filters = append(filters, runtime.FileFilter{DisplayName: "All files", Pattern: "*"})
+	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{Title: title, Filters: filters, ShowHiddenFiles: true})
+}
+
 // RevealPath shows a file in the system file manager.
 func (a *App) RevealPath(path string) error { return reveal(path) }
