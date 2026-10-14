@@ -97,8 +97,8 @@ export function errorPos(state: EditorState): number {
 }
 
 const scriptTheme = EditorView.theme({
-  '.cm-current-statement': { backgroundColor: 'color-mix(in srgb, var(--surface0) 35%, transparent)' },
-  '.cm-current-statement.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--surface1) 45%, transparent)' },
+  '.cm-current-statement': { backgroundColor: 'color-mix(in srgb, var(--accent) 4%, transparent)' },
+  '.cm-current-statement.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--accent) 7%, transparent)' },
   '.cm-error-mark': {
     textDecoration: 'underline wavy var(--red)',
     textDecorationSkipInk: 'none',

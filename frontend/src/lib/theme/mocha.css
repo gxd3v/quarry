@@ -39,8 +39,8 @@
   --env-dev: var(--green);
   --env-local: var(--blue);
 
-  --font-ui: system-ui, -apple-system, 'Segoe UI', Ubuntu, Cantarell, 'Noto Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Cascadia Mono', 'Fira Code', 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+  --font-ui: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'Cascadia Mono', 'DejaVu Sans Mono', Menlo, Consolas, monospace;
 
   color-scheme: dark;
 }
@@ -60,15 +60,18 @@ body {
   color: var(--text);
   font-family: var(--font-ui);
   font-size: 13px;
+  line-height: 1.4;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 #app {
   height: 100%;
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--surface2) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -78,17 +81,18 @@ body {
 
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {
-  background: var(--mantle);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface1);
-  border: 2px solid var(--mantle);
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+  border: 3px solid transparent;
   border-radius: 6px;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--surface2);
+  background-color: color-mix(in srgb, var(--text) 24%, transparent);
 }
 
 button,

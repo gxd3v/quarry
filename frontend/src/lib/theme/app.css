@@ -1,4 +1,28 @@
-/* Shared controls of the app shell, built on the Mocha tokens. */
+/* Shared controls of the app shell, built on the palette tokens. */
+
+:root {
+  /* surfaces, from the window chrome inwards */
+  --bg-chrome: var(--crust);
+  --bg-side: var(--mantle);
+  --bg-main: var(--base);
+  --bg-raised: color-mix(in srgb, var(--surface0) 55%, var(--base));
+  --bg-hover: color-mix(in srgb, var(--text) 6%, transparent);
+  --bg-active: color-mix(in srgb, var(--text) 10%, transparent);
+  --bg-field: color-mix(in srgb, var(--crust) 70%, var(--base));
+  --line: color-mix(in srgb, var(--text) 7%, transparent);
+  --line-strong: color-mix(in srgb, var(--text) 12%, transparent);
+
+  --text-1: var(--text);
+  --text-2: var(--subtext0);
+  --text-3: var(--overlay1);
+
+  --radius-s: 4px;
+  --radius: 6px;
+  --radius-l: 10px;
+  --control: 28px;
+  --shadow-pop: 0 10px 30px rgb(0 0 0 / 0.35), 0 2px 6px rgb(0 0 0 / 0.2);
+  --ring: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
 
 button,
 input,
@@ -8,46 +32,74 @@ textarea {
   color: inherit;
 }
 
+/* --- buttons --- */
+
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  height: 26px;
-  padding: 0 10px;
-  background: var(--surface0);
-  border: 1px solid var(--surface1);
-  border-radius: 5px;
+  height: var(--control);
+  padding: 0 12px;
+  background: var(--bg-raised);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-1);
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    opacity 0.12s;
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--surface1);
+  background: color-mix(in srgb, var(--surface1) 70%, var(--base));
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: default;
+}
+
+.btn.small {
+  height: 24px;
+  padding: 0 9px;
+  font-size: 12px;
+  border-radius: var(--radius-s);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--text-2);
+}
+
+.btn.ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-1);
 }
 
 .btn.primary {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--crust);
   font-weight: 600;
 }
 
 .btn.primary:hover:not(:disabled) {
-  background: var(--lavender);
+  background: color-mix(in srgb, var(--accent) 85%, var(--text));
 }
 
 .btn.danger {
   color: var(--red);
 }
 
+.btn.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+}
+
 .btn.danger.solid {
   background: var(--red);
-  border-color: var(--red);
   color: var(--crust);
   font-weight: 600;
 }
@@ -56,64 +108,194 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  flex: none;
+  width: 26px;
+  height: 26px;
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 4px;
-  color: var(--overlay2);
+  border-radius: var(--radius);
+  color: var(--text-3);
   cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .icon-btn:hover:not(:disabled) {
-  background: var(--surface0);
-  color: var(--text);
+  background: var(--bg-hover);
+  color: var(--text-1);
 }
 
 .icon-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: default;
 }
 
-:is(.btn, .icon-btn, [tabindex]):focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 1px;
+:is(.btn, .icon-btn, [tabindex], summary, a):focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
 }
+
+/* --- fields --- */
 
 .field {
   width: 100%;
-  height: 28px;
-  padding: 0 8px;
-  background: var(--crust);
-  border: 1px solid var(--surface1);
-  border-radius: 5px;
+  height: var(--control);
+  padding: 0 10px;
+  background: var(--bg-field);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+
+.field:hover:not(:disabled, :focus) {
+  border-color: color-mix(in srgb, var(--text) 20%, transparent);
 }
 
 .field:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  box-shadow: var(--ring);
+}
+
+.field:disabled {
+  opacity: 0.5;
 }
 
 .field::placeholder {
   color: var(--overlay0);
 }
 
+textarea.field {
+  height: auto;
+  padding: 8px 10px;
+}
+
+/* Native selects keep the platform popup but lose the platform look. */
 select.field {
-  padding: 0 4px;
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237f849c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 6.5 8 9.5l3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  cursor: pointer;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  background: var(--bg-field);
+  border: 1px solid color-mix(in srgb, var(--text) 22%, transparent);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+input[type='radio'] {
+  border-radius: 50%;
+}
+
+input[type='checkbox']::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  margin-top: -2px;
+  border-left: 2px solid var(--crust);
+  border-bottom: 2px solid var(--crust);
+  transform: rotate(-45deg) scale(0);
+  transition: transform 0.1s;
+}
+
+input[type='radio']::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--crust);
+  transform: scale(0);
+  transition: transform 0.1s;
+}
+
+input:is([type='checkbox'], [type='radio']):checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+input[type='checkbox']:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+input[type='radio']:checked::after {
+  transform: scale(1);
+}
+
+input:is([type='checkbox'], [type='radio']):focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* <details> sections with a chevron instead of the platform triangle. */
+details > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details > summary::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin: 0 3px 2px 1px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.12s;
+  opacity: 0.7;
+}
+
+details[open] > summary::before {
+  transform: rotate(45deg);
+  margin-bottom: 4px;
 }
 
 .kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px;
+  height: 18px;
+  border-radius: var(--radius-s);
+  background: var(--bg-hover);
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--overlay1);
+  color: var(--text-3);
 }
+
+/* --- environments --- */
 
 .env-dot {
   display: inline-block;
   flex: none;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--env-local);
 }
@@ -135,12 +317,28 @@ select.field {
   background: var(--env);
 }
 
+/* A short environment label: PROD, QA, DEV. */
+.env-tag {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--env) 16%, transparent);
+  color: var(--env);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .spinner {
   display: inline-block;
   flex: none;
   width: 12px;
   height: 12px;
-  border: 2px solid var(--surface2);
+  border: 2px solid color-mix(in srgb, var(--text) 15%, transparent);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

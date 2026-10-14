@@ -1,3 +1,5 @@
+import '@fontsource-variable/inter'
+import '@fontsource-variable/jetbrains-mono'
 import { mount } from 'svelte'
 import './lib/theme/mocha.css'
 import './lib/theme/app.css'
