@@ -6,6 +6,7 @@
   import {
     applyChanges,
     applyFilter,
+    countRows,
     flavorOf,
     deleteRows,
     discardChanges,
@@ -356,6 +357,13 @@
         <span class="muted">loading…</span>
       {:else if snap.elapsedMs}
         <span class="muted">{count(snap.elapsedMs)} ms</span>
+      {/if}
+      {#if t.total !== null}
+        <span class="muted" title="Rows the filter matches on the server">of {count(t.total)}</span>
+      {:else if snap.hasMore && flavor !== 'redis'}
+        <button class="btn small" type="button" disabled={t.counting} title="Count the rows the filter matches (may be slow on big tables)" onclick={() => guard('Count rows', () => countRows(tab))}>
+          {#if t.counting}<span class="spinner"></span>{/if}Count all
+        </button>
       {/if}
       {#if snap.hasMore}
         <span class="more">more rows available</span>

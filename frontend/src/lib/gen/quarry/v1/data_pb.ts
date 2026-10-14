@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file quarry/v1/data.proto.
  */
 export const file_quarry_v1_data: GenFile = /*@__PURE__*/
-  fileDesc("ChRxdWFycnkvdjEvZGF0YS5wcm90bxIJcXVhcnJ5LnYxInQKD09wZW5EYXRhUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlEg4KBmZpbHRlchgDIAEoCRIQCghvcmRlcl9ieRgEIAMoCRIQCghtYXhfcm93cxgFIAEoBSI/Cg1Sb3dLZXlSZXF1ZXN0Eg8KB2Nvbm5faWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlIiEKDlJvd0tleVJlc3BvbnNlEg8KB2NvbHVtbnMYASADKAkiiQIKCVJvd0NoYW5nZRIfCgJvcBgBIAEoDjITLnF1YXJyeS52MS5DaGFuZ2VPcBIqCgNrZXkYAiADKAsyHS5xdWFycnkudjEuUm93Q2hhbmdlLktleUVudHJ5EjAKBnZhbHVlcxgDIAMoCzIgLnF1YXJyeS52MS5Sb3dDaGFuZ2UuVmFsdWVzRW50cnkaPAoIS2V5RW50cnkSCwoDa2V5GAEgASgJEh8KBXZhbHVlGAIgASgLMhAucXVhcnJ5LnYxLlZhbHVlOgI4ARo/CgtWYWx1ZXNFbnRyeRILCgNrZXkYASABKAkSHwoFdmFsdWUYAiABKAsyEC5xdWFycnkudjEuVmFsdWU6AjgBIn8KE0FwcGx5Q2hhbmdlc1JlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSJQoHY2hhbmdlcxgDIAMoCzIULnF1YXJyeS52MS5Sb3dDaGFuZ2USEQoJY29uZmlybWVkGAQgASgIIhYKFEFwcGx5Q2hhbmdlc1Jlc3BvbnNlImIKDVNldFRUTFJlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSDgoGdHRsX21zGAMgASgDEhEKCWNvbmZpcm1lZBgEIAEoCCIQCg5TZXRUVExSZXNwb25zZSpnCghDaGFuZ2VPcBIZChVDSEFOR0VfT1BfVU5TUEVDSUZJRUQQABIUChBDSEFOR0VfT1BfSU5TRVJUEAESFAoQQ0hBTkdFX09QX1VQREFURRACEhQKEENIQU5HRV9PUF9ERUxFVEUQAzKbAgoLRGF0YVNlcnZpY2USPQoIT3BlbkRhdGESGi5xdWFycnkudjEuT3BlbkRhdGFSZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESPQoGUm93S2V5EhgucXVhcnJ5LnYxLlJvd0tleVJlcXVlc3QaGS5xdWFycnkudjEuUm93S2V5UmVzcG9uc2USTwoMQXBwbHlDaGFuZ2VzEh4ucXVhcnJ5LnYxLkFwcGx5Q2hhbmdlc1JlcXVlc3QaHy5xdWFycnkudjEuQXBwbHlDaGFuZ2VzUmVzcG9uc2USPQoGU2V0VFRMEhgucXVhcnJ5LnYxLlNldFRUTFJlcXVlc3QaGS5xdWFycnkudjEuU2V0VFRMUmVzcG9uc2VCMFouZ2l0aHViLmNvbS9neGQzdi9xdWFycnkvZ2VuL3F1YXJyeS92MTtxdWFycnl2MWIGcHJvdG8z", [file_quarry_v1_common, file_quarry_v1_explorer, file_quarry_v1_query]);
+  fileDesc("ChRxdWFycnkvdjEvZGF0YS5wcm90bxIJcXVhcnJ5LnYxInQKD09wZW5EYXRhUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlEg4KBmZpbHRlchgDIAEoCRIQCghvcmRlcl9ieRgEIAMoCRIQCghtYXhfcm93cxgFIAEoBSI/Cg1Sb3dLZXlSZXF1ZXN0Eg8KB2Nvbm5faWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlIiEKDlJvd0tleVJlc3BvbnNlEg8KB2NvbHVtbnMYASADKAkiiQIKCVJvd0NoYW5nZRIfCgJvcBgBIAEoDjITLnF1YXJyeS52MS5DaGFuZ2VPcBIqCgNrZXkYAiADKAsyHS5xdWFycnkudjEuUm93Q2hhbmdlLktleUVudHJ5EjAKBnZhbHVlcxgDIAMoCzIgLnF1YXJyeS52MS5Sb3dDaGFuZ2UuVmFsdWVzRW50cnkaPAoIS2V5RW50cnkSCwoDa2V5GAEgASgJEh8KBXZhbHVlGAIgASgLMhAucXVhcnJ5LnYxLlZhbHVlOgI4ARo/CgtWYWx1ZXNFbnRyeRILCgNrZXkYASABKAkSHwoFdmFsdWUYAiABKAsyEC5xdWFycnkudjEuVmFsdWU6AjgBIn8KE0FwcGx5Q2hhbmdlc1JlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSJQoHY2hhbmdlcxgDIAMoCzIULnF1YXJyeS52MS5Sb3dDaGFuZ2USEQoJY29uZmlybWVkGAQgASgIIhYKFEFwcGx5Q2hhbmdlc1Jlc3BvbnNlImIKDVNldFRUTFJlcXVlc3QSDwoHY29ubl9pZBgBIAEoCRIdCgRub2RlGAIgASgLMg8ucXVhcnJ5LnYxLk5vZGUSDgoGdHRsX21zGAMgASgDEhEKCWNvbmZpcm1lZBgEIAEoCCIQCg5TZXRUVExSZXNwb25zZSJSChBDb3VudFJvd3NSZXF1ZXN0Eg8KB2Nvbm5faWQYASABKAkSHQoEbm9kZRgCIAEoCzIPLnF1YXJyeS52MS5Ob2RlEg4KBmZpbHRlchgDIAEoCSIiChFDb3VudFJvd3NSZXNwb25zZRINCgVjb3VudBgBIAEoAypnCghDaGFuZ2VPcBIZChVDSEFOR0VfT1BfVU5TUEVDSUZJRUQQABIUChBDSEFOR0VfT1BfSU5TRVJUEAESFAoQQ0hBTkdFX09QX1VQREFURRACEhQKEENIQU5HRV9PUF9ERUxFVEUQAzLjAgoLRGF0YVNlcnZpY2USPQoIT3BlbkRhdGESGi5xdWFycnkudjEuT3BlbkRhdGFSZXF1ZXN0GhMucXVhcnJ5LnYxLlJ1bkV2ZW50MAESPQoGUm93S2V5EhgucXVhcnJ5LnYxLlJvd0tleVJlcXVlc3QaGS5xdWFycnkudjEuUm93S2V5UmVzcG9uc2USTwoMQXBwbHlDaGFuZ2VzEh4ucXVhcnJ5LnYxLkFwcGx5Q2hhbmdlc1JlcXVlc3QaHy5xdWFycnkudjEuQXBwbHlDaGFuZ2VzUmVzcG9uc2USPQoGU2V0VFRMEhgucXVhcnJ5LnYxLlNldFRUTFJlcXVlc3QaGS5xdWFycnkudjEuU2V0VFRMUmVzcG9uc2USRgoJQ291bnRSb3dzEhsucXVhcnJ5LnYxLkNvdW50Um93c1JlcXVlc3QaHC5xdWFycnkudjEuQ291bnRSb3dzUmVzcG9uc2VCMFouZ2l0aHViLmNvbS9neGQzdi9xdWFycnkvZ2VuL3F1YXJyeS92MTtxdWFycnl2MWIGcHJvdG8z", [file_quarry_v1_common, file_quarry_v1_explorer, file_quarry_v1_query]);
 
 /**
  * @generated from message quarry.v1.OpenDataRequest
@@ -225,6 +225,50 @@ export const SetTTLResponseSchema: GenMessage<SetTTLResponse> = /*@__PURE__*/
   messageDesc(file_quarry_v1_data, 7);
 
 /**
+ * @generated from message quarry.v1.CountRowsRequest
+ */
+export type CountRowsRequest = Message<"quarry.v1.CountRowsRequest"> & {
+  /**
+   * @generated from field: string conn_id = 1;
+   */
+  connId: string;
+
+  /**
+   * @generated from field: quarry.v1.Node node = 2;
+   */
+  node?: Node | undefined;
+
+  /**
+   * @generated from field: string filter = 3;
+   */
+  filter: string;
+};
+
+/**
+ * Describes the message quarry.v1.CountRowsRequest.
+ * Use `create(CountRowsRequestSchema)` to create a new message.
+ */
+export const CountRowsRequestSchema: GenMessage<CountRowsRequest> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_data, 8);
+
+/**
+ * @generated from message quarry.v1.CountRowsResponse
+ */
+export type CountRowsResponse = Message<"quarry.v1.CountRowsResponse"> & {
+  /**
+   * @generated from field: int64 count = 1;
+   */
+  count: bigint;
+};
+
+/**
+ * Describes the message quarry.v1.CountRowsResponse.
+ * Use `create(CountRowsResponseSchema)` to create a new message.
+ */
+export const CountRowsResponseSchema: GenMessage<CountRowsResponse> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_data, 9);
+
+/**
  * @generated from enum quarry.v1.ChangeOp
  */
 export enum ChangeOp {
@@ -303,6 +347,16 @@ export const DataService: GenService<{
     methodKind: "unary";
     input: typeof SetTTLRequestSchema;
     output: typeof SetTTLResponseSchema;
+  },
+  /**
+   * CountRows counts the rows the data view's filter matches.
+   *
+   * @generated from rpc quarry.v1.DataService.CountRows
+   */
+  countRows: {
+    methodKind: "unary";
+    input: typeof CountRowsRequestSchema;
+    output: typeof CountRowsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_quarry_v1_data, 0);
