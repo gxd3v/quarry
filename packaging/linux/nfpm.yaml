@@ -1,0 +1,27 @@
+# deb and rpm packages; VERSION comes from the environment (without the "v").
+name: quarry
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: devel
+priority: optional
+maintainer: GustavoN <guganascimento2000@gmail.com>
+description: Database IDE for PostgreSQL, Oracle, MongoDB and Redis.
+homepage: https://github.com/gxd3v/quarry
+license: Proprietary
+contents:
+  - src: build/bin/quarry
+    dst: /usr/bin/quarry
+  - src: packaging/linux/quarry.desktop
+    dst: /usr/share/applications/quarry.desktop
+  - src: build/appicon.png
+    dst: /usr/share/icons/hicolor/512x512/apps/quarry.png
+overrides:
+  deb:
+    depends:
+      - libgtk-3-0
+      - libwebkit2gtk-4.1-0
+  rpm:
+    depends:
+      - gtk3
+      - webkit2gtk4.1

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Quarry
+GenericName=Database IDE
+Comment=Database IDE for PostgreSQL, Oracle, MongoDB and Redis
+Exec=quarry
+Icon=quarry
+Terminal=false
+Categories=Development;Database;
+Keywords=sql;postgresql;oracle;mongodb;redis;database;
+StartupWMClass=quarry

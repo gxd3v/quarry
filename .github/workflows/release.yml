@@ -1,0 +1,128 @@
+name: release
+
+# A "v*" tag builds every package and opens a draft GitHub release with them
+# and the package manager manifests; see docs/RELEASING.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  WAILS_VERSION: v2.16.0
+  NFPM_VERSION: v2.47.0
+  APPIMAGETOOL_VERSION: "1.9.1"
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev file
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
+      - run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@${NFPM_VERSION}
+      - name: Build
+        run: wails build -clean -tags webkit2_41 -ldflags "-X main.version=${GITHUB_REF_NAME}"
+      - name: Package
+        run: |
+          set -eu
+          version=${GITHUB_REF_NAME#v}
+          mkdir -p dist tar
+          cp build/bin/quarry packaging/linux/quarry.desktop tar/
+          cp build/appicon.png tar/quarry.png
+          tar -C tar -czf dist/quarry-linux-amd64.tar.gz .
+          VERSION=$version nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/quarry_${version}_amd64.deb
+          VERSION=$version nfpm package -f packaging/linux/nfpm.yaml -p rpm -t dist/quarry-${version}.x86_64.rpm
+          # The AppImage carries the binary; WebKitGTK 4.1 comes from the system.
+          mkdir -p AppDir/usr/bin
+          cp build/bin/quarry AppDir/usr/bin/
+          cp packaging/linux/quarry.desktop AppDir/
+          cp build/appicon.png AppDir/quarry.png
+          printf '#!/bin/sh\nexec "$(dirname "$(readlink -f "$0")")/usr/bin/quarry" "$@"\n' > AppDir/AppRun
+          chmod +x AppDir/AppRun
+          curl -fsSL -o appimagetool "https://github.com/AppImage/appimagetool/releases/download/${APPIMAGETOOL_VERSION}/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir dist/Quarry-x86_64.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@$env:WAILS_VERSION
+      - name: Build
+        run: wails build -clean -nsis -ldflags "-X main.version=$env:GITHUB_REF_NAME"
+      - name: Package
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path build/bin/quarry.exe -DestinationPath dist/quarry-windows-amd64.zip
+          Copy-Item build/bin/quarry-amd64-installer.exe dist/quarry-windows-amd64-installer.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/*
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
+      - name: Build
+        run: wails build -clean -platform darwin/universal -ldflags "-X main.version=${GITHUB_REF_NAME}"
+      - name: Package
+        run: |
+          mkdir -p dist
+          app=$(ls -d build/bin/*.app)
+          [ "$app" = build/bin/Quarry.app ] || mv "$app" build/bin/Quarry.app
+          ditto -c -k --keepParent build/bin/Quarry.app dist/quarry-macos-universal.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/*
+
+  publish:
+    needs: [linux, windows, macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums and manifests
+        run: |
+          set -eu
+          scripts/render-manifests.sh "${GITHUB_REF_NAME#v}" dist dist/manifests
+          (cd dist && sha256sum quarry* Quarry* > SHA256SUMS)
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --draft --generate-notes --title "Quarry $GITHUB_REF_NAME" dist/quarry* dist/Quarry* dist/SHA256SUMS dist/manifests/*

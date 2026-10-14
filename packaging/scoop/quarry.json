@@ -1,0 +1,22 @@
+{
+  "version": "@VERSION@",
+  "description": "Database IDE for PostgreSQL, Oracle, MongoDB and Redis",
+  "homepage": "https://github.com/gxd3v/quarry",
+  "license": "Proprietary",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/gxd3v/quarry/releases/download/v@VERSION@/quarry-windows-amd64.zip",
+      "hash": "@SHA256_WINDOWS_ZIP@"
+    }
+  },
+  "bin": "quarry.exe",
+  "shortcuts": [["quarry.exe", "Quarry"]],
+  "checkver": "github",
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/gxd3v/quarry/releases/download/v$version/quarry-windows-amd64.zip"
+      }
+    }
+  }
+}
