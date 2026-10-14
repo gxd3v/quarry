@@ -8,7 +8,7 @@ priority: optional
 maintainer: GustavoN <guganascimento2000@gmail.com>
 description: Database IDE for PostgreSQL, Oracle, MongoDB and Redis.
 homepage: https://github.com/gxd3v/quarry
-license: Proprietary
+license: MIT
 contents:
   - src: build/bin/quarry
     dst: /usr/bin/quarry

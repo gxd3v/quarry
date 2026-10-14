@@ -1,13 +1,6 @@
 # Publicar uma versão
 
-## 1. Antes da primeira release
-
-O repositório ainda não tem `LICENSE`, por isso os manifestos dizem `Proprietary`. Antes da v1.0:
-
-- escolher a licença e criar o ficheiro `LICENSE`;
-- atualizar o campo `license` em `packaging/linux/nfpm.yaml`, `packaging/aur/PKGBUILD`, `packaging/scoop/quarry.json` e `packaging/winget/gxd3v.Quarry.yaml`.
-
-## 2. Release
+## 1. Release
 
 ```sh
 git tag v1.0.0
@@ -27,7 +20,7 @@ A versão vem da tag e fica embutida com `-ldflags "-X main.version=…"`. `quar
 
 Revê o rascunho no GitHub e publica-o. A verificação de atualizações da app lê `releases/latest`, que ignora rascunhos e pré-releases.
 
-## 3. Gestores de pacotes
+## 2. Gestores de pacotes
 
 Os manifestos gerados vão anexados à release. Publicá-los precisa de contas e tokens teus, por isso o workflow não o faz:
 
@@ -40,7 +33,7 @@ Os manifestos gerados vão anexados à release. Publicá-los precisa de contas e
 
 Quando existirem o tap e o bucket, os passos de cópia podem passar para o workflow, usando um token guardado nos secrets.
 
-## 4. Limitações conhecidas
+## 3. Limitações conhecidas
 
 - **Linux:** o AppImage não inclui o WebKitGTK. Precisa de `libwebkit2gtk-4.1` no sistema, como o `.deb` e o `.rpm`.
 - **macOS:** a app não está assinada nem notarizada, por isso o Gatekeeper avisa na primeira abertura. Para assinar é preciso um certificado Apple Developer.

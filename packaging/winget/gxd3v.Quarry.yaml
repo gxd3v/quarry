@@ -5,7 +5,7 @@ PackageVersion: @VERSION@
 PackageLocale: en-US
 Publisher: gxd3v
 PackageName: Quarry
-License: Proprietary
+License: MIT
 ShortDescription: Database IDE for PostgreSQL, Oracle, MongoDB and Redis
 PackageUrl: https://github.com/gxd3v/quarry
 Installers:
