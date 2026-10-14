@@ -6,7 +6,7 @@ import { ConnectionConfigSchema, type ConnectionConfig } from '../gen/quarry/v1/
 import { RunMode } from '../gen/quarry/v1/query_pb'
 import type { ResultSet } from '../run/model'
 import { schemaOfObject, scopeOfPath, selectAll, type ScopeLike } from '../sql'
-import { MAX_TERMINALS, TerminalSession } from '../terminal/session.svelte'
+import { MAX_TERMINALS } from '../terminal/limits'
 import { orderBy } from '../table/order'
 import { connections } from './connections.svelte'
 import { explorer, type TreeNode } from './explorer.svelte'
@@ -57,14 +57,16 @@ export async function pickAndNewScript() {
   if (id) newScript(id)
 }
 
-// openTerminal opens a terminal tab running the connection's native CLI.
-export function openTerminal(connId: string, scope?: ScopeLike): Tab | null {
+// openTerminal opens a terminal tab running the connection's native CLI;
+// xterm.js loads with the first one.
+export async function openTerminal(connId: string, scope?: ScopeLike): Promise<Tab | null> {
   if (tabs.tabs.filter((t) => t.kind === 'terminal').length >= MAX_TERMINALS) {
     notify.toast('error', `At most ${MAX_TERMINALS} terminals can be open; close one first`)
     return null
   }
   const cfg = connections.config(connId)
   const where = scope ?? { database: cfg?.database ?? '', schema: '' }
+  const { TerminalSession } = await import('../terminal/session.svelte')
   const term = new TerminalSession(connId, where, () => prompts.askPassword(`Password for ${connections.name(connId)}`, ''))
   const tab = tabs.open(connId, where, '', { title: 'Shell', terminal: term })
   void term.start()
