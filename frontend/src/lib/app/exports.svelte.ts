@@ -4,6 +4,7 @@
 import type { MessageInitShape } from '@bufbuild/protobuf'
 import { exportClient } from '../api/clients'
 import { errorMessage, isAbort } from '../api/errors'
+import { canReveal, revealPath } from '../api/server'
 import type { ExportOptionsSchema, ExportRequestSchema } from '../gen/quarry/v1/export_pb'
 import type { ScopeLike } from '../sql'
 import { copyText } from '../ui/clipboard'
@@ -119,9 +120,9 @@ class Exports {
       if (!done) throw new Error('the export stream ended early')
       task.state = 'done'
       const secs = (task.elapsedMs / 1000).toFixed(1)
-      notify.toast('success', `Exported ${task.rows.toLocaleString('en-US')} rows of ${job.label} to ${job.path} in ${secs} s`, 12000, [
-        { label: 'Copy path', run: () => void copyText(job.path).then(() => notify.flash('Path copied')) },
-      ])
+      const actions = [{ label: 'Copy path', run: () => void copyText(job.path).then(() => notify.flash('Path copied')) }]
+      if (canReveal()) actions.push({ label: 'Show in folder', run: () => void revealPath(job.path).catch((e: unknown) => notify.error(e, 'Show in folder')) })
+      notify.toast('success', `Exported ${task.rows.toLocaleString('en-US')} rows of ${job.label} to ${job.path} in ${secs} s`, 12000, actions)
     } catch (err) {
       if (ctrl.signal.aborted || isAbort(err)) {
         task.state = 'canceled'

@@ -10,6 +10,9 @@ interface AppBinding {
   // Native file dialogs; "" means cancelled.
   OpenScriptDialog(): Promise<string>
   SaveScriptDialog(defaultName: string): Promise<string>
+  SaveExportDialog(defaultName: string, format: string): Promise<string>
+  // Shows a file in the system file manager.
+  RevealPath(path: string): Promise<void>
   // Lets the window close after the frontend saved its state.
   ConfirmClose(): Promise<void>
 }
@@ -61,6 +64,22 @@ export async function saveScriptDialog(defaultName: string): Promise<string> {
   const a = app()
   if (!a?.SaveScriptDialog) throw new Error('file dialogs need the desktop app')
   return a.SaveScriptDialog(defaultName)
+}
+
+// saveExportDialog asks where to write an export; '' means cancelled.
+export async function saveExportDialog(defaultName: string, format: string): Promise<string> {
+  const a = app()
+  if (!a?.SaveExportDialog) throw new Error('file dialogs need the desktop app')
+  return a.SaveExportDialog(defaultName, format)
+}
+
+// canReveal reports whether revealPath works here (desktop app only).
+export function canReveal(): boolean {
+  return !!app()?.RevealPath
+}
+
+export async function revealPath(path: string): Promise<void> {
+  await app()?.RevealPath?.(path)
 }
 
 // onBeforeClose runs fn when the user closes the window, then lets it close.

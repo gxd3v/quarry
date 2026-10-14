@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { saveScriptDialog } from '../api/server'
+  import { saveExportDialog } from '../api/server'
   import { exportTasks, MAX_RUNNING } from '../app/exports.svelte'
   import { notify } from '../app/notify.svelte'
   import type { ExportRequest } from '../app/ui.svelte'
@@ -47,7 +47,7 @@
 
   async function browse() {
     try {
-      const path = await saveScriptDialog(fileName(request.name, form.format))
+      const path = await saveExportDialog(fileName(request.name, form.format), form.format)
       if (path) form.path = path
     } catch (err) {
       notify.error(err, 'Choose file')
