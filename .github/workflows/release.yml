@@ -5,11 +5,15 @@ name: release
 on:
   push:
     tags: ["v*"]
+  # A manual run builds every package without publishing, to try the build.
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 env:
+  # Manual runs have no tag; they build a pre-release version.
+  VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v0.0.0-dev' }}
   WAILS_VERSION: v2.16.0
   NFPM_VERSION: v2.47.0
   APPIMAGETOOL_VERSION: "1.9.1"
@@ -31,11 +35,11 @@ jobs:
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
       - run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@${NFPM_VERSION}
       - name: Build
-        run: wails build -clean -tags webkit2_41 -ldflags "-X main.version=${GITHUB_REF_NAME}"
+        run: wails build -clean -tags webkit2_41 -ldflags "-X main.version=${VERSION}"
       - name: Package
         run: |
           set -eu
-          version=${GITHUB_REF_NAME#v}
+          version=${VERSION#v}
           mkdir -p dist tar
           cp build/bin/quarry packaging/linux/quarry.desktop tar/
           cp build/appicon.png tar/quarry.png
@@ -71,7 +75,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@$env:WAILS_VERSION
       - name: Build
-        run: wails build -clean -nsis -ldflags "-X main.version=$env:GITHUB_REF_NAME"
+        run: wails build -clean -nsis -ldflags "-X main.version=$env:VERSION"
       - name: Package
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
@@ -96,7 +100,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
       - name: Build
-        run: wails build -clean -platform darwin/universal -ldflags "-X main.version=${GITHUB_REF_NAME}"
+        run: wails build -clean -platform darwin/universal -ldflags "-X main.version=${VERSION}"
       - name: Package
         run: |
           mkdir -p dist
@@ -120,9 +124,14 @@ jobs:
       - name: Checksums and manifests
         run: |
           set -eu
-          scripts/render-manifests.sh "${GITHUB_REF_NAME#v}" dist dist/manifests
+          scripts/render-manifests.sh "${VERSION#v}" dist dist/manifests
           (cd dist && sha256sum quarry* Quarry* > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: dist/*
       - name: Draft release
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --draft --generate-notes --title "Quarry $GITHUB_REF_NAME" dist/quarry* dist/Quarry* dist/SHA256SUMS dist/manifests/*
+        run: gh release create "$VERSION" --draft --generate-notes --title "Quarry $VERSION" dist/quarry* dist/Quarry* dist/SHA256SUMS dist/manifests/*
