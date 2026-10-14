@@ -67,3 +67,25 @@ func (a *App) OpenScriptDialog() (string, error) {
 func (a *App) SaveScriptDialog(name string) (string, error) {
 	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{Title: "Save script", DefaultFilename: name, Filters: scriptFilters})
 }
+
+var exportFilters = map[string]runtime.FileFilter{
+	"csv":      {DisplayName: "CSV (*.csv)", Pattern: "*.csv"},
+	"tsv":      {DisplayName: "TSV (*.tsv)", Pattern: "*.tsv"},
+	"json":     {DisplayName: "JSON (*.json)", Pattern: "*.json"},
+	"ndjson":   {DisplayName: "NDJSON (*.ndjson, *.jsonl)", Pattern: "*.ndjson;*.jsonl"},
+	"sql":      {DisplayName: "SQL (*.sql)", Pattern: "*.sql"},
+	"markdown": {DisplayName: "Markdown (*.md)", Pattern: "*.md"},
+}
+
+// SaveExportDialog asks where to write an export; "" means cancelled.
+func (a *App) SaveExportDialog(name, format string) (string, error) {
+	var filters []runtime.FileFilter
+	if f, ok := exportFilters[format]; ok {
+		filters = append(filters, f)
+	}
+	filters = append(filters, runtime.FileFilter{DisplayName: "All files", Pattern: "*"})
+	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{Title: "Export to", DefaultFilename: name, Filters: filters})
+}
+
+// RevealPath shows a file in the system file manager.
+func (a *App) RevealPath(path string) error { return reveal(path) }
