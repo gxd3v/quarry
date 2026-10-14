@@ -2,10 +2,11 @@
   import { exportResult, guard } from '../app/actions'
   import type { MenuEntry } from '../app/menu.svelte'
   import { connections } from '../app/connections.svelte'
-  import { HISTORY, MESSAGES, tabs, type Tab } from '../app/tabs.svelte'
+  import { HISTORY, MESSAGES, PLAN, tabs, type Tab } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
   import { guessTable, type CopyOptions } from '../grid/copy'
   import Grid from '../grid/Grid.svelte'
+  import ExplainView from './ExplainView.svelte'
   import HistoryView from './HistoryView.svelte'
 
   interface Props {
@@ -34,7 +35,9 @@
     }
   })
 
-  const view = $derived(tab.view === HISTORY ? HISTORY : tab.view === MESSAGES || tab.view >= snap.results.length ? MESSAGES : tab.view)
+  const view = $derived(
+    tab.view === HISTORY ? HISTORY : tab.view === PLAN && tab.plan ? PLAN : tab.view < 0 || tab.view >= snap.results.length ? MESSAGES : tab.view,
+  )
   const current = $derived(view < 0 ? null : snap.results[view])
 
   let panel = $state<HTMLElement>()
@@ -68,7 +71,7 @@
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-    const ids = [...snap.results.keys(), MESSAGES, HISTORY]
+    const ids = [...snap.results.keys(), MESSAGES, ...(tab.plan ? [PLAN] : []), HISTORY]
     const i = ids.indexOf(view)
     const next = ids[(i + (e.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length]
     tab.view = next
@@ -109,6 +112,20 @@
       Messages
       {#if snap.errors}<span class="err-dot" title="{snap.errors} error(s)"></span>{/if}
     </button>
+    {#if tab.plan}
+      <button
+        type="button"
+        role="tab"
+        data-view={PLAN}
+        aria-selected={view === PLAN}
+        tabindex={view === PLAN ? 0 : -1}
+        class:active={view === PLAN}
+        onclick={() => (tab.view = PLAN)}
+      >
+        Plan
+        {#if tab.plan.error}<span class="err-dot" title="Explain failed"></span>{/if}
+      </button>
+    {/if}
     <button
       type="button"
       role="tab"
@@ -125,6 +142,8 @@
   <div class="body">
     {#if view === HISTORY}
       <HistoryView {tab} />
+    {:else if view === PLAN && tab.plan}
+      {#key tab.plan}<ExplainView plan={tab.plan} />{/key}
     {:else if current}
       <div class="grid-wrap">
         <Grid bind:this={grid} buffer={current.r.buffer} version={tab.version} oncell={openCell} {copyOptions} {menuItems} />

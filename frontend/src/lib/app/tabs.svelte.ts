@@ -2,11 +2,11 @@ import { Text, type EditorState, type TransactionSpec } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import type { Row } from '../gen/quarry/v1/common_pb'
 import { dataClient, queryClient, workspaceClient } from '../api/clients'
-import { errorMessage, isAbort, needsConfirmation, notConnected, tabBusy, unknownTab } from '../api/errors'
+import { errorMessage, isAbort, needsConfirmation, notConnected, tabBusy, unimplemented, unknownTab } from '../api/errors'
 import type { CompleteReply } from '../editor/complete'
 import { createScriptState, errorPos, setError, setStatement } from '../editor/script'
 import { statementAt, type Range } from '../editor/statements'
-import { RunMode } from '../gen/quarry/v1/query_pb'
+import { RunMode, type PlanNode } from '../gen/quarry/v1/query_pb'
 import { decide, paramLabel } from '../run/guard'
 import { RunModel, type ResultSet, type TxInfo } from '../run/model'
 import type { ScopeLike } from '../sql'
@@ -25,6 +25,16 @@ export const MESSAGES = -1
 
 // Results panel view showing the connection's query history.
 export const HISTORY = -2
+
+// Results panel view showing the last explained plan.
+export const PLAN = -3
+
+export interface PlanResult {
+  root: PlanNode | null
+  analyze: boolean
+  statement: string
+  error: string
+}
 
 export interface TabOptions {
   // File or scratch path; '' for an untitled script.
@@ -62,8 +72,9 @@ export class Tab {
   startedAt = $state(0)
   canceling = $state(false)
   tx = $state<TxInfo>({ supported: true, autoCommit: true, inTx: false })
-  // Selected result, or MESSAGES.
+  // Selected result, or MESSAGES, HISTORY or PLAN.
   view = $state(0)
+  plan = $state.raw<PlanResult | null>(null)
   // Last bind parameter values, by bare name.
   params: Record<string, string> = {}
 
@@ -326,14 +337,70 @@ class Tabs {
     }
   }
 
+  // explain shows the plan of the statement at target; analyze executes it
+  // (the server rolls it back), so only then do the run guards apply.
+  async explain(tab: Tab, target: RunTarget, analyze: boolean) {
+    if (tab.busy) return
+    const ctrl = new AbortController()
+    tab.controller = ctrl
+    const st = this.state(tab)
+    const script = st.doc.toString()
+    const doc = st.doc
+    tab.busy = 'run'
+    tab.canceling = false
+    tab.startedAt = performance.now()
+    if (errorPos(st) >= 0) this.update(tab, { effects: setError.of(null) })
+    const verb = analyze ? 'Explain analyze' : 'Explain'
+    try {
+      const pre = await this.#preflight(tab, script, target, ctrl.signal, analyze)
+      if (pre.stop) {
+        if (pre.error) tab.plan = { root: null, analyze, statement: '', error: pre.error }
+        else if (pre.info) notify.flash(pre.info.replace(/^Run/, verb))
+        if (pre.error) tab.view = PLAN
+        return
+      }
+      tab.startedAt = performance.now()
+      const res = await this.#call(tab, (tabId) =>
+        queryClient().explain(
+          { tabId, script, mode: target.mode, start: target.start, end: target.end, params: pre.params, analyze, confirmed: pre.confirmed },
+          { signal: ctrl.signal },
+        ),
+      )
+      if (res.tx) tab.tx = { supported: res.tx.supported, autoCommit: res.tx.autoCommit, inTx: res.tx.inTx }
+      const statement = res.range ? script.slice(res.range.start, res.range.end) : ''
+      if (res.error) {
+        tab.plan = { root: null, analyze, statement, error: res.error.message }
+        if (res.error.position >= 0 && this.state(tab).doc === doc) this.markError(tab, res.error.position)
+      } else {
+        tab.plan = { root: res.plan ?? null, analyze, statement, error: '' }
+      }
+      tab.view = PLAN
+    } catch (err) {
+      if (ctrl.signal.aborted || isAbort(err)) return
+      tab.plan = {
+        root: null,
+        analyze,
+        statement: '',
+        error: unimplemented(err) ? `${connections.name(tab.connId)} cannot explain statements` : errorMessage(err),
+      }
+      tab.view = PLAN
+    } finally {
+      if (tab.controller === ctrl) tab.controller = null
+      tab.busy = ''
+      tab.canceling = false
+    }
+  }
+
   // #preflight inspects what a run would execute: it refuses writes on a
   // read-only connection, asks for parameters and confirms risky statements.
   // When Inspect fails, the run goes ahead and the server's own checks apply.
+  // Without guards (a plain explain) only the parameters are asked for.
   async #preflight(
     tab: Tab,
     script: string,
     target: RunTarget,
     signal: AbortSignal,
+    guards = true,
   ): Promise<{ stop: true; error?: string; info: string } | { stop: false; confirmed: boolean; params: Record<string, string> }> {
     let res
     try {
@@ -344,9 +411,9 @@ class Tabs {
     }
     const name = connections.name(tab.connId)
     const d = decide(res, script, name)
-    if (d.kind === 'blocked') return { stop: true, error: d.message, info: '' }
+    if (d.kind === 'blocked' && guards) return { stop: true, error: d.message, info: '' }
     let params: Record<string, string> = {}
-    if (d.params.length) {
+    if (d.kind !== 'blocked' && d.params.length) {
       const dialect = connections.config(tab.connId)?.kind ?? ''
       const values = await prompts.askParams({
         title: d.params.length === 1 ? 'Parameter value' : 'Parameter values',
@@ -357,7 +424,7 @@ class Tabs {
       tab.params = { ...tab.params, ...values }
       params = values
     }
-    if (d.confirm) {
+    if (d.kind !== 'blocked' && d.confirm && guards) {
       const prod = d.prod
       const ok = await prompts.reviewList({
         title: prod ? `Run on PROD: ${name}` : 'Confirm run',

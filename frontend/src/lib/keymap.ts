@@ -37,6 +37,8 @@ export const DEFAULT_BINDINGS: Readonly<Record<string, string>> = {
   'Mod+Shift+O': 'palette.objects',
   'Mod+Shift+H': 'results.history',
   'Mod+Shift+T': 'terminal.open',
+  'Mod+E': 'run.explain',
+  'Mod+Shift+E': 'run.explainAnalyze',
 }
 
 // Actions whose chords still work while a terminal has the focus; every

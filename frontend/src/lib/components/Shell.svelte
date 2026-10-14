@@ -130,6 +130,18 @@
       },
       { id: 'run.statement', category: 'Run', title: 'Run statement or selection', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, false) : undefined)) },
       { id: 'run.script', category: 'Run', title: 'Run script', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, true) : undefined)) },
+      {
+        id: 'run.explain',
+        category: 'Run',
+        title: 'Explain statement',
+        run: withTab((t) => (t.kind === 'script' ? void tabs.explain(t, tabs.target(t, false), false) : false)),
+      },
+      {
+        id: 'run.explainAnalyze',
+        category: 'Run',
+        title: 'Explain analyze statement (runs it, then rolls back)',
+        run: withTab((t) => (t.kind === 'script' ? void tabs.explain(t, tabs.target(t, false), true) : false)),
+      },
       { id: 'table.refresh', category: 'Table', title: 'Refresh data', run: withTable((t) => run(t)) },
       { id: 'table.apply', category: 'Table', title: 'Apply pending changes', run: withTable(applyTable) },
       { id: 'table.discard', category: 'Table', title: 'Discard pending changes', run: withTable((t) => t.table && table.discardChanges(t.table)) },
