@@ -4,4 +4,3 @@ O Go ignora diretórios que começam por `_`, por isso nada aqui é compilado ne
 
 | Diretório | Destino |
 |---|---|
-| `importcsv` | `internal/importcsv` |

@@ -254,6 +254,10 @@ func decode(r io.Reader, enc string) (io.Reader, string, error) {
 		return &utf16Reader{r: br, be: true}, UTF16BE, nil
 	case strings.EqualFold(enc, Windows1252):
 		return &cp1252Reader{r: br}, Windows1252, nil
+	case strings.EqualFold(enc, UTF16LE):
+		return &utf16Reader{r: br}, UTF16LE, nil
+	case strings.EqualFold(enc, UTF16BE):
+		return &utf16Reader{r: br, be: true}, UTF16BE, nil
 	}
 	return br, UTF8, nil
 }
