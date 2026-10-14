@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file quarry/v1/query.proto.
  */
 export const file_quarry_v1_query: GenFile = /*@__PURE__*/
-  fileDesc("ChVxdWFycnkvdjEvcXVlcnkucHJvdG8SCXF1YXJyeS52MSJACgdUeFN0YXRlEhEKCXN1cHBvcnRlZBgBIAEoCBITCgthdXRvX2NvbW1pdBgCIAEoCBINCgVpbl90eBgDIAEoCCJCCg5PcGVuVGFiUmVxdWVzdBIPCgdjb25uX2lkGAEgASgJEh8KBXNjb3BlGAIgASgLMhAucXVhcnJ5LnYxLlNjb3BlIjMKD09wZW5UYWJSZXNwb25zZRIOCgZ0YWJfaWQYASABKAkSEAoIbGFuZ3VhZ2UYAiABKAkiUQoNUmViaW5kUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDwoHY29ubl9pZBgCIAEoCRIfCgVzY29wZRgDIAEoCzIQLnF1YXJyeS52MS5TY29wZSIiCg5SZWJpbmRSZXNwb25zZRIQCghsYW5ndWFnZRgBIAEoCSIhCg9DbG9zZVRhYlJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhIKEENsb3NlVGFiUmVzcG9uc2UiLAoOU3RhdGVtZW50UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIkAKDkFuYWx5emVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIlEKD0FuYWx5emVSZXNwb25zZRItCgpzdGF0ZW1lbnRzGAEgAygLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlEg8KB2N1cnJlbnQYAiABKAUi8QEKClJ1blJlcXVlc3QSDgoGdGFiX2lkGAEgASgJEg4KBnNjcmlwdBgCIAEoCRIgCgRtb2RlGAMgASgOMhIucXVhcnJ5LnYxLlJ1bk1vZGUSDQoFc3RhcnQYBCABKAUSCwoDZW5kGAUgASgFEhAKCG1heF9yb3dzGAYgASgFEjEKBnBhcmFtcxgHIAMoCzIhLnF1YXJyeS52MS5SdW5SZXF1ZXN0LlBhcmFtc0VudHJ5EhEKCWNvbmZpcm1lZBgIIAEoCBotCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIm4KDkluc3BlY3RSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSIAoEbW9kZRgDIAEoDjISLnF1YXJyeS52MS5SdW5Nb2RlEg0KBXN0YXJ0GAQgASgFEgsKA2VuZBgFIAEoBSJmCg5TdGF0ZW1lbnRDaGVjaxIoCgVyYW5nZRgBIAEoCzIZLnF1YXJyeS52MS5TdGF0ZW1lbnRSYW5nZRIMCgRyaXNrGAIgASgJEgwKBHZlcmIYAyABKAkSDgoGcmVhc29uGAQgASgJIooBCg9JbnNwZWN0UmVzcG9uc2USLQoKc3RhdGVtZW50cxgBIAMoCzIZLnF1YXJyeS52MS5TdGF0ZW1lbnRDaGVjaxIOCgZwYXJhbXMYAiADKAkSGgoSbmVlZHNfY29uZmlybWF0aW9uGAMgASgIEg8KB2Jsb2NrZWQYBCABKAgSCwoDZW52GAUgASgJIjAKDEZldGNoUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSEAoIbWF4X3Jvd3MYAiABKAUiMAoKUnVuU3RhcnRlZBIOCgZydW5faWQYASABKAkSEgoKc3RhdGVtZW50cxgCIAEoBSJLChBTdGF0ZW1lbnRTdGFydGVkEg0KBWluZGV4GAEgASgFEigKBXJhbmdlGAIgASgLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlIjMKDVJlc3VsdENvbHVtbnMSIgoHY29sdW1ucxgBIAMoCzIRLnF1YXJyeS52MS5Db2x1bW4iKAoIUm93QmF0Y2gSHAoEcm93cxgBIAMoCzIOLnF1YXJyeS52MS5Sb3ciYgoNU3RhdGVtZW50RG9uZRIQCghhZmZlY3RlZBgBIAEoAxILCgN0YWcYAiABKAkSEgoKZWxhcHNlZF9tcxgDIAEoAxIMCgRyb3dzGAQgASgDEhAKCGhhc19tb3JlGAUgASgIIlsKClF1ZXJ5RXJyb3ISDwoHbWVzc2FnZRgBIAEoCRIMCgRjb2RlGAIgASgJEg4KBmRldGFpbBgDIAEoCRIMCgRoaW50GAQgASgJEhAKCHBvc2l0aW9uGAUgASgFIi8KDVNlcnZlck1lc3NhZ2USEAoIc2V2ZXJpdHkYASABKAkSDAoEdGV4dBgCIAEoCSJTCgtSdW5GaW5pc2hlZBISCgplbGFwc2VkX21zGAEgASgDEh4KAnR4GAIgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUSEAoIY2FuY2VsZWQYAyABKAgi7AIKCFJ1bkV2ZW50EigKB3N0YXJ0ZWQYASABKAsyFS5xdWFycnkudjEuUnVuU3RhcnRlZEgAEjAKCXN0YXRlbWVudBgCIAEoCzIbLnF1YXJyeS52MS5TdGF0ZW1lbnRTdGFydGVkSAASKwoHY29sdW1ucxgDIAEoCzIYLnF1YXJyeS52MS5SZXN1bHRDb2x1bW5zSAASIwoEcm93cxgEIAEoCzITLnF1YXJyeS52MS5Sb3dCYXRjaEgAEigKBGRvbmUYBSABKAsyGC5xdWFycnkudjEuU3RhdGVtZW50RG9uZUgAEiYKBWVycm9yGAYgASgLMhUucXVhcnJ5LnYxLlF1ZXJ5RXJyb3JIABIrCgdtZXNzYWdlGAcgASgLMhgucXVhcnJ5LnYxLlNlcnZlck1lc3NhZ2VIABIqCghmaW5pc2hlZBgIIAEoCzIWLnF1YXJyeS52MS5SdW5GaW5pc2hlZEgAQgcKBWV2ZW50Ih8KDUNhbmNlbFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhAKDkNhbmNlbFJlc3BvbnNlIjIKFFNldEF1dG9Db21taXRSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIKCgJvbhgCIAEoCCI3ChVTZXRBdXRvQ29tbWl0UmVzcG9uc2USHgoCdHgYASABKAsyEi5xdWFycnkudjEuVHhTdGF0ZSIfCg1Db21taXRSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCSIwCg5Db21taXRSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIiEKD1JvbGxiYWNrUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkiMgoQUm9sbGJhY2tSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIkEKD0NvbXBsZXRlUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDgoGc2NyaXB0GAIgASgJEg4KBmN1cnNvchgDIAEoBSJNCg5Db21wbGV0aW9uSXRlbRINCgVsYWJlbBgBIAEoCRIOCgZpbnNlcnQYAiABKAkSDgoGZGV0YWlsGAMgASgJEgwKBGtpbmQYBCABKAkiWAoQQ29tcGxldGVSZXNwb25zZRINCgVzdGFydBgBIAEoBRILCgNlbmQYAiABKAUSKAoFaXRlbXMYAyADKAsyGS5xdWFycnkudjEuQ29tcGxldGlvbkl0ZW0qTwoHUnVuTW9kZRIYChRSVU5fTU9ERV9VTlNQRUNJRklFRBAAEhYKElJVTl9NT0RFX1NUQVRFTUVOVBABEhIKDlJVTl9NT0RFX1JBTkdFEAIyogYKDFF1ZXJ5U2VydmljZRJACgdPcGVuVGFiEhkucXVhcnJ5LnYxLk9wZW5UYWJSZXF1ZXN0GhoucXVhcnJ5LnYxLk9wZW5UYWJSZXNwb25zZRI9CgZSZWJpbmQSGC5xdWFycnkudjEuUmViaW5kUmVxdWVzdBoZLnF1YXJyeS52MS5SZWJpbmRSZXNwb25zZRJDCghDbG9zZVRhYhIaLnF1YXJyeS52MS5DbG9zZVRhYlJlcXVlc3QaGy5xdWFycnkudjEuQ2xvc2VUYWJSZXNwb25zZRJACgdBbmFseXplEhkucXVhcnJ5LnYxLkFuYWx5emVSZXF1ZXN0GhoucXVhcnJ5LnYxLkFuYWx5emVSZXNwb25zZRJACgdJbnNwZWN0EhkucXVhcnJ5LnYxLkluc3BlY3RSZXF1ZXN0GhoucXVhcnJ5LnYxLkluc3BlY3RSZXNwb25zZRIzCgNSdW4SFS5xdWFycnkudjEuUnVuUmVxdWVzdBoTLnF1YXJyeS52MS5SdW5FdmVudDABEjcKBUZldGNoEhcucXVhcnJ5LnYxLkZldGNoUmVxdWVzdBoTLnF1YXJyeS52MS5SdW5FdmVudDABEj0KBkNhbmNlbBIYLnF1YXJyeS52MS5DYW5jZWxSZXF1ZXN0GhkucXVhcnJ5LnYxLkNhbmNlbFJlc3BvbnNlElIKDVNldEF1dG9Db21taXQSHy5xdWFycnkudjEuU2V0QXV0b0NvbW1pdFJlcXVlc3QaIC5xdWFycnkudjEuU2V0QXV0b0NvbW1pdFJlc3BvbnNlEj0KBkNvbW1pdBIYLnF1YXJyeS52MS5Db21taXRSZXF1ZXN0GhkucXVhcnJ5LnYxLkNvbW1pdFJlc3BvbnNlEkMKCFJvbGxiYWNrEhoucXVhcnJ5LnYxLlJvbGxiYWNrUmVxdWVzdBobLnF1YXJyeS52MS5Sb2xsYmFja1Jlc3BvbnNlEkMKCENvbXBsZXRlEhoucXVhcnJ5LnYxLkNvbXBsZXRlUmVxdWVzdBobLnF1YXJyeS52MS5Db21wbGV0ZVJlc3BvbnNlQjBaLmdpdGh1Yi5jb20vZ3hkM3YvcXVhcnJ5L2dlbi9xdWFycnkvdjE7cXVhcnJ5djFiBnByb3RvMw", [file_quarry_v1_common, file_quarry_v1_explorer]);
+  fileDesc("ChVxdWFycnkvdjEvcXVlcnkucHJvdG8SCXF1YXJyeS52MSJACgdUeFN0YXRlEhEKCXN1cHBvcnRlZBgBIAEoCBITCgthdXRvX2NvbW1pdBgCIAEoCBINCgVpbl90eBgDIAEoCCJCCg5PcGVuVGFiUmVxdWVzdBIPCgdjb25uX2lkGAEgASgJEh8KBXNjb3BlGAIgASgLMhAucXVhcnJ5LnYxLlNjb3BlIjMKD09wZW5UYWJSZXNwb25zZRIOCgZ0YWJfaWQYASABKAkSEAoIbGFuZ3VhZ2UYAiABKAkiUQoNUmViaW5kUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDwoHY29ubl9pZBgCIAEoCRIfCgVzY29wZRgDIAEoCzIQLnF1YXJyeS52MS5TY29wZSIiCg5SZWJpbmRSZXNwb25zZRIQCghsYW5ndWFnZRgBIAEoCSIhCg9DbG9zZVRhYlJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhIKEENsb3NlVGFiUmVzcG9uc2UiLAoOU3RhdGVtZW50UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIkAKDkFuYWx5emVSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSDgoGY3Vyc29yGAMgASgFIlEKD0FuYWx5emVSZXNwb25zZRItCgpzdGF0ZW1lbnRzGAEgAygLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlEg8KB2N1cnJlbnQYAiABKAUi8QEKClJ1blJlcXVlc3QSDgoGdGFiX2lkGAEgASgJEg4KBnNjcmlwdBgCIAEoCRIgCgRtb2RlGAMgASgOMhIucXVhcnJ5LnYxLlJ1bk1vZGUSDQoFc3RhcnQYBCABKAUSCwoDZW5kGAUgASgFEhAKCG1heF9yb3dzGAYgASgFEjEKBnBhcmFtcxgHIAMoCzIhLnF1YXJyeS52MS5SdW5SZXF1ZXN0LlBhcmFtc0VudHJ5EhEKCWNvbmZpcm1lZBgIIAEoCBotCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIm4KDkluc3BlY3RSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSIAoEbW9kZRgDIAEoDjISLnF1YXJyeS52MS5SdW5Nb2RlEg0KBXN0YXJ0GAQgASgFEgsKA2VuZBgFIAEoBSJmCg5TdGF0ZW1lbnRDaGVjaxIoCgVyYW5nZRgBIAEoCzIZLnF1YXJyeS52MS5TdGF0ZW1lbnRSYW5nZRIMCgRyaXNrGAIgASgJEgwKBHZlcmIYAyABKAkSDgoGcmVhc29uGAQgASgJIooBCg9JbnNwZWN0UmVzcG9uc2USLQoKc3RhdGVtZW50cxgBIAMoCzIZLnF1YXJyeS52MS5TdGF0ZW1lbnRDaGVjaxIOCgZwYXJhbXMYAiADKAkSGgoSbmVlZHNfY29uZmlybWF0aW9uGAMgASgIEg8KB2Jsb2NrZWQYBCABKAgSCwoDZW52GAUgASgJIjAKDEZldGNoUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSEAoIbWF4X3Jvd3MYAiABKAUiMAoKUnVuU3RhcnRlZBIOCgZydW5faWQYASABKAkSEgoKc3RhdGVtZW50cxgCIAEoBSJLChBTdGF0ZW1lbnRTdGFydGVkEg0KBWluZGV4GAEgASgFEigKBXJhbmdlGAIgASgLMhkucXVhcnJ5LnYxLlN0YXRlbWVudFJhbmdlIjMKDVJlc3VsdENvbHVtbnMSIgoHY29sdW1ucxgBIAMoCzIRLnF1YXJyeS52MS5Db2x1bW4iKAoIUm93QmF0Y2gSHAoEcm93cxgBIAMoCzIOLnF1YXJyeS52MS5Sb3ciYgoNU3RhdGVtZW50RG9uZRIQCghhZmZlY3RlZBgBIAEoAxILCgN0YWcYAiABKAkSEgoKZWxhcHNlZF9tcxgDIAEoAxIMCgRyb3dzGAQgASgDEhAKCGhhc19tb3JlGAUgASgIIlsKClF1ZXJ5RXJyb3ISDwoHbWVzc2FnZRgBIAEoCRIMCgRjb2RlGAIgASgJEg4KBmRldGFpbBgDIAEoCRIMCgRoaW50GAQgASgJEhAKCHBvc2l0aW9uGAUgASgFIi8KDVNlcnZlck1lc3NhZ2USEAoIc2V2ZXJpdHkYASABKAkSDAoEdGV4dBgCIAEoCSJTCgtSdW5GaW5pc2hlZBISCgplbGFwc2VkX21zGAEgASgDEh4KAnR4GAIgASgLMhIucXVhcnJ5LnYxLlR4U3RhdGUSEAoIY2FuY2VsZWQYAyABKAgi7AIKCFJ1bkV2ZW50EigKB3N0YXJ0ZWQYASABKAsyFS5xdWFycnkudjEuUnVuU3RhcnRlZEgAEjAKCXN0YXRlbWVudBgCIAEoCzIbLnF1YXJyeS52MS5TdGF0ZW1lbnRTdGFydGVkSAASKwoHY29sdW1ucxgDIAEoCzIYLnF1YXJyeS52MS5SZXN1bHRDb2x1bW5zSAASIwoEcm93cxgEIAEoCzITLnF1YXJyeS52MS5Sb3dCYXRjaEgAEigKBGRvbmUYBSABKAsyGC5xdWFycnkudjEuU3RhdGVtZW50RG9uZUgAEiYKBWVycm9yGAYgASgLMhUucXVhcnJ5LnYxLlF1ZXJ5RXJyb3JIABIrCgdtZXNzYWdlGAcgASgLMhgucXVhcnJ5LnYxLlNlcnZlck1lc3NhZ2VIABIqCghmaW5pc2hlZBgIIAEoCzIWLnF1YXJyeS52MS5SdW5GaW5pc2hlZEgAQgcKBWV2ZW50Ih8KDUNhbmNlbFJlcXVlc3QSDgoGdGFiX2lkGAEgASgJIhAKDkNhbmNlbFJlc3BvbnNlIjIKFFNldEF1dG9Db21taXRSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIKCgJvbhgCIAEoCCI3ChVTZXRBdXRvQ29tbWl0UmVzcG9uc2USHgoCdHgYASABKAsyEi5xdWFycnkudjEuVHhTdGF0ZSIfCg1Db21taXRSZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCSIwCg5Db21taXRSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIiEKD1JvbGxiYWNrUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkiMgoQUm9sbGJhY2tSZXNwb25zZRIeCgJ0eBgBIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlIkEKD0NvbXBsZXRlUmVxdWVzdBIOCgZ0YWJfaWQYASABKAkSDgoGc2NyaXB0GAIgASgJEg4KBmN1cnNvchgDIAEoBSJNCg5Db21wbGV0aW9uSXRlbRINCgVsYWJlbBgBIAEoCRIOCgZpbnNlcnQYAiABKAkSDgoGZGV0YWlsGAMgASgJEgwKBGtpbmQYBCABKAkiWAoQQ29tcGxldGVSZXNwb25zZRINCgVzdGFydBgBIAEoBRILCgNlbmQYAiABKAUSKAoFaXRlbXMYAyADKAsyGS5xdWFycnkudjEuQ29tcGxldGlvbkl0ZW0i+AEKDkV4cGxhaW5SZXF1ZXN0Eg4KBnRhYl9pZBgBIAEoCRIOCgZzY3JpcHQYAiABKAkSIAoEbW9kZRgDIAEoDjISLnF1YXJyeS52MS5SdW5Nb2RlEg0KBXN0YXJ0GAQgASgFEgsKA2VuZBgFIAEoBRI1CgZwYXJhbXMYBiADKAsyJS5xdWFycnkudjEuRXhwbGFpblJlcXVlc3QuUGFyYW1zRW50cnkSDwoHYW5hbHl6ZRgHIAEoCBIRCgljb25maXJtZWQYCCABKAgaLQoLUGFyYW1zRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASLoAQoIUGxhbk5vZGUSCgoCb3AYASABKAkSDgoGdGFyZ2V0GAIgASgJEgwKBGNvc3QYAyABKAESDAoEcm93cxgEIAEoARIOCgZhY3R1YWwYBSABKAESEAoIYWN0X3Jvd3MYBiABKAESLQoFcHJvcHMYByADKAsyHi5xdWFycnkudjEuUGxhbk5vZGUuUHJvcHNFbnRyeRIlCghjaGlsZHJlbhgIIAMoCzITLnF1YXJyeS52MS5QbGFuTm9kZRosCgpQcm9wc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi0AEKD0V4cGxhaW5SZXNwb25zZRIhCgRwbGFuGAEgASgLMhMucXVhcnJ5LnYxLlBsYW5Ob2RlEiQKBWVycm9yGAIgASgLMhUucXVhcnJ5LnYxLlF1ZXJ5RXJyb3ISKAoFcmFuZ2UYAyABKAsyGS5xdWFycnkudjEuU3RhdGVtZW50UmFuZ2USKgoIbWVzc2FnZXMYBCADKAsyGC5xdWFycnkudjEuU2VydmVyTWVzc2FnZRIeCgJ0eBgFIAEoCzISLnF1YXJyeS52MS5UeFN0YXRlKk8KB1J1bk1vZGUSGAoUUlVOX01PREVfVU5TUEVDSUZJRUQQABIWChJSVU5fTU9ERV9TVEFURU1FTlQQARISCg5SVU5fTU9ERV9SQU5HRRACMuQGCgxRdWVyeVNlcnZpY2USQAoHT3BlblRhYhIZLnF1YXJyeS52MS5PcGVuVGFiUmVxdWVzdBoaLnF1YXJyeS52MS5PcGVuVGFiUmVzcG9uc2USPQoGUmViaW5kEhgucXVhcnJ5LnYxLlJlYmluZFJlcXVlc3QaGS5xdWFycnkudjEuUmViaW5kUmVzcG9uc2USQwoIQ2xvc2VUYWISGi5xdWFycnkudjEuQ2xvc2VUYWJSZXF1ZXN0GhsucXVhcnJ5LnYxLkNsb3NlVGFiUmVzcG9uc2USQAoHQW5hbHl6ZRIZLnF1YXJyeS52MS5BbmFseXplUmVxdWVzdBoaLnF1YXJyeS52MS5BbmFseXplUmVzcG9uc2USQAoHSW5zcGVjdBIZLnF1YXJyeS52MS5JbnNwZWN0UmVxdWVzdBoaLnF1YXJyeS52MS5JbnNwZWN0UmVzcG9uc2USMwoDUnVuEhUucXVhcnJ5LnYxLlJ1blJlcXVlc3QaEy5xdWFycnkudjEuUnVuRXZlbnQwARI3CgVGZXRjaBIXLnF1YXJyeS52MS5GZXRjaFJlcXVlc3QaEy5xdWFycnkudjEuUnVuRXZlbnQwARI9CgZDYW5jZWwSGC5xdWFycnkudjEuQ2FuY2VsUmVxdWVzdBoZLnF1YXJyeS52MS5DYW5jZWxSZXNwb25zZRJSCg1TZXRBdXRvQ29tbWl0Eh8ucXVhcnJ5LnYxLlNldEF1dG9Db21taXRSZXF1ZXN0GiAucXVhcnJ5LnYxLlNldEF1dG9Db21taXRSZXNwb25zZRI9CgZDb21taXQSGC5xdWFycnkudjEuQ29tbWl0UmVxdWVzdBoZLnF1YXJyeS52MS5Db21taXRSZXNwb25zZRJDCghSb2xsYmFjaxIaLnF1YXJyeS52MS5Sb2xsYmFja1JlcXVlc3QaGy5xdWFycnkudjEuUm9sbGJhY2tSZXNwb25zZRJDCghDb21wbGV0ZRIaLnF1YXJyeS52MS5Db21wbGV0ZVJlcXVlc3QaGy5xdWFycnkudjEuQ29tcGxldGVSZXNwb25zZRJACgdFeHBsYWluEhkucXVhcnJ5LnYxLkV4cGxhaW5SZXF1ZXN0GhoucXVhcnJ5LnYxLkV4cGxhaW5SZXNwb25zZUIwWi5naXRodWIuY29tL2d4ZDN2L3F1YXJyeS9nZW4vcXVhcnJ5L3YxO3F1YXJyeXYxYgZwcm90bzM", [file_quarry_v1_common, file_quarry_v1_explorer]);
 
 /**
  * @generated from message quarry.v1.TxState
@@ -941,6 +941,171 @@ export const CompleteResponseSchema: GenMessage<CompleteResponse> = /*@__PURE__*
   messageDesc(file_quarry_v1_query, 34);
 
 /**
+ * @generated from message quarry.v1.ExplainRequest
+ */
+export type ExplainRequest = Message<"quarry.v1.ExplainRequest"> & {
+  /**
+   * @generated from field: string tab_id = 1;
+   */
+  tabId: string;
+
+  /**
+   * @generated from field: string script = 2;
+   */
+  script: string;
+
+  /**
+   * Selects the statement as Run does; RUN_MODE_RANGE must cover exactly one.
+   *
+   * @generated from field: quarry.v1.RunMode mode = 3;
+   */
+  mode: RunMode;
+
+  /**
+   * @generated from field: int32 start = 4;
+   */
+  start: number;
+
+  /**
+   * @generated from field: int32 end = 5;
+   */
+  end: number;
+
+  /**
+   * @generated from field: map<string, string> params = 6;
+   */
+  params: { [key: string]: string };
+
+  /**
+   * Execute the statement to report actual times and rows (EXPLAIN ANALYZE).
+   *
+   * @generated from field: bool analyze = 7;
+   */
+  analyze: boolean;
+
+  /**
+   * As in RunRequest; only checked with analyze.
+   *
+   * @generated from field: bool confirmed = 8;
+   */
+  confirmed: boolean;
+};
+
+/**
+ * Describes the message quarry.v1.ExplainRequest.
+ * Use `create(ExplainRequestSchema)` to create a new message.
+ */
+export const ExplainRequestSchema: GenMessage<ExplainRequest> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 35);
+
+/**
+ * PlanNode is one operator of an execution plan.
+ *
+ * @generated from message quarry.v1.PlanNode
+ */
+export type PlanNode = Message<"quarry.v1.PlanNode"> & {
+  /**
+   * e.g. "Seq Scan", "Hash Join", "HashAggregate".
+   *
+   * @generated from field: string op = 1;
+   */
+  op: string;
+
+  /**
+   * Relation, index, CTE or function the operator reads, if any.
+   *
+   * @generated from field: string target = 2;
+   */
+  target: string;
+
+  /**
+   * Planner total cost and row estimate.
+   *
+   * @generated from field: double cost = 3;
+   */
+  cost: number;
+
+  /**
+   * @generated from field: double rows = 4;
+   */
+  rows: number;
+
+  /**
+   * Actual time in ms and rows over all loops; -1 without analyze.
+   *
+   * @generated from field: double actual = 5;
+   */
+  actual: number;
+
+  /**
+   * @generated from field: double act_rows = 6;
+   */
+  actRows: number;
+
+  /**
+   * Other details worth showing: filters, conditions, sort keys, buffers...
+   *
+   * @generated from field: map<string, string> props = 7;
+   */
+  props: { [key: string]: string };
+
+  /**
+   * @generated from field: repeated quarry.v1.PlanNode children = 8;
+   */
+  children: PlanNode[];
+};
+
+/**
+ * Describes the message quarry.v1.PlanNode.
+ * Use `create(PlanNodeSchema)` to create a new message.
+ */
+export const PlanNodeSchema: GenMessage<PlanNode> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 36);
+
+/**
+ * @generated from message quarry.v1.ExplainResponse
+ */
+export type ExplainResponse = Message<"quarry.v1.ExplainResponse"> & {
+  /**
+   * Unset when error is set.
+   *
+   * @generated from field: quarry.v1.PlanNode plan = 1;
+   */
+  plan?: PlanNode | undefined;
+
+  /**
+   * The server rejected the statement; positions refer to the script.
+   *
+   * @generated from field: quarry.v1.QueryError error = 2;
+   */
+  error?: QueryError | undefined;
+
+  /**
+   * The statement explained.
+   *
+   * @generated from field: quarry.v1.StatementRange range = 3;
+   */
+  range?: StatementRange | undefined;
+
+  /**
+   * @generated from field: repeated quarry.v1.ServerMessage messages = 4;
+   */
+  messages: ServerMessage[];
+
+  /**
+   * @generated from field: quarry.v1.TxState tx = 5;
+   */
+  tx?: TxState | undefined;
+};
+
+/**
+ * Describes the message quarry.v1.ExplainResponse.
+ * Use `create(ExplainResponseSchema)` to create a new message.
+ */
+export const ExplainResponseSchema: GenMessage<ExplainResponse> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_query, 37);
+
+/**
  * @generated from enum quarry.v1.RunMode
  */
 export enum RunMode {
@@ -1090,6 +1255,18 @@ export const QueryService: GenService<{
     methodKind: "unary";
     input: typeof CompleteRequestSchema;
     output: typeof CompleteResponseSchema;
+  },
+  /**
+   * Explain shows the execution plan of one statement. Like Run it holds the
+   * tab busy and Cancel stops it. With analyze the statement is executed and
+   * then rolled back, so it passes the same guards as Run.
+   *
+   * @generated from rpc quarry.v1.QueryService.Explain
+   */
+  explain: {
+    methodKind: "unary";
+    input: typeof ExplainRequestSchema;
+    output: typeof ExplainResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_quarry_v1_query, 0);
