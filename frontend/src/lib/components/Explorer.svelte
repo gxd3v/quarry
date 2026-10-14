@@ -25,6 +25,7 @@
   import { dragName } from '../explorer/tree'
   import type { FileInfo } from '../gen/quarry/v1/workspace_pb'
   import { scopeOfPath } from '../sql'
+  import DriverBadge from '../ui/DriverBadge.svelte'
   import Icon from '../ui/Icon.svelte'
 
   let tree = $state<HTMLDivElement>()
@@ -238,15 +239,20 @@
 <aside class="explorer">
   <header>
     <span class="title">Connections</span>
-    <button class="icon-btn" type="button" title="New connection (Ctrl+Shift+N)" onclick={() => (ui.editing = '')}>
-      <Icon name="plus" />
-    </button>
+    <span class="actions">
+      <button class="icon-btn" type="button" title="Import connections" onclick={() => (ui.importingConnections = true)}>
+        <Icon name="download" size={14} />
+      </button>
+      <button class="icon-btn" type="button" title="New connection (Ctrl+Shift+N)" onclick={() => (ui.editing = '')}>
+        <Icon name="plus" size={15} />
+      </button>
+    </span>
   </header>
   <div class="filter">
     <Icon name="search" size={13} />
     <input
       type="text"
-      placeholder="Filter loaded objects"
+      placeholder="Filter"
       bind:value={explorer.filter}
       onkeydown={(e) => {
         if (e.key === 'Escape' && explorer.filter) {
@@ -271,7 +277,7 @@
         aria-expanded={expandable(r) ? r.expanded : undefined}
         tabindex="-1"
         data-i={i}
-        style:padding-left="{6 + r.depth * 14}px"
+        style:padding-left="{6 + r.depth * 16}px"
         draggable={r.type === 'node' && !!dragName(r.node, connections.config(r.connId)?.kind)}
         ondragstart={(e) => ondragstart(e, r)}
         onclick={() => (explorer.selected = r.key)}
@@ -298,17 +304,20 @@
         {/if}
 
         {#if r.type === 'group'}
+          <span class="kind folder"><Icon name={r.expanded ? 'folderOpen' : 'folder'} size={14} /></span>
           <span class="name">{r.name}</span>
+          <span class="end count">{r.count}</span>
         {:else if r.type === 'conn'}
           {@const st = connections.status(r.conn.id)}
-          <span class="env-dot" data-env={r.conn.env} title={r.conn.env}></span>
+          <DriverBadge kind={r.conn.kind} active={st?.state === ConnectionState.CONNECTED} />
           <span class="name">{r.conn.name}</span>
+          {#if r.conn.env === 'prod'}<span class="env-tag" data-env="prod">prod</span>{/if}
           {#if r.conn.favorite}<span class="star" title="Favorite"><Icon name="star" size={11} fill /></span>{/if}
           <span class="end">
             {#if r.loading || st?.state === ConnectionState.CONNECTING}
               <span class="spinner"></span>
             {:else if st?.state === ConnectionState.CONNECTED}
-              <span class="latency" title="Connected, last ping {st.latencyMs} ms">{st.latencyMs > 0n ? `${st.latencyMs} ms` : 'on'}</span>
+              <span class="latency" title="Connected, last ping {st.latencyMs} ms">{st.latencyMs > 0n ? `${st.latencyMs} ms` : ''}</span>
             {:else if st?.state === ConnectionState.LOST || st?.state === ConnectionState.FAILED}
               <span class="status {statusClass(r.conn.id)}" title={st.error || statusClass(r.conn.id)}>
                 <Icon name="alert" size={12} />
@@ -323,7 +332,7 @@
         {/if}
       </div>
       {#if r.type !== 'group' && r.error && !r.loading}
-        <div class="row-error" style:padding-left="{26 + r.depth * 14}px" title={r.error}>
+        <div class="row-error" style:padding-left="{30 + r.depth * 16}px" title={r.error}>
           <span>{r.error}</span>
           <button
             class="retry"
@@ -408,40 +417,47 @@
     flex-direction: column;
     height: 100%;
     min-width: 0;
-    background: var(--mantle);
+    background: var(--bg-side);
   }
 
   header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 32px;
-    padding: 0 6px 0 12px;
+    height: 36px;
+    padding: 0 6px 0 14px;
   }
 
   .title {
-    color: var(--subtext0);
-    font-size: 11px;
+    color: var(--text-2);
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  }
+
+  .actions {
+    display: flex;
+    gap: 2px;
   }
 
   .filter {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 0 8px 6px;
-    padding: 0 8px;
-    height: 26px;
-    color: var(--overlay0);
-    background: var(--crust);
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
+    gap: 7px;
+    margin: 0 10px 8px;
+    padding: 0 9px;
+    height: 28px;
+    background: var(--bg-hover);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    color: var(--text-3);
+    transition:
+      border-color 0.12s,
+      box-shadow 0.12s;
   }
 
   .filter:focus-within {
-    border-color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    box-shadow: var(--ring);
   }
 
   .filter input {
@@ -450,45 +466,47 @@
     background: none;
     border: none;
     outline: none;
-    color: var(--text);
+    color: var(--text-1);
+  }
+
+  .filter input::placeholder {
+    color: var(--text-3);
   }
 
   .tree {
     flex: 1;
     overflow: auto;
-    padding-bottom: 12px;
+    padding: 0 6px 8px;
     outline: none;
   }
 
   .row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 24px;
+    gap: 7px;
+    height: 26px;
     padding-right: 8px;
-    white-space: nowrap;
+    border-radius: var(--radius);
+    color: var(--text-1);
     cursor: default;
+    white-space: nowrap;
     user-select: none;
   }
 
   .row:hover {
-    background: color-mix(in srgb, var(--surface0) 55%, transparent);
+    background: var(--bg-hover);
   }
 
   .row.selected {
-    background: var(--surface0);
+    background: var(--bg-active);
   }
 
   .tree:focus-visible .row.selected {
-    box-shadow: inset 2px 0 0 var(--accent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent);
   }
 
   .row.group .name {
-    color: var(--subtext0);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    color: var(--text-1);
   }
 
   .twisty {
@@ -498,12 +516,14 @@
     flex: none;
     width: 14px;
     height: 14px;
+    margin-right: -3px;
     padding: 0;
     background: none;
     border: none;
-    color: var(--overlay1);
+    border-radius: var(--radius-s);
+    color: var(--text-3);
     cursor: pointer;
-    transition: transform 0.1s;
+    transition: transform 0.12s;
   }
 
   .twisty.open {
@@ -516,26 +536,27 @@
   }
 
   .star {
+    display: inline-flex;
     color: var(--yellow);
   }
 
   .detail {
-    color: var(--overlay0);
-    font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-3);
+    font-size: 11px;
   }
 
   .end {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
     margin-left: auto;
     padding-left: 6px;
   }
 
+  .count,
   .latency {
-    color: var(--green);
+    color: var(--text-3);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
   }
@@ -549,7 +570,13 @@
   }
 
   .kind {
-    color: var(--overlay2);
+    display: inline-flex;
+    flex: none;
+    color: var(--text-3);
+  }
+
+  .kind.folder {
+    color: color-mix(in srgb, var(--yellow) 70%, var(--overlay1));
   }
 
   .kind.database {
@@ -560,7 +587,8 @@
     color: var(--mauve);
   }
 
-  .kind.table {
+  .kind.table,
+  .kind.collection {
     color: var(--blue);
   }
 
@@ -569,23 +597,20 @@
   }
 
   .kind.function {
-    color: var(--yellow);
-  }
-
-  .kind.column {
-    color: var(--lavender);
+    color: var(--pink);
   }
 
   .kind.index,
   .kind.key {
-    color: var(--sapphire);
+    color: var(--yellow);
   }
 
   .row-error {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 2px 8px 4px 0;
+    min-height: 24px;
+    padding-right: 8px;
     color: var(--red);
     font-size: 12px;
   }
@@ -598,26 +623,29 @@
 
   .retry {
     flex: none;
-    padding: 0 6px;
+    padding: 0;
     background: none;
-    border: 1px solid var(--surface1);
-    border-radius: 4px;
-    color: var(--subtext0);
-    font-size: 11px;
+    border: none;
+    color: var(--blue);
     cursor: pointer;
+  }
+
+  .retry:hover {
+    text-decoration: underline;
   }
 
   .empty {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 8px;
-    padding: 12px;
-    color: var(--overlay1);
+    padding: 32px 16px;
+    color: var(--text-2);
+    text-align: center;
   }
 
   .empty p {
-    margin: 0;
+    margin: 0 0 4px;
   }
 
   .empty .err {
@@ -626,51 +654,59 @@
 
   .scratches {
     flex: none;
+    max-height: 40%;
     display: flex;
     flex-direction: column;
-    max-height: 35%;
-    border-top: 1px solid var(--surface0);
+    border-top: 1px solid var(--line);
   }
 
   .scratches header {
-    height: 30px;
-    padding-left: 4px;
+    padding-left: 8px;
   }
 
   .section {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 0 4px;
+    height: 26px;
+    padding: 0 6px;
     background: none;
     border: none;
+    border-radius: var(--radius);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
   }
 
+  .section:hover {
+    color: var(--text-1);
+  }
+
   .n {
-    color: var(--overlay0);
-    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 400;
   }
 
   .slist {
     overflow: auto;
-    padding-bottom: 6px;
+    padding: 0 6px 8px;
   }
 
   .srow {
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 24px;
-    padding: 0 6px 0 24px;
-    cursor: pointer;
-    white-space: nowrap;
+    gap: 7px;
+    height: 26px;
+    padding: 0 6px 0 10px;
+    border-radius: var(--radius);
+    cursor: default;
     outline: none;
   }
 
   .srow:hover,
   .srow:focus-visible {
-    background: color-mix(in srgb, var(--surface0) 55%, transparent);
+    background: var(--bg-hover);
   }
 
   .srow.current .name {
@@ -678,8 +714,11 @@
   }
 
   .dirty {
-    color: var(--peach);
-    font-size: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-2);
+    font-size: 0;
   }
 
   .srow .detail {
@@ -691,8 +730,8 @@
     padding: 2px;
     background: none;
     border: none;
-    border-radius: 3px;
-    color: var(--overlay0);
+    border-radius: var(--radius-s);
+    color: var(--text-3);
     cursor: pointer;
     opacity: 0;
   }
@@ -703,12 +742,12 @@
 
   .del:hover {
     color: var(--red);
-    background: var(--surface0);
   }
 
   .none {
-    margin: 4px 12px 8px 24px;
-    color: var(--overlay0);
+    margin: 0;
+    padding: 4px 12px 8px;
+    color: var(--text-3);
     font-size: 12px;
   }
 </style>
