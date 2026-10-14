@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"slices"
+	"strings"
 
 	"connectrpc.com/connect"
 
@@ -26,7 +27,7 @@ func (s *Service) Complete(ctx context.Context, req *connect.Request[quarryv1.Co
 	script := req.Msg.Script
 	cr := complete.Request{Lang: lang, Text: script, Cursor: service.ByteOffset(script, int(req.Msg.Cursor))}
 	if cfg, ok := s.live.Config(connID); ok {
-		cr.SearchPath = searchPath(cfg.Kind, scope)
+		cr.SearchPath = searchPath(cfg, scope)
 	}
 	if s.catalog != nil {
 		objs, err := s.catalog.Objects(ctx, connID, scope, false)
@@ -50,13 +51,18 @@ func (s *Service) Complete(ctx context.Context, req *connect.Request[quarryv1.Co
 }
 
 // searchPath lists the schemas whose objects resolve without qualification.
-func searchPath(kind driver.Kind, scope driver.Scope) []string {
-	switch kind {
+func searchPath(cfg driver.Config, scope driver.Scope) []string {
+	switch cfg.Kind {
 	case driver.Postgres:
 		if scope.Schema == "" {
 			return []string{"public"}
 		}
 		return slices.Compact([]string{scope.Schema, "public"})
+	case driver.Oracle:
+		if scope.Schema == "" {
+			return []string{strings.ToUpper(cfg.User)}
+		}
+		return []string{scope.Schema}
 	}
 	return nil
 }

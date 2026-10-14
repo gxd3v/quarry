@@ -181,9 +181,11 @@ func TestSearchPath(t *testing.T) {
 		{driver.Postgres, driver.Scope{}, []string{"public"}},
 		{driver.Postgres, driver.Scope{Schema: "shop"}, []string{"shop", "public"}},
 		{driver.Postgres, driver.Scope{Schema: "public"}, []string{"public"}},
+		{driver.Oracle, driver.Scope{}, []string{"SCOTT"}},
+		{driver.Oracle, driver.Scope{Schema: "HR"}, []string{"HR"}},
 		{driver.Redis, driver.Scope{Database: "0"}, nil},
 	} {
-		if got := searchPath(tc.kind, tc.scope); !slices.Equal(got, tc.want) {
+		if got := searchPath(driver.Config{Kind: tc.kind, User: "scott"}, tc.scope); !slices.Equal(got, tc.want) {
 			t.Errorf("%s %+v: %v, want %v", tc.kind, tc.scope, got, tc.want)
 		}
 	}
