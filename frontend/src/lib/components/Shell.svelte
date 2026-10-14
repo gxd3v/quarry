@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { canImport, closeTab, exportTableData, guard, importCsv, pickAndNewScript, pickAndOpenTerminal, run, saveTab } from '../app/actions'
+  import { canImport, closeTab, exportTableData, guard, importCsv, listen, pickAndNewScript, pickAndOpenTerminal, run, saveTab } from '../app/actions'
   import { onBeforeClose } from '../api/server'
   import { connections } from '../app/connections.svelte'
   import { exportTasks } from '../app/exports.svelte'
@@ -132,6 +132,12 @@
       },
       { id: 'run.statement', category: 'Run', title: 'Run statement or selection', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, false) : undefined)) },
       { id: 'run.script', category: 'Run', title: 'Run script', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, true) : undefined)) },
+      {
+        id: 'run.listen',
+        category: 'Run',
+        title: 'Listen to notifications (LISTEN)…',
+        run: withTab((t) => (t.kind === 'script' ? void listen(t) : false)),
+      },
       {
         id: 'run.explain',
         category: 'Run',

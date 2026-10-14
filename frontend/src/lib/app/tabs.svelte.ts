@@ -15,6 +15,7 @@ import { afterClose, cycle } from './layout'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
 import type { TerminalSession } from '../terminal/session.svelte'
+import type { Listener } from './listen.svelte'
 import type { TableState } from './table.svelte'
 import { slicer } from './yield'
 
@@ -28,6 +29,9 @@ export const HISTORY = -2
 
 // Results panel view showing the last explained plan.
 export const PLAN = -3
+
+// Results panel view showing LISTEN/NOTIFY notifications.
+export const NOTIFICATIONS = -4
 
 export interface PlanResult {
   root: PlanNode | null
@@ -75,6 +79,7 @@ export class Tab {
   // Selected result, or MESSAGES, HISTORY or PLAN.
   view = $state(0)
   plan = $state.raw<PlanResult | null>(null)
+  listener = $state.raw<Listener | null>(null)
   // Last bind parameter values, by bare name.
   params: Record<string, string> = {}
 
@@ -177,6 +182,7 @@ class Tabs {
     }
     tab.controller?.abort()
     tab.terminal?.dispose()
+    tab.listener?.stop()
     const i = this.tabs.indexOf(tab)
     if (i < 0) return
     const n = this.tabs.length

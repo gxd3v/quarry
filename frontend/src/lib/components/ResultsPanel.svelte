@@ -2,12 +2,13 @@
   import { exportResult, guard } from '../app/actions'
   import type { MenuEntry } from '../app/menu.svelte'
   import { connections } from '../app/connections.svelte'
-  import { HISTORY, MESSAGES, PLAN, tabs, type Tab } from '../app/tabs.svelte'
+  import { HISTORY, MESSAGES, NOTIFICATIONS, PLAN, tabs, type Tab } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
   import { guessTable, type CopyOptions } from '../grid/copy'
   import Grid from '../grid/Grid.svelte'
   import ExplainView from './ExplainView.svelte'
   import HistoryView from './HistoryView.svelte'
+  import NotificationsView from './NotificationsView.svelte'
 
   interface Props {
     tab: Tab
@@ -36,7 +37,15 @@
   })
 
   const view = $derived(
-    tab.view === HISTORY ? HISTORY : tab.view === PLAN && tab.plan ? PLAN : tab.view < 0 || tab.view >= snap.results.length ? MESSAGES : tab.view,
+    tab.view === HISTORY
+      ? HISTORY
+      : tab.view === PLAN && tab.plan
+        ? PLAN
+        : tab.view === NOTIFICATIONS && tab.listener
+          ? NOTIFICATIONS
+          : tab.view < 0 || tab.view >= snap.results.length
+            ? MESSAGES
+            : tab.view,
   )
   const current = $derived(view < 0 ? null : snap.results[view])
 
@@ -71,7 +80,7 @@
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-    const ids = [...snap.results.keys(), MESSAGES, ...(tab.plan ? [PLAN] : []), HISTORY]
+    const ids = [...snap.results.keys(), MESSAGES, ...(tab.plan ? [PLAN] : []), ...(tab.listener ? [NOTIFICATIONS] : []), HISTORY]
     const i = ids.indexOf(view)
     const next = ids[(i + (e.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length]
     tab.view = next
@@ -126,6 +135,21 @@
         {#if tab.plan.error}<span class="err-dot" title="Explain failed"></span>{/if}
       </button>
     {/if}
+    {#if tab.listener}
+      <button
+        type="button"
+        role="tab"
+        data-view={NOTIFICATIONS}
+        aria-selected={view === NOTIFICATIONS}
+        tabindex={view === NOTIFICATIONS ? 0 : -1}
+        class:active={view === NOTIFICATIONS}
+        onclick={() => (tab.view = NOTIFICATIONS)}
+      >
+        Notifications
+        <span class="count">{tab.listener.items.length}</span>
+        {#if tab.listener.state === 'listening'}<span class="live" title="Listening"></span>{/if}
+      </button>
+    {/if}
     <button
       type="button"
       role="tab"
@@ -142,6 +166,8 @@
   <div class="body">
     {#if view === HISTORY}
       <HistoryView {tab} />
+    {:else if view === NOTIFICATIONS && tab.listener}
+      <NotificationsView {tab} />
     {:else if view === PLAN && tab.plan}
       {#key tab.plan}<ExplainView plan={tab.plan} />{/key}
     {:else if current}
@@ -247,6 +273,13 @@
     color: var(--overlay0);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
+  }
+
+  .live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
   }
 
   .err-dot {

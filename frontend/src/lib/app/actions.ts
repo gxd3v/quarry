@@ -13,7 +13,8 @@ import { explorer, type TreeNode } from './explorer.svelte'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
 import { loadData, openTable } from './table.svelte'
-import { editorHost, tabs, type Tab } from './tabs.svelte'
+import { Listener, parseChannels } from './listen.svelte'
+import { editorHost, NOTIFICATIONS, tabs, type Tab } from './tabs.svelte'
 import { ui } from './ui.svelte'
 import { workspace } from './workspace.svelte'
 
@@ -77,6 +78,25 @@ export async function pickAndOpenTerminal() {
   if (t && t.kind !== 'terminal') return void openTerminal(t.connId, t.scope)
   const id = await ui.pickConnection('Open terminal on…')
   if (id) openTerminal(id)
+}
+
+// listen asks for channels and listens to them in the tab's results panel.
+export async function listen(tab: Tab) {
+  const prev = tab.listener
+  const v = await prompts.prompt({
+    title: `Listen on ${connections.name(tab.connId)}`,
+    label: 'Channels, separated by commas',
+    value: prev?.channels.join(', ') ?? '',
+    placeholder: 'e.g. jobs, events',
+    confirm: 'Listen',
+  })
+  const channels = parseChannels(v ?? '')
+  if (!channels.length) return
+  prev?.stop()
+  const l = new Listener(tab.connId, { ...tab.scope }, channels)
+  tab.listener = l
+  tab.view = NOTIFICATIONS
+  void l.start()
 }
 
 // openObject opens the table tab of a table or view.
