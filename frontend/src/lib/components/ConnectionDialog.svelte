@@ -16,6 +16,7 @@
     validate,
     type ConnForm,
   } from '../connections/form'
+  import { sshConfigured, sshFlag, sshSecretsForSave, withSshFlag, withoutSsh, type SshFlag } from '../connections/ssh'
   import Modal from '../ui/Modal.svelte'
 
   interface Props {
@@ -86,7 +87,7 @@
     busy = 'save'
     error = ''
     try {
-      const saved = await connections.save(configFromForm(form), passwordForSave(form))
+      const saved = await connections.save(configFromForm(form), { ...passwordForSave(form), ...sshSecretsForSave(form) })
       notify.flash(`Saved ${saved.config!.name}`)
       onclose()
     } catch (err) {
@@ -102,6 +103,19 @@
 
   function option(key: string, value: string) {
     form.options = { ...form.options, [key]: value }
+  }
+
+  // Opened for connections that already have a tunnel.
+  let sshOpen = $state(sshConfigured(initial().options))
+
+  function flag(key: SshFlag, on: boolean) {
+    form.options = withSshFlag(form.options, key, on)
+  }
+
+  function removeSsh() {
+    form.options = withoutSsh(form.options)
+    form.sshPassword = form.sshPassphrase = ''
+    form.sshPasswordTouched = form.sshPassphraseTouched = true
   }
 </script>
 
@@ -205,18 +219,82 @@
           {#each groups as g (g)}<option value={g}></option>{/each}
         </datalist>
       </label>
-      <label>
-        <span>SSL mode</span>
-        <select class="field" value={form.options.sslmode ?? ''} onchange={(e) => option('sslmode', e.currentTarget.value)}>
-          {#each SSL_MODES as m (m)}<option value={m}>{m || 'default (prefer)'}</option>{/each}
-        </select>
-      </label>
+      {#if form.kind === 'postgres'}
+        <label>
+          <span>SSL mode</span>
+          <select class="field" value={form.options.sslmode ?? ''} onchange={(e) => option('sslmode', e.currentTarget.value)}>
+            {#each SSL_MODES as m (m)}<option value={m}>{m || 'default (prefer)'}</option>{/each}
+          </select>
+        </label>
+      {:else if form.kind === 'oracle'}
+        <label>
+          <span>SID (instead of service)</span>
+          <input class="field" type="text" value={form.options.sid ?? ''} oninput={(e) => option('sid', e.currentTarget.value)} />
+        </label>
+      {/if}
 
       <div class="checks wide">
         <label class="check"><input type="checkbox" bind:checked={form.readOnly} /> Read-only</label>
         <label class="check"><input type="checkbox" bind:checked={form.favorite} /> Favorite</label>
       </div>
     </div>
+
+    <details class="ssh" bind:open={sshOpen}>
+      <summary>SSH tunnel{form.options.ssh_host ? ` · ${form.options.ssh_host}` : ''}</summary>
+      <div class="grid">
+        <label class="host">
+          <span>SSH host</span>
+          <input class="field" type="text" placeholder="bastion.example.com" value={form.options.ssh_host ?? ''} oninput={(e) => option('ssh_host', e.currentTarget.value)} />
+        </label>
+        <label>
+          <span>SSH port</span>
+          <input class="field" type="text" inputmode="numeric" placeholder="22" value={form.options.ssh_port ?? ''} oninput={(e) => option('ssh_port', e.currentTarget.value)} />
+        </label>
+        <label>
+          <span>SSH user</span>
+          <input class="field" type="text" placeholder="current user" value={form.options.ssh_user ?? ''} oninput={(e) => option('ssh_user', e.currentTarget.value)} />
+        </label>
+        <label>
+          <span>SSH password</span>
+          <input
+            class="field"
+            type="password"
+            placeholder={form.sshPasswordTouched ? '' : 'Keyring, if saved'}
+            bind:value={form.sshPassword}
+            oninput={() => (form.sshPasswordTouched = true)}
+          />
+        </label>
+        <label>
+          <span>Private key</span>
+          <input class="field" type="text" placeholder="~/.ssh/id_ed25519 (default: agent, then usual keys)" value={form.options.ssh_key ?? ''} oninput={(e) => option('ssh_key', e.currentTarget.value)} />
+        </label>
+        <label>
+          <span>Key passphrase</span>
+          <input
+            class="field"
+            type="password"
+            placeholder={form.sshPassphraseTouched ? '' : 'Keyring, if saved'}
+            bind:value={form.sshPassphrase}
+            oninput={() => (form.sshPassphraseTouched = true)}
+          />
+        </label>
+        <label class="wide">
+          <span>Jump hosts</span>
+          <input class="field" type="text" placeholder="user@jump1:22, jump2" value={form.options.ssh_jump ?? ''} oninput={(e) => option('ssh_jump', e.currentTarget.value)} />
+        </label>
+        <label class="wide">
+          <span>known_hosts file</span>
+          <input class="field" type="text" placeholder="~/.ssh/known_hosts" value={form.options.ssh_known_hosts ?? ''} oninput={(e) => option('ssh_known_hosts', e.currentTarget.value)} />
+        </label>
+        <div class="checks wide">
+          <label class="check"><input type="checkbox" checked={sshFlag(form.options, 'ssh_agent')} onchange={(e) => flag('ssh_agent', e.currentTarget.checked)} /> Also use the SSH agent</label>
+          <label class="check"><input type="checkbox" checked={sshFlag(form.options, 'ssh_accept_new')} onchange={(e) => flag('ssh_accept_new', e.currentTarget.checked)} /> Trust an unknown host key on first connect</label>
+        </div>
+        {#if sshConfigured(form.options)}
+          <div class="wide"><button class="btn" type="button" onclick={removeSsh}>Remove tunnel</button></div>
+        {/if}
+      </div>
+    </details>
 
     {#if test}
       <p class="test" class:ok={test.ok}>{test.text}</p>
@@ -339,5 +417,18 @@
 
   .spacer {
     flex: 1;
+  }
+
+  .ssh {
+    margin-top: 14px;
+    border-top: 1px solid var(--surface0);
+    padding-top: 10px;
+  }
+
+  .ssh summary {
+    color: var(--subtext0);
+    cursor: pointer;
+    margin-bottom: 10px;
+    user-select: none;
   }
 </style>

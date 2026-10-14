@@ -11,6 +11,14 @@ import {
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
 
+// SaveSecrets says what SaveConnection does with the stored secrets.
+export interface SaveSecrets {
+  password?: string
+  forgetPassword: boolean
+  sshPassword?: string
+  sshPassphrase?: string
+}
+
 export { ConnectionState }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -86,8 +94,8 @@ class Connections {
     }
   }
 
-  async save(config: ConnectionConfig, password: { password?: string; forgetPassword: boolean }): Promise<Connection> {
-    const res = await connectionClient().saveConnection({ config, ...password })
+  async save(config: ConnectionConfig, secrets: SaveSecrets): Promise<Connection> {
+    const res = await connectionClient().saveConnection({ config, ...secrets })
     const saved = res.connection!
     const id = saved.config!.id
     const i = this.list.findIndex((c) => c.config!.id === id)

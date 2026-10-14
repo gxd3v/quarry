@@ -20,9 +20,20 @@ export function isAbort(err: unknown): boolean {
 // needsPassword reports a connect that failed for want of a (right) password.
 // PostgreSQL rejects a bad password as Unavailable with SQLSTATE 28P01.
 export function needsPassword(err: unknown): boolean {
-  if (!(err instanceof ConnectError)) return false
+  if (!(err instanceof ConnectError) || sshRefused(err)) return false
   if (err.code === Code.Unauthenticated) return true
   return err.code === Code.Unavailable && /password authentication failed|no password supplied|28P01/i.test(err.rawMessage)
+}
+
+// sshRefused reports an SSH tunnel login the server refused; asking for the
+// database password would not help.
+export function sshRefused(err: unknown): boolean {
+  return err instanceof ConnectError && err.code === Code.PermissionDenied
+}
+
+// unimplemented reports a call the connection's driver does not support.
+export function unimplemented(err: unknown): boolean {
+  return err instanceof ConnectError && err.code === Code.Unimplemented
 }
 
 export function notConnected(err: unknown): boolean {

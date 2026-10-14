@@ -4,6 +4,7 @@ import {
   type ConnectionConfig,
   type ParseURIResponse,
 } from '../gen/quarry/v1/connection_pb'
+import { validateSsh } from './ssh'
 
 export const ENVS = ['local', 'dev', 'qa', 'prod'] as const
 export type Env = (typeof ENVS)[number]
@@ -32,7 +33,14 @@ export interface ConnForm {
   group: string
   favorite: boolean
   options: Record<string, string>
+  // SSH tunnel secrets; untouched fields keep the stored ones.
+  sshPassword: string
+  sshPasswordTouched: boolean
+  sshPassphrase: string
+  sshPassphraseTouched: boolean
 }
+
+const noSshSecrets = { sshPassword: '', sshPasswordTouched: false, sshPassphrase: '', sshPassphraseTouched: false }
 
 export function emptyForm(kind = 'postgres'): ConnForm {
   return {
@@ -52,6 +60,7 @@ export function emptyForm(kind = 'postgres'): ConnForm {
     group: '',
     favorite: false,
     options: {},
+    ...noSshSecrets,
   }
 }
 
@@ -73,6 +82,7 @@ export function formFromConfig(c: ConnectionConfig, hasPassword = false): ConnFo
     group: c.group,
     favorite: c.favorite,
     options: { ...c.options },
+    ...noSshSecrets,
   }
 }
 
@@ -118,7 +128,7 @@ export function validate(f: ConnForm): string {
   if (!f.name.trim()) return 'Name is required'
   if (!f.kind) return 'Database type is required'
   if (Number.isNaN(parsePort(f.port))) return 'Port must be between 1 and 65535'
-  return ''
+  return validateSsh(f.options)
 }
 
 export function configFromForm(f: ConnForm): ConnectionConfig {
