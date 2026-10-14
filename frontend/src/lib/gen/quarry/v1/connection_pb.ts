@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file quarry/v1/connection.proto.
  */
 export const file_quarry_v1_connection: GenFile = /*@__PURE__*/
-  fileDesc("ChpxdWFycnkvdjEvY29ubmVjdGlvbi5wcm90bxIJcXVhcnJ5LnYxIrgCChBDb25uZWN0aW9uQ29uZmlnEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDAoEa2luZBgDIAEoCRILCgNlbnYYBCABKAkSDAoEaG9zdBgFIAEoCRIMCgRwb3J0GAYgASgFEgwKBHVzZXIYByABKAkSEAoIZGF0YWJhc2UYCCABKAkSEQoJcmVhZF9vbmx5GAkgASgIEg0KBWdyb3VwGAogASgJEhAKCGZhdm9yaXRlGAsgASgIEhQKDGFza19wYXNzd29yZBgMIAEoCBI5CgdvcHRpb25zGA0gAygLMigucXVhcnJ5LnYxLkNvbm5lY3Rpb25Db25maWcuT3B0aW9uc0VudHJ5Gi4KDE9wdGlvbnNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBImwKEENvbm5lY3Rpb25TdGF0dXMSCgoCaWQYASABKAkSKQoFc3RhdGUYAiABKA4yGi5xdWFycnkudjEuQ29ubmVjdGlvblN0YXRlEhIKCmxhdGVuY3lfbXMYAyABKAMSDQoFZXJyb3IYBCABKAkifAoKQ29ubmVjdGlvbhIrCgZjb25maWcYASABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvbkNvbmZpZxIrCgZzdGF0dXMYAiABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvblN0YXR1cxIUCgxoYXNfcGFzc3dvcmQYAyABKAgiQgoKRHJpdmVySW5mbxIMCgRraW5kGAEgASgJEhAKCGxhbmd1YWdlGAIgASgJEhQKDGRlZmF1bHRfcG9ydBgDIAEoBSIUChJMaXN0RHJpdmVyc1JlcXVlc3QiPQoTTGlzdERyaXZlcnNSZXNwb25zZRImCgdkcml2ZXJzGAEgAygLMhUucXVhcnJ5LnYxLkRyaXZlckluZm8iGAoWTGlzdENvbm5lY3Rpb25zUmVxdWVzdCJFChdMaXN0Q29ubmVjdGlvbnNSZXNwb25zZRIqCgtjb25uZWN0aW9ucxgBIAMoCzIVLnF1YXJyeS52MS5Db25uZWN0aW9uIt0BChVTYXZlQ29ubmVjdGlvblJlcXVlc3QSKwoGY29uZmlnGAEgASgLMhsucXVhcnJ5LnYxLkNvbm5lY3Rpb25Db25maWcSFQoIcGFzc3dvcmQYAiABKAlIAIgBARIXCg9mb3JnZXRfcGFzc3dvcmQYAyABKAgSGQoMc3NoX3Bhc3N3b3JkGAQgASgJSAGIAQESGwoOc3NoX3Bhc3NwaHJhc2UYBSABKAlIAogBAUILCglfcGFzc3dvcmRCDwoNX3NzaF9wYXNzd29yZEIRCg9fc3NoX3Bhc3NwaHJhc2UiQwoWU2F2ZUNvbm5lY3Rpb25SZXNwb25zZRIpCgpjb25uZWN0aW9uGAEgASgLMhUucXVhcnJ5LnYxLkNvbm5lY3Rpb24iJQoXRGVsZXRlQ29ubmVjdGlvblJlcXVlc3QSCgoCaWQYASABKAkiGgoYRGVsZXRlQ29ubmVjdGlvblJlc3BvbnNlImgKFVRlc3RDb25uZWN0aW9uUmVxdWVzdBIrCgZjb25maWcYASABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvbkNvbmZpZxIVCghwYXNzd29yZBgCIAEoCUgAiAEBQgsKCV9wYXNzd29yZCIsChZUZXN0Q29ubmVjdGlvblJlc3BvbnNlEhIKCmxhdGVuY3lfbXMYASABKAMiHgoPUGFyc2VVUklSZXF1ZXN0EgsKA3VyaRgBIAEoCSJjChBQYXJzZVVSSVJlc3BvbnNlEisKBmNvbmZpZxgBIAEoCzIbLnF1YXJyeS52MS5Db25uZWN0aW9uQ29uZmlnEhUKCHBhc3N3b3JkGAIgASgJSACIAQFCCwoJX3Bhc3N3b3JkIkAKDkNvbm5lY3RSZXF1ZXN0EgoKAmlkGAEgASgJEhUKCHBhc3N3b3JkGAIgASgJSACIAQFCCwoJX3Bhc3N3b3JkIj4KD0Nvbm5lY3RSZXNwb25zZRIrCgZzdGF0dXMYASABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvblN0YXR1cyIfChFEaXNjb25uZWN0UmVxdWVzdBIKCgJpZBgBIAEoCSIUChJEaXNjb25uZWN0UmVzcG9uc2UiFAoSV2F0Y2hTdGF0dXNSZXF1ZXN0IlUKE1dhdGNoU3RhdHVzUmVzcG9uc2USLQoIc3RhdHVzZXMYASADKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvblN0YXR1cxIPCgdkZWxldGVkGAIgAygJKs8BCg9Db25uZWN0aW9uU3RhdGUSIAocQ09OTkVDVElPTl9TVEFURV9VTlNQRUNJRklFRBAAEiEKHUNPTk5FQ1RJT05fU1RBVEVfRElTQ09OTkVDVEVEEAESHwobQ09OTkVDVElPTl9TVEFURV9DT05ORUNUSU5HEAISHgoaQ09OTkVDVElPTl9TVEFURV9DT05ORUNURUQQAxIZChVDT05ORUNUSU9OX1NUQVRFX0xPU1QQBBIbChdDT05ORUNUSU9OX1NUQVRFX0ZBSUxFRBAFMugFChFDb25uZWN0aW9uU2VydmljZRJMCgtMaXN0RHJpdmVycxIdLnF1YXJyeS52MS5MaXN0RHJpdmVyc1JlcXVlc3QaHi5xdWFycnkudjEuTGlzdERyaXZlcnNSZXNwb25zZRJYCg9MaXN0Q29ubmVjdGlvbnMSIS5xdWFycnkudjEuTGlzdENvbm5lY3Rpb25zUmVxdWVzdBoiLnF1YXJyeS52MS5MaXN0Q29ubmVjdGlvbnNSZXNwb25zZRJVCg5TYXZlQ29ubmVjdGlvbhIgLnF1YXJyeS52MS5TYXZlQ29ubmVjdGlvblJlcXVlc3QaIS5xdWFycnkudjEuU2F2ZUNvbm5lY3Rpb25SZXNwb25zZRJbChBEZWxldGVDb25uZWN0aW9uEiIucXVhcnJ5LnYxLkRlbGV0ZUNvbm5lY3Rpb25SZXF1ZXN0GiMucXVhcnJ5LnYxLkRlbGV0ZUNvbm5lY3Rpb25SZXNwb25zZRJVCg5UZXN0Q29ubmVjdGlvbhIgLnF1YXJyeS52MS5UZXN0Q29ubmVjdGlvblJlcXVlc3QaIS5xdWFycnkudjEuVGVzdENvbm5lY3Rpb25SZXNwb25zZRJDCghQYXJzZVVSSRIaLnF1YXJyeS52MS5QYXJzZVVSSVJlcXVlc3QaGy5xdWFycnkudjEuUGFyc2VVUklSZXNwb25zZRJACgdDb25uZWN0EhkucXVhcnJ5LnYxLkNvbm5lY3RSZXF1ZXN0GhoucXVhcnJ5LnYxLkNvbm5lY3RSZXNwb25zZRJJCgpEaXNjb25uZWN0EhwucXVhcnJ5LnYxLkRpc2Nvbm5lY3RSZXF1ZXN0Gh0ucXVhcnJ5LnYxLkRpc2Nvbm5lY3RSZXNwb25zZRJOCgtXYXRjaFN0YXR1cxIdLnF1YXJyeS52MS5XYXRjaFN0YXR1c1JlcXVlc3QaHi5xdWFycnkudjEuV2F0Y2hTdGF0dXNSZXNwb25zZTABQjBaLmdpdGh1Yi5jb20vZ3hkM3YvcXVhcnJ5L2dlbi9xdWFycnkvdjE7cXVhcnJ5djFiBnByb3RvMw");
+  fileDesc("ChpxdWFycnkvdjEvY29ubmVjdGlvbi5wcm90bxIJcXVhcnJ5LnYxIrgCChBDb25uZWN0aW9uQ29uZmlnEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDAoEa2luZBgDIAEoCRILCgNlbnYYBCABKAkSDAoEaG9zdBgFIAEoCRIMCgRwb3J0GAYgASgFEgwKBHVzZXIYByABKAkSEAoIZGF0YWJhc2UYCCABKAkSEQoJcmVhZF9vbmx5GAkgASgIEg0KBWdyb3VwGAogASgJEhAKCGZhdm9yaXRlGAsgASgIEhQKDGFza19wYXNzd29yZBgMIAEoCBI5CgdvcHRpb25zGA0gAygLMigucXVhcnJ5LnYxLkNvbm5lY3Rpb25Db25maWcuT3B0aW9uc0VudHJ5Gi4KDE9wdGlvbnNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBImwKEENvbm5lY3Rpb25TdGF0dXMSCgoCaWQYASABKAkSKQoFc3RhdGUYAiABKA4yGi5xdWFycnkudjEuQ29ubmVjdGlvblN0YXRlEhIKCmxhdGVuY3lfbXMYAyABKAMSDQoFZXJyb3IYBCABKAkifAoKQ29ubmVjdGlvbhIrCgZjb25maWcYASABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvbkNvbmZpZxIrCgZzdGF0dXMYAiABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvblN0YXR1cxIUCgxoYXNfcGFzc3dvcmQYAyABKAgiQgoKRHJpdmVySW5mbxIMCgRraW5kGAEgASgJEhAKCGxhbmd1YWdlGAIgASgJEhQKDGRlZmF1bHRfcG9ydBgDIAEoBSIUChJMaXN0RHJpdmVyc1JlcXVlc3QiPQoTTGlzdERyaXZlcnNSZXNwb25zZRImCgdkcml2ZXJzGAEgAygLMhUucXVhcnJ5LnYxLkRyaXZlckluZm8iKwoaRGlzY292ZXJDb25uZWN0aW9uc1JlcXVlc3QSDQoFcGF0aHMYASADKAkidwoURGlzY292ZXJlZENvbm5lY3Rpb24SKwoGY29uZmlnGAEgASgLMhsucXVhcnJ5LnYxLkNvbm5lY3Rpb25Db25maWcSDgoGc291cmNlGAIgASgJEhUKCHBhc3N3b3JkGAMgASgJSACIAQFCCwoJX3Bhc3N3b3JkImMKG0Rpc2NvdmVyQ29ubmVjdGlvbnNSZXNwb25zZRI0Cgtjb25uZWN0aW9ucxgBIAMoCzIfLnF1YXJyeS52MS5EaXNjb3ZlcmVkQ29ubmVjdGlvbhIOCgZlcnJvcnMYAiADKAkiGAoWTGlzdENvbm5lY3Rpb25zUmVxdWVzdCJFChdMaXN0Q29ubmVjdGlvbnNSZXNwb25zZRIqCgtjb25uZWN0aW9ucxgBIAMoCzIVLnF1YXJyeS52MS5Db25uZWN0aW9uIt0BChVTYXZlQ29ubmVjdGlvblJlcXVlc3QSKwoGY29uZmlnGAEgASgLMhsucXVhcnJ5LnYxLkNvbm5lY3Rpb25Db25maWcSFQoIcGFzc3dvcmQYAiABKAlIAIgBARIXCg9mb3JnZXRfcGFzc3dvcmQYAyABKAgSGQoMc3NoX3Bhc3N3b3JkGAQgASgJSAGIAQESGwoOc3NoX3Bhc3NwaHJhc2UYBSABKAlIAogBAUILCglfcGFzc3dvcmRCDwoNX3NzaF9wYXNzd29yZEIRCg9fc3NoX3Bhc3NwaHJhc2UiQwoWU2F2ZUNvbm5lY3Rpb25SZXNwb25zZRIpCgpjb25uZWN0aW9uGAEgASgLMhUucXVhcnJ5LnYxLkNvbm5lY3Rpb24iJQoXRGVsZXRlQ29ubmVjdGlvblJlcXVlc3QSCgoCaWQYASABKAkiGgoYRGVsZXRlQ29ubmVjdGlvblJlc3BvbnNlImgKFVRlc3RDb25uZWN0aW9uUmVxdWVzdBIrCgZjb25maWcYASABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvbkNvbmZpZxIVCghwYXNzd29yZBgCIAEoCUgAiAEBQgsKCV9wYXNzd29yZCIsChZUZXN0Q29ubmVjdGlvblJlc3BvbnNlEhIKCmxhdGVuY3lfbXMYASABKAMiHgoPUGFyc2VVUklSZXF1ZXN0EgsKA3VyaRgBIAEoCSJjChBQYXJzZVVSSVJlc3BvbnNlEisKBmNvbmZpZxgBIAEoCzIbLnF1YXJyeS52MS5Db25uZWN0aW9uQ29uZmlnEhUKCHBhc3N3b3JkGAIgASgJSACIAQFCCwoJX3Bhc3N3b3JkIkAKDkNvbm5lY3RSZXF1ZXN0EgoKAmlkGAEgASgJEhUKCHBhc3N3b3JkGAIgASgJSACIAQFCCwoJX3Bhc3N3b3JkIj4KD0Nvbm5lY3RSZXNwb25zZRIrCgZzdGF0dXMYASABKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvblN0YXR1cyIfChFEaXNjb25uZWN0UmVxdWVzdBIKCgJpZBgBIAEoCSIUChJEaXNjb25uZWN0UmVzcG9uc2UiFAoSV2F0Y2hTdGF0dXNSZXF1ZXN0IlUKE1dhdGNoU3RhdHVzUmVzcG9uc2USLQoIc3RhdHVzZXMYASADKAsyGy5xdWFycnkudjEuQ29ubmVjdGlvblN0YXR1cxIPCgdkZWxldGVkGAIgAygJKs8BCg9Db25uZWN0aW9uU3RhdGUSIAocQ09OTkVDVElPTl9TVEFURV9VTlNQRUNJRklFRBAAEiEKHUNPTk5FQ1RJT05fU1RBVEVfRElTQ09OTkVDVEVEEAESHwobQ09OTkVDVElPTl9TVEFURV9DT05ORUNUSU5HEAISHgoaQ09OTkVDVElPTl9TVEFURV9DT05ORUNURUQQAxIZChVDT05ORUNUSU9OX1NUQVRFX0xPU1QQBBIbChdDT05ORUNUSU9OX1NUQVRFX0ZBSUxFRBAFMs4GChFDb25uZWN0aW9uU2VydmljZRJMCgtMaXN0RHJpdmVycxIdLnF1YXJyeS52MS5MaXN0RHJpdmVyc1JlcXVlc3QaHi5xdWFycnkudjEuTGlzdERyaXZlcnNSZXNwb25zZRJYCg9MaXN0Q29ubmVjdGlvbnMSIS5xdWFycnkudjEuTGlzdENvbm5lY3Rpb25zUmVxdWVzdBoiLnF1YXJyeS52MS5MaXN0Q29ubmVjdGlvbnNSZXNwb25zZRJVCg5TYXZlQ29ubmVjdGlvbhIgLnF1YXJyeS52MS5TYXZlQ29ubmVjdGlvblJlcXVlc3QaIS5xdWFycnkudjEuU2F2ZUNvbm5lY3Rpb25SZXNwb25zZRJbChBEZWxldGVDb25uZWN0aW9uEiIucXVhcnJ5LnYxLkRlbGV0ZUNvbm5lY3Rpb25SZXF1ZXN0GiMucXVhcnJ5LnYxLkRlbGV0ZUNvbm5lY3Rpb25SZXNwb25zZRJVCg5UZXN0Q29ubmVjdGlvbhIgLnF1YXJyeS52MS5UZXN0Q29ubmVjdGlvblJlcXVlc3QaIS5xdWFycnkudjEuVGVzdENvbm5lY3Rpb25SZXNwb25zZRJDCghQYXJzZVVSSRIaLnF1YXJyeS52MS5QYXJzZVVSSVJlcXVlc3QaGy5xdWFycnkudjEuUGFyc2VVUklSZXNwb25zZRJkChNEaXNjb3ZlckNvbm5lY3Rpb25zEiUucXVhcnJ5LnYxLkRpc2NvdmVyQ29ubmVjdGlvbnNSZXF1ZXN0GiYucXVhcnJ5LnYxLkRpc2NvdmVyQ29ubmVjdGlvbnNSZXNwb25zZRJACgdDb25uZWN0EhkucXVhcnJ5LnYxLkNvbm5lY3RSZXF1ZXN0GhoucXVhcnJ5LnYxLkNvbm5lY3RSZXNwb25zZRJJCgpEaXNjb25uZWN0EhwucXVhcnJ5LnYxLkRpc2Nvbm5lY3RSZXF1ZXN0Gh0ucXVhcnJ5LnYxLkRpc2Nvbm5lY3RSZXNwb25zZRJOCgtXYXRjaFN0YXR1cxIdLnF1YXJyeS52MS5XYXRjaFN0YXR1c1JlcXVlc3QaHi5xdWFycnkudjEuV2F0Y2hTdGF0dXNSZXNwb25zZTABQjBaLmdpdGh1Yi5jb20vZ3hkM3YvcXVhcnJ5L2dlbi9xdWFycnkvdjE7cXVhcnJ5djFiBnByb3RvMw");
 
 /**
  * @generated from message quarry.v1.ConnectionConfig
@@ -216,6 +216,80 @@ export const ListDriversResponseSchema: GenMessage<ListDriversResponse> = /*@__P
   messageDesc(file_quarry_v1_connection, 5);
 
 /**
+ * @generated from message quarry.v1.DiscoverConnectionsRequest
+ */
+export type DiscoverConnectionsRequest = Message<"quarry.v1.DiscoverConnectionsRequest"> & {
+  /**
+   * @generated from field: repeated string paths = 1;
+   */
+  paths: string[];
+};
+
+/**
+ * Describes the message quarry.v1.DiscoverConnectionsRequest.
+ * Use `create(DiscoverConnectionsRequestSchema)` to create a new message.
+ */
+export const DiscoverConnectionsRequestSchema: GenMessage<DiscoverConnectionsRequest> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_connection, 6);
+
+/**
+ * @generated from message quarry.v1.DiscoveredConnection
+ */
+export type DiscoveredConnection = Message<"quarry.v1.DiscoveredConnection"> & {
+  /**
+   * No id; saving it with SaveConnection creates the connection.
+   *
+   * @generated from field: quarry.v1.ConnectionConfig config = 1;
+   */
+  config?: ConnectionConfig | undefined;
+
+  /**
+   * File the entry came from.
+   *
+   * @generated from field: string source = 2;
+   */
+  source: string;
+
+  /**
+   * From .pgpass, when it has one for this entry.
+   *
+   * @generated from field: optional string password = 3;
+   */
+  password?: string | undefined;
+};
+
+/**
+ * Describes the message quarry.v1.DiscoveredConnection.
+ * Use `create(DiscoveredConnectionSchema)` to create a new message.
+ */
+export const DiscoveredConnectionSchema: GenMessage<DiscoveredConnection> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_connection, 7);
+
+/**
+ * @generated from message quarry.v1.DiscoverConnectionsResponse
+ */
+export type DiscoverConnectionsResponse = Message<"quarry.v1.DiscoverConnectionsResponse"> & {
+  /**
+   * @generated from field: repeated quarry.v1.DiscoveredConnection connections = 1;
+   */
+  connections: DiscoveredConnection[];
+
+  /**
+   * Files that exist but could not be read or parsed.
+   *
+   * @generated from field: repeated string errors = 2;
+   */
+  errors: string[];
+};
+
+/**
+ * Describes the message quarry.v1.DiscoverConnectionsResponse.
+ * Use `create(DiscoverConnectionsResponseSchema)` to create a new message.
+ */
+export const DiscoverConnectionsResponseSchema: GenMessage<DiscoverConnectionsResponse> = /*@__PURE__*/
+  messageDesc(file_quarry_v1_connection, 8);
+
+/**
  * @generated from message quarry.v1.ListConnectionsRequest
  */
 export type ListConnectionsRequest = Message<"quarry.v1.ListConnectionsRequest"> & {
@@ -226,7 +300,7 @@ export type ListConnectionsRequest = Message<"quarry.v1.ListConnectionsRequest">
  * Use `create(ListConnectionsRequestSchema)` to create a new message.
  */
 export const ListConnectionsRequestSchema: GenMessage<ListConnectionsRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 6);
+  messageDesc(file_quarry_v1_connection, 9);
 
 /**
  * @generated from message quarry.v1.ListConnectionsResponse
@@ -243,7 +317,7 @@ export type ListConnectionsResponse = Message<"quarry.v1.ListConnectionsResponse
  * Use `create(ListConnectionsResponseSchema)` to create a new message.
  */
 export const ListConnectionsResponseSchema: GenMessage<ListConnectionsResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 7);
+  messageDesc(file_quarry_v1_connection, 10);
 
 /**
  * @generated from message quarry.v1.SaveConnectionRequest
@@ -286,7 +360,7 @@ export type SaveConnectionRequest = Message<"quarry.v1.SaveConnectionRequest"> &
  * Use `create(SaveConnectionRequestSchema)` to create a new message.
  */
 export const SaveConnectionRequestSchema: GenMessage<SaveConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 8);
+  messageDesc(file_quarry_v1_connection, 11);
 
 /**
  * @generated from message quarry.v1.SaveConnectionResponse
@@ -303,7 +377,7 @@ export type SaveConnectionResponse = Message<"quarry.v1.SaveConnectionResponse">
  * Use `create(SaveConnectionResponseSchema)` to create a new message.
  */
 export const SaveConnectionResponseSchema: GenMessage<SaveConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 9);
+  messageDesc(file_quarry_v1_connection, 12);
 
 /**
  * @generated from message quarry.v1.DeleteConnectionRequest
@@ -320,7 +394,7 @@ export type DeleteConnectionRequest = Message<"quarry.v1.DeleteConnectionRequest
  * Use `create(DeleteConnectionRequestSchema)` to create a new message.
  */
 export const DeleteConnectionRequestSchema: GenMessage<DeleteConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 10);
+  messageDesc(file_quarry_v1_connection, 13);
 
 /**
  * @generated from message quarry.v1.DeleteConnectionResponse
@@ -333,7 +407,7 @@ export type DeleteConnectionResponse = Message<"quarry.v1.DeleteConnectionRespon
  * Use `create(DeleteConnectionResponseSchema)` to create a new message.
  */
 export const DeleteConnectionResponseSchema: GenMessage<DeleteConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 11);
+  messageDesc(file_quarry_v1_connection, 14);
 
 /**
  * @generated from message quarry.v1.TestConnectionRequest
@@ -357,7 +431,7 @@ export type TestConnectionRequest = Message<"quarry.v1.TestConnectionRequest"> &
  * Use `create(TestConnectionRequestSchema)` to create a new message.
  */
 export const TestConnectionRequestSchema: GenMessage<TestConnectionRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 12);
+  messageDesc(file_quarry_v1_connection, 15);
 
 /**
  * @generated from message quarry.v1.TestConnectionResponse
@@ -374,7 +448,7 @@ export type TestConnectionResponse = Message<"quarry.v1.TestConnectionResponse">
  * Use `create(TestConnectionResponseSchema)` to create a new message.
  */
 export const TestConnectionResponseSchema: GenMessage<TestConnectionResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 13);
+  messageDesc(file_quarry_v1_connection, 16);
 
 /**
  * @generated from message quarry.v1.ParseURIRequest
@@ -391,7 +465,7 @@ export type ParseURIRequest = Message<"quarry.v1.ParseURIRequest"> & {
  * Use `create(ParseURIRequestSchema)` to create a new message.
  */
 export const ParseURIRequestSchema: GenMessage<ParseURIRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 14);
+  messageDesc(file_quarry_v1_connection, 17);
 
 /**
  * @generated from message quarry.v1.ParseURIResponse
@@ -413,7 +487,7 @@ export type ParseURIResponse = Message<"quarry.v1.ParseURIResponse"> & {
  * Use `create(ParseURIResponseSchema)` to create a new message.
  */
 export const ParseURIResponseSchema: GenMessage<ParseURIResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 15);
+  messageDesc(file_quarry_v1_connection, 18);
 
 /**
  * @generated from message quarry.v1.ConnectRequest
@@ -437,7 +511,7 @@ export type ConnectRequest = Message<"quarry.v1.ConnectRequest"> & {
  * Use `create(ConnectRequestSchema)` to create a new message.
  */
 export const ConnectRequestSchema: GenMessage<ConnectRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 16);
+  messageDesc(file_quarry_v1_connection, 19);
 
 /**
  * @generated from message quarry.v1.ConnectResponse
@@ -454,7 +528,7 @@ export type ConnectResponse = Message<"quarry.v1.ConnectResponse"> & {
  * Use `create(ConnectResponseSchema)` to create a new message.
  */
 export const ConnectResponseSchema: GenMessage<ConnectResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 17);
+  messageDesc(file_quarry_v1_connection, 20);
 
 /**
  * @generated from message quarry.v1.DisconnectRequest
@@ -471,7 +545,7 @@ export type DisconnectRequest = Message<"quarry.v1.DisconnectRequest"> & {
  * Use `create(DisconnectRequestSchema)` to create a new message.
  */
 export const DisconnectRequestSchema: GenMessage<DisconnectRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 18);
+  messageDesc(file_quarry_v1_connection, 21);
 
 /**
  * @generated from message quarry.v1.DisconnectResponse
@@ -484,7 +558,7 @@ export type DisconnectResponse = Message<"quarry.v1.DisconnectResponse"> & {
  * Use `create(DisconnectResponseSchema)` to create a new message.
  */
 export const DisconnectResponseSchema: GenMessage<DisconnectResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 19);
+  messageDesc(file_quarry_v1_connection, 22);
 
 /**
  * @generated from message quarry.v1.WatchStatusRequest
@@ -497,7 +571,7 @@ export type WatchStatusRequest = Message<"quarry.v1.WatchStatusRequest"> & {
  * Use `create(WatchStatusRequestSchema)` to create a new message.
  */
 export const WatchStatusRequestSchema: GenMessage<WatchStatusRequest> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 20);
+  messageDesc(file_quarry_v1_connection, 23);
 
 /**
  * @generated from message quarry.v1.WatchStatusResponse
@@ -521,7 +595,7 @@ export type WatchStatusResponse = Message<"quarry.v1.WatchStatusResponse"> & {
  * Use `create(WatchStatusResponseSchema)` to create a new message.
  */
 export const WatchStatusResponseSchema: GenMessage<WatchStatusResponse> = /*@__PURE__*/
-  messageDesc(file_quarry_v1_connection, 21);
+  messageDesc(file_quarry_v1_connection, 24);
 
 /**
  * @generated from enum quarry.v1.ConnectionState
@@ -623,6 +697,18 @@ export const ConnectionService: GenService<{
     methodKind: "unary";
     input: typeof ParseURIRequestSchema;
     output: typeof ParseURIResponseSchema;
+  },
+  /**
+   * DiscoverConnections reads .pgpass, pg_service.conf and tnsnames.ora from
+   * their usual locations, plus the given files, and returns the entries not
+   * saved yet.
+   *
+   * @generated from rpc quarry.v1.ConnectionService.DiscoverConnections
+   */
+  discoverConnections: {
+    methodKind: "unary";
+    input: typeof DiscoverConnectionsRequestSchema;
+    output: typeof DiscoverConnectionsResponseSchema;
   },
   /**
    * @generated from rpc quarry.v1.ConnectionService.Connect
