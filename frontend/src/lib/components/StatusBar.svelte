@@ -18,16 +18,11 @@
   }
 </script>
 
-<footer class="status" data-env={cfg?.env || 'local'}>
+<footer class="status">
   {#if tab && cfg}
-    <span class="env-dot" data-env={cfg.env || 'local'}></span>
-    <span class="name">{cfg.name}</span>
-    <span class="env">{cfg.env || 'local'}</span>
     <span class="state {stateLabel(state)}" title={status?.error || undefined}>
-      {stateLabel(state)}{#if state === ConnectionState.CONNECTED && status && status.latencyMs > 0n}{` · ${status.latencyMs} ms`}{/if}{#if status?.error && state !== ConnectionState.CONNECTED}{` · ${status.error}`}{/if}
+      <span class="dot"></span>{stateLabel(state)}{#if state === ConnectionState.CONNECTED && status && status.latencyMs > 0n}<span class="muted">{` · ${status.latencyMs} ms`}</span>{/if}{#if status?.error && state !== ConnectionState.CONNECTED}{` · ${status.error}`}{/if}
     </span>
-  {:else}
-    <span class="muted">No script open</span>
   {/if}
   <span class="flash">{notify.status}</span>
   {#each exportTasks.tasks as task (task.id)}
@@ -55,107 +50,83 @@
   .status {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 24px;
-    padding: 0 10px;
-    background: var(--crust);
-    border-top: 1px solid var(--surface0);
-    color: var(--subtext0);
+    gap: 12px;
+    height: 26px;
+    padding: 0 12px;
+    background: var(--bg-chrome);
+    color: var(--text-3);
     font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
   }
 
-  .status[data-env='prod'] {
-    border-top-color: var(--env-prod);
-  }
-
-  .name {
-    color: var(--text);
-  }
-
-  .update {
-    margin-left: auto;
+  .state {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 0 8px;
-    height: 18px;
-    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    color: var(--text);
-    font-size: 11px;
-    cursor: pointer;
+    gap: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
   }
 
-  .update:hover {
-    background: color-mix(in srgb, var(--accent) 20%, transparent);
-  }
-
-  .update .dot {
+  .state .dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--overlay0);
   }
 
-  .env {
-    color: var(--env);
+  .state.connected .dot {
+    background: var(--green);
   }
 
-  .state {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .state.connected {
-    color: var(--green);
-  }
-
-  .state.lost {
-    color: var(--peach);
+  .state.connecting .dot,
+  .state.lost .dot {
+    background: var(--peach);
   }
 
   .state.failed {
     color: var(--red);
   }
 
-  .state.disconnected,
+  .state.failed .dot {
+    background: var(--red);
+  }
+
   .muted {
-    color: var(--overlay0);
+    color: var(--text-3);
+    text-transform: none;
   }
 
   .flash {
-    margin-left: auto;
-    color: var(--subtext1);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-2);
   }
 
   .task {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    height: 20px;
     padding: 0 4px 0 8px;
-    height: 18px;
-    background: var(--surface0);
-    border-radius: 9px;
-    font-variant-numeric: tabular-nums;
+    border-radius: 10px;
+    background: var(--bg-hover);
+    color: var(--text-2);
+  }
+
+  .task[data-state='failed'] {
+    color: var(--red);
   }
 
   .task .label {
-    max-width: 160px;
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--text);
   }
 
-  .task .rows {
-    color: var(--green);
-  }
-
-  .spinner.small {
-    width: 10px;
-    height: 10px;
+  .rows {
+    font-variant-numeric: tabular-nums;
   }
 
   .cancel {
@@ -164,20 +135,60 @@
     background: none;
     border: none;
     border-radius: 50%;
-    color: var(--overlay1);
+    color: var(--text-3);
     cursor: pointer;
   }
 
   .cancel:hover {
-    color: var(--red);
-    background: var(--surface1);
+    color: var(--text-1);
+    background: var(--bg-active);
+  }
+
+  .spinner.small {
+    width: 10px;
+    height: 10px;
   }
 
   .path {
+    margin-left: auto;
     max-width: 40%;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--overlay0);
+    color: var(--text-3);
     direction: rtl;
+  }
+
+  .update {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 18px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .path + .update {
+    margin-left: 0;
+  }
+
+  .update:not(.path + .update) {
+    margin-left: auto;
+  }
+
+  .update:hover {
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+  }
+
+  .update .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
   }
 </style>

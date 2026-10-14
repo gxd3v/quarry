@@ -63,7 +63,7 @@
         tabindex="0"
         aria-selected={t.key === tabs.activeKey}
         data-env={env}
-        title="{t.table ? t.table.node.path.join(' › ') : t.path || t.title} @ {connections.name(t.connId)}{t.dirty ? ' (unsaved)' : ''}{t.table?.changes ? ' (pending changes)' : ''}"
+        title="{t.table ? t.table.node.path.join(' › ') : t.path || t.title} · {connections.name(t.connId)}{t.dirty ? ' · unsaved' : ''}{t.table?.changes ? ' · pending changes' : ''}"
         onmousedown={(e) => {
           if (e.button === 0) tabs.activate(t)
           else if (e.button === 1) e.preventDefault()
@@ -74,14 +74,12 @@
         onauxclick={(e) => onauxclick(e, t)}
         oncontextmenu={(e) => oncontextmenu(e, t)}
       >
-        <span class="env-dot" data-env={env}></span>
-        {#if t.scratch}<span class="scratch" title="Scratch"><Icon name="scratch" size={12} /></span>{/if}
-        {#if t.terminal}<span class="tkind" title="Terminal"><Icon name="terminal" size={12} /></span>{/if}
-        {#if t.table}<span class="tkind" title={t.table.node.kind}><Icon name={t.table.node.kind === 'view' ? 'view' : 'table'} size={12} /></span>{/if}
+        <span class="kind">
+          {#if t.terminal}<Icon name="terminal" size={13} />{:else if t.table}<Icon name={t.table.node.kind === 'view' ? 'view' : t.table.node.kind === 'key' ? 'key' : 'table'} size={13} />{:else if t.scratch}<Icon name="scratch" size={13} />{:else}<Icon name="script" size={13} />{/if}
+          <span class="env-mark"></span>
+        </span>
         <span class="title">{t.title}</span>
-        <span class="conn">@{connections.name(t.connId)}</span>
-        {#if t.busy}<span class="spinner small"></span>{/if}
-        {#if t.tx.inTx}<span class="tx" title="Open transaction">●</span>{/if}
+        {#if t.busy}<span class="spinner small"></span>{:else if t.tx.inTx}<span class="tx" title="Open transaction"></span>{/if}
         <button
           class="close"
           class:dirty={t.dirty || !!t.table?.changes}
@@ -90,89 +88,138 @@
           title="Close ({hint('tab.close')})"
           onmousedown={(e) => e.stopPropagation()}
           onclick={() => close(t)}
-          ><span class="dot" aria-label="Unsaved changes">●</span><Icon name="close" size={11} /></button
+          ><span class="dot" aria-label="Unsaved changes"></span><Icon name="close" size={10} /></button
         >
       </div>
     {/each}
   </div>
   <button class="icon-btn new" type="button" title="New script ({hint('tab.new')})" onclick={() => pickAndNewScript()}>
-    <Icon name="plus" />
+    <Icon name="plus" size={14} />
   </button>
 </div>
 
 <style>
   .tabbar {
     display: flex;
-    align-items: stretch;
-    height: 34px;
-    background: var(--crust);
-    border-bottom: 1px solid var(--surface0);
+    align-items: flex-end;
+    gap: 2px;
+    min-width: 0;
+    height: 100%;
   }
 
   .tabs {
     display: flex;
+    align-items: flex-end;
+    gap: 2px;
     min-width: 0;
+    height: 100%;
     overflow-x: auto;
     scrollbar-width: none;
   }
 
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
   .tab {
+    --wails-draggable: no-drag;
     position: relative;
     display: flex;
     align-items: center;
-    gap: 6px;
-    max-width: 260px;
-    padding: 0 6px 0 12px;
-    color: var(--overlay1);
-    border-right: 1px solid var(--surface0);
-    cursor: pointer;
+    gap: 7px;
+    flex: none;
+    max-width: 220px;
+    height: 32px;
+    padding: 0 6px 0 10px;
+    border-radius: 8px 8px 0 0;
+    color: var(--text-3);
+    cursor: default;
     white-space: nowrap;
     user-select: none;
     outline: none;
+    transition:
+      background 0.12s,
+      color 0.12s;
   }
 
   .tab:hover {
-    color: var(--subtext1);
-    background: color-mix(in srgb, var(--mantle) 60%, transparent);
+    color: var(--text-2);
+    background: var(--bg-hover);
   }
 
   .tab.active {
-    color: var(--text);
-    background: var(--base);
+    color: var(--text-1);
+    background: var(--bg-main);
+  }
+
+  /* Rounded joins between the active tab and the content below. */
+  .tab.active::before,
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 8px;
+    height: 8px;
+    background: transparent;
+    pointer-events: none;
   }
 
   .tab.active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--env);
+    left: -8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 4px 4px 0 4px var(--bg-main);
+  }
+
+  .tab.active::after {
+    right: -8px;
+    border-bottom-left-radius: 8px;
+    box-shadow: -4px 4px 0 4px var(--bg-main);
   }
 
   .tab:focus-visible {
-    box-shadow: inset 0 0 0 1px var(--accent);
+    box-shadow: inset var(--ring);
+  }
+
+  .kind {
+    position: relative;
+    display: inline-flex;
+    color: var(--text-3);
+  }
+
+  .tab.active .kind {
+    color: var(--env);
+  }
+
+  /* The environment shows as a dot on the icon. */
+  .env-mark {
+    position: absolute;
+    right: -3px;
+    bottom: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--env);
+    box-shadow: 0 0 0 2px var(--bg-chrome);
+  }
+
+  .tab:hover .env-mark {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--text) 6%, var(--bg-chrome));
+  }
+
+  .tab.active .env-mark {
+    box-shadow: 0 0 0 2px var(--bg-main);
   }
 
   .title {
-    font-weight: 500;
-  }
-
-  .conn {
-    color: var(--overlay0);
-    font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .tab.active .conn {
-    color: var(--subtext0);
-  }
-
   .tx {
-    color: var(--peach);
-    font-size: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--peach);
   }
 
   .spinner.small {
@@ -184,13 +231,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: none;
     width: 18px;
     height: 18px;
     padding: 0;
     background: none;
     border: none;
-    border-radius: 4px;
-    color: var(--overlay0);
+    border-radius: var(--radius-s);
+    color: var(--text-3);
     cursor: pointer;
     opacity: 0;
   }
@@ -203,33 +251,28 @@
 
   .close .dot {
     display: none;
-    color: var(--peach);
-    font-size: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-2);
   }
 
   .close.dirty:not(:hover) .dot {
-    display: inline;
+    display: block;
   }
 
   .close.dirty:not(:hover) :global(.icon) {
     display: none;
   }
 
-  .scratch {
-    color: var(--overlay1);
-  }
-
-  .tkind {
-    color: var(--blue);
-  }
-
   .close:hover {
-    background: var(--surface1);
-    color: var(--text);
+    background: var(--bg-active);
+    color: var(--text-1);
   }
 
   .new {
+    --wails-draggable: no-drag;
     align-self: center;
-    margin: 0 6px;
+    margin-left: 2px;
   }
 </style>

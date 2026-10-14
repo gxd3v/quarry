@@ -25,6 +25,28 @@ interface AppBinding {
 interface Runtime {
   EventsOn(name: string, cb: (...args: unknown[]) => void): () => void
   BrowserOpenURL(url: string): void
+  WindowMinimise(): void
+  WindowToggleMaximise(): void
+  WindowIsMaximised(): Promise<boolean>
+  Quit(): void
+}
+
+export type Platform = 'mac' | 'windows' | 'linux'
+
+export const platform: Platform =
+  typeof navigator === 'undefined' ? 'linux' : /Mac/.test(navigator.userAgent) ? 'mac' : /Windows/.test(navigator.userAgent) ? 'windows' : 'linux'
+
+function rt(): Runtime | undefined {
+  return typeof window === 'undefined' ? undefined : window.runtime
+}
+
+// The window buttons of the frameless window; no-ops in a browser.
+export const appWindow = {
+  available: () => !!rt()?.WindowMinimise,
+  minimise: () => rt()?.WindowMinimise(),
+  toggleMaximise: () => rt()?.WindowToggleMaximise(),
+  isMaximised: async () => (await rt()?.WindowIsMaximised?.()) ?? false,
+  quit: () => rt()?.Quit(),
 }
 
 export interface UpdateInfo {

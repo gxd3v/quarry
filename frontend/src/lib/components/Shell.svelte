@@ -38,7 +38,8 @@
   import StatusBar from './StatusBar.svelte'
   import TableView from './TableView.svelte'
   import UpdateDialog from './UpdateDialog.svelte'
-  import TabBar from './TabBar.svelte'
+  import TitleBar from './TitleBar.svelte'
+  import Icon from '../ui/Icon.svelte'
   import TerminalView from './TerminalView.svelte'
   import Toasts from './Toasts.svelte'
 
@@ -305,6 +306,8 @@
   }
 </script>
 
+<div class="app">
+<TitleBar lead={layout.explorer + 5} />
 <div class="shell" style:grid-template-columns="{layout.explorer}px 5px minmax(0, 1fr)">
   <div class="left">
     <Explorer bind:this={explorerRef} />
@@ -322,7 +325,6 @@
   ></div>
 
   <div class="main">
-    <TabBar />
     {#if tabs.active}
       {@const tab = tabs.active}
       {#if tab.kind !== 'terminal'}<ContextBar {tab} />{/if}
@@ -353,27 +355,41 @@
       {/if}
     {:else}
       <div class="welcome" bind:this={center}>
-        <h1>Quarry</h1>
-        <p>Every script runs on exactly one connection.</p>
-        <div class="actions">
-          <button class="btn primary" type="button" onclick={() => pickAndNewScript()}>New script <span class="kbd">{hint('tab.new')}</span></button>
-          <button class="btn" type="button" onclick={() => guard('Open file', () => workspace.openFile())}>Open file <span class="kbd">{hint('file.open')}</span></button>
-          <button class="btn" type="button" onclick={() => (ui.editing = '')}>New connection <span class="kbd">{hint('connection.new')}</span></button>
+        <div class="hero">
+          <svg viewBox="0 0 20 20" width="44" height="44" aria-hidden="true">
+            <path d="M10 1.8 17.5 6v8L10 18.2 2.5 14V6z" fill="currentColor" opacity=".18" />
+            <path d="M10 1.8 17.5 6 10 10.2 2.5 6z" fill="currentColor" opacity=".9" />
+            <path d="M10 10.2V18.2L2.5 14V6z" fill="currentColor" opacity=".45" />
+          </svg>
+          <h1>Quarry</h1>
+          <p>Every script runs on exactly one connection.</p>
+        </div>
+        <div class="cards">
+          <button class="card" type="button" onclick={() => pickAndNewScript()}>
+            <Icon name="script" size={18} /><span class="t">New script</span><span class="kbd">{hint('tab.new')}</span>
+          </button>
+          <button class="card" type="button" onclick={() => guard('Open file', () => workspace.openFile())}>
+            <Icon name="open" size={18} /><span class="t">Open file</span><span class="kbd">{hint('file.open')}</span>
+          </button>
+          <button class="card" type="button" onclick={() => (ui.editing = '')}>
+            <Icon name="plus" size={18} /><span class="t">New connection</span><span class="kbd">{hint('connection.new')}</span>
+          </button>
+          <button class="card" type="button" onclick={() => (ui.palette = 'commands')}>
+            <Icon name="command" size={18} /><span class="t">All commands</span><span class="kbd">{hint('palette.commands')}</span>
+          </button>
         </div>
         <dl>
-          <dt>{hint('run.statement')}</dt><dd>Run the statement at the cursor or the selection</dd>
-          <dt>{hint('run.script')}</dt><dd>Run the whole script</dd>
-          <dt>{hint('file.newScratch')} · {hint('file.save')}</dt><dd>New scratch, save</dd>
-          <dt>{hint('palette.commands')}</dt><dd>Command palette</dd>
-          <dt>{hint('palette.objects')}</dt><dd>Go to a table, view or function</dd>
-          <dt>{hint('tab.close')} · {hint('tab.next')}</dt><dd>Close and switch tabs</dd>
-          <dt>Alt+1 · Alt+2 · Alt+3</dt><dd>Focus explorer, editor, results</dd>
+          <dt><span class="kbd">{hint('run.statement')}</span></dt><dd>Run the statement at the cursor or the selection</dd>
+          <dt><span class="kbd">{hint('run.script')}</span></dt><dd>Run the whole script</dd>
+          <dt><span class="kbd">{hint('palette.objects')}</span></dt><dd>Go to a table, view or function</dd>
+          <dt><span class="kbd">{hint('run.explain')}</span></dt><dd>Explain the statement</dd>
         </dl>
       </div>
     {/if}
   </div>
 
   <div class="bottom"><StatusBar /></div>
+</div>
 </div>
 
 {#if ui.editing !== null}
@@ -416,16 +432,23 @@
 <Toasts />
 
 <style>
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-chrome);
+  }
+
   .shell {
+    flex: 1;
+    min-height: 0;
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
-    height: 100%;
   }
 
   .left {
     min-width: 0;
     min-height: 0;
-    border-right: 1px solid var(--surface0);
   }
 
   .main {
@@ -433,6 +456,9 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
+    background: var(--bg-main);
+    border-radius: 10px 0 0 0;
+    overflow: hidden;
   }
 
   .bottom {
@@ -456,9 +482,31 @@
   }
 
   .split {
-    background: var(--mantle);
+    position: relative;
+    background: var(--bg-side);
     touch-action: none;
     outline: none;
+  }
+
+  .split.horizontal {
+    background: var(--bg-main);
+  }
+
+  .split::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    background: transparent;
+    transition: background 0.12s;
+  }
+
+  .split.vertical::after {
+    width: 2px;
+  }
+
+  .split.horizontal::after {
+    height: 2px;
   }
 
   .split.vertical {
@@ -467,12 +515,12 @@
 
   .split.horizontal {
     cursor: row-resize;
-    border-block: 1px solid var(--surface0);
+    border-top: 1px solid var(--line);
   }
 
-  .split:hover,
-  .split:focus-visible {
-    background: var(--surface1);
+  .split:hover::after,
+  .split:focus-visible::after {
+    background: color-mix(in srgb, var(--accent) 60%, transparent);
   }
 
   :global(body.dragging) {
@@ -485,48 +533,82 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    color: var(--subtext0);
+    gap: 28px;
+    padding: 24px;
+    color: var(--text-2);
+  }
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent);
   }
 
   h1 {
-    margin: 0;
-    color: var(--accent);
-    font-size: 28px;
+    margin: 4px 0 0;
+    color: var(--text-1);
+    font-size: 24px;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.02em;
   }
 
   p {
     margin: 0;
+    color: var(--text-3);
   }
 
-  .actions {
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 220px);
+    gap: 10px;
+  }
+
+  .card {
     display: flex;
-    gap: 8px;
-    margin: 8px 0 16px;
+    align-items: center;
+    gap: 10px;
+    height: 48px;
+    padding: 0 12px 0 14px;
+    background: var(--bg-hover);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    color: var(--text-2);
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      border-color 0.12s,
+      color 0.12s;
   }
 
-  .actions .kbd {
-    color: inherit;
-    opacity: 0.7;
+  .card:hover {
+    background: var(--bg-active);
+    border-color: var(--line-strong);
+    color: var(--text-1);
+  }
+
+  .card .t {
+    flex: 1;
+    text-align: left;
+    font-weight: 500;
   }
 
   dl {
     display: grid;
     grid-template-columns: auto auto;
-    gap: 6px 16px;
+    align-items: center;
+    gap: 8px 14px;
     margin: 0;
     font-size: 12px;
   }
 
   dt {
     text-align: right;
-    font-family: var(--font-mono);
-    color: var(--overlay1);
   }
 
   dd {
     margin: 0;
+    color: var(--text-3);
   }
 </style>
