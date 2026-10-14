@@ -15,11 +15,19 @@ import (
 	"github.com/gxd3v/quarry/internal/driver"
 )
 
-// docColumn is the result column holding each whole document.
-const docColumn = "{document}"
-
 // normalize converts a BSON value to one of the value types the UI knows
-// (see driver.Result).
+// (see driver.Result):
+//
+//	double → float64; int32, int64 → int64; decimal → driver.Number (NaN
+//	and infinities as strings); string, bool; date → time.Time (UTC);
+//	null, undefined → nil; objectId → its 24-digit hex string; UUID
+//	binaries (subtype 4) → the canonical UUID string; other binaries →
+//	[]byte; documents and arrays → driver.JSON (relaxed Extended JSON);
+//	regex → "/pattern/flags"; timestamp, minKey, maxKey, code → strings.
+//
+// Scalars stay grid-friendly; the column type ($type alias) and, when
+// editing, the stored value tell objectIds and UUIDs apart from plain
+// strings (see Apply), and DocumentColumn always has the exact document.
 func normalize(rv bson.RawValue) any {
 	switch rv.Type {
 	case bson.TypeDouble:
@@ -200,44 +208,29 @@ func docKeys(doc bson.Raw) []string {
 // stripReply drops the cluster bookkeeping fields mongosh hides from
 // command replies.
 func stripReply(doc bson.Raw) bson.Raw {
+	return filterDoc(doc, func(k string) bool {
+		switch k {
+		case "$clusterTime", "operationTime", "$configTime", "$topologyTime", "$gleStats", "lastCommittedOpTime", "electionId":
+			return false
+		}
+		return true
+	})
+}
+
+// filterDoc returns doc with only the top-level fields keep accepts.
+func filterDoc(doc bson.Raw, keep func(string) bool) bson.Raw {
 	els, err := doc.Elements()
 	if err != nil {
 		return doc
 	}
-	drop := func(k string) bool {
-		switch k {
-		case "$clusterTime", "operationTime", "$configTime", "$topologyTime", "$gleStats", "lastCommittedOpTime", "electionId":
-			return true
-		}
-		return false
-	}
-	need := false
-	for _, e := range els {
-		if drop(e.Key()) {
-			need = true
-			break
-		}
-	}
-	if !need {
-		return doc
-	}
 	idx, out := bsoncore.AppendDocumentStart(nil)
 	for _, e := range els {
-		if !drop(e.Key()) {
+		if keep(e.Key()) {
 			out = append(out, e...)
 		}
 	}
 	out, _ = bsoncore.AppendDocumentEnd(out, idx)
 	return bson.Raw(out)
-}
-
-// marshalDoc turns a bson.D (or any document value) into raw BSON.
-func marshalDoc(v any) (bson.Raw, error) {
-	b, err := bson.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-	return bson.Raw(b), nil
 }
 
 // ---------------------------------------------------------------------------
@@ -466,7 +459,7 @@ func jsQuote(s string) string {
 			b.WriteString(`\r`)
 		case '\t':
 			b.WriteString(`\t`)
-		case ' ', ' ':
+		case 0x2028, 0x2029: // line and paragraph separators
 			fmt.Fprintf(&b, `\u%04x`, r)
 		default:
 			if r < 0x20 || r == 0x7f {

@@ -80,13 +80,6 @@ func (p *parser) peek() token {
 	return token{kind: tEOF, start: len(p.src), end: len(p.src)}
 }
 
-func (p *parser) peekAt(k int) token {
-	if p.i+k < len(p.toks) {
-		return p.toks[p.i+k]
-	}
-	return token{kind: tEOF, start: len(p.src), end: len(p.src)}
-}
-
 func (p *parser) next() token {
 	t := p.peek()
 	if p.i < len(p.toks) {

@@ -51,7 +51,7 @@ type token struct {
 }
 
 func (t token) is(kind tokKind, text string) bool { return t.kind == kind && t.text == text }
-func (t token) punct(p string) bool                { return t.kind == tPunct && t.text == p }
+func (t token) punct(p string) bool               { return t.kind == tPunct && t.text == p }
 
 // lexError is a tokenizer failure at a byte offset.
 type lexError struct {
@@ -77,9 +77,9 @@ func space(s string, i int) (size int, newline bool) {
 	}
 	r, n := utf8.DecodeRuneInString(s[i:])
 	switch r {
-	case ' ', ' ':
+	case 0x2028, 0x2029: // line and paragraph separators
 		return n, true
-	case ' ', '﻿':
+	case 0x00a0, 0xfeff: // no-break space, byte order mark
 		return n, false
 	}
 	if unicode.IsSpace(r) {
