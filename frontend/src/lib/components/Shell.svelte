@@ -7,7 +7,7 @@
   import { clampLayout } from '../app/layout'
   import { menu } from '../app/menu.svelte'
   import { notify } from '../app/notify.svelte'
-  import { checkUpdates } from '../app/updates'
+  import { updates } from '../app/updates.svelte'
   import { settings } from '../app/settings.svelte'
   import * as table from '../app/table.svelte'
   import { editorHost, HISTORY, tabs } from '../app/tabs.svelte'
@@ -37,6 +37,7 @@
   import ShortcutsDialog from './ShortcutsDialog.svelte'
   import StatusBar from './StatusBar.svelte'
   import TableView from './TableView.svelte'
+  import UpdateDialog from './UpdateDialog.svelte'
   import TabBar from './TabBar.svelte'
   import TerminalView from './TerminalView.svelte'
   import Toasts from './Toasts.svelte'
@@ -198,7 +199,7 @@
       { id: 'palette.commands', category: 'View', title: 'Command palette', run: () => void (ui.palette = 'commands') },
       { id: 'palette.objects', category: 'Go', title: 'Go to object…', run: withTab(() => (ui.palette = 'objects')) },
       { id: 'keymap.edit', category: 'Preferences', title: 'Keyboard shortcuts', run: () => void (ui.shortcuts = true) },
-      { id: 'app.checkUpdates', category: 'Help', title: 'Check for updates', run: () => void checkUpdates(true) },
+      { id: 'app.checkUpdates', category: 'Help', title: 'Check for updates', run: () => void updates.check(true) },
       ...THEMES.map((t) => ({
         id: `theme.${t}`,
         category: 'Preferences',
@@ -272,10 +273,11 @@
 
     const watch = new AbortController()
     settings.load().catch((err: unknown) => notify.error(err, 'Load settings'))
-    setTimeout(() => void checkUpdates(false), 5000)
+    updates.start()
     connections
       .load()
       .then(() => workspace.restore())
+      .then(() => updates.reconnect())
       .catch(() => {})
     void connections.watch(watch.signal)
     return () => {
@@ -405,6 +407,9 @@
 {/if}
 {#if ui.exporting}
   <ExportDialog request={ui.exporting} onclose={() => (ui.exporting = null)} />
+{/if}
+{#if updates.open && updates.info}
+  <UpdateDialog onclose={() => (updates.open = false)} />
 {/if}
 <PromptDialogs />
 <ContextMenu />

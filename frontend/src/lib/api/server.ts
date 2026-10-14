@@ -13,6 +13,8 @@ interface AppBinding {
   SaveExportDialog(defaultName: string, format: string): Promise<string>
   OpenFileDialog(title: string, kind: string, pattern: string): Promise<string>
   CheckForUpdate(): Promise<UpdateInfo>
+  InstallUpdate(version: string): Promise<void>
+  TakeReconnect(): Promise<string[] | null>
   // Shows a file in the system file manager.
   RevealPath(path: string): Promise<void>
   // Lets the window close after the frontend saved its state.
@@ -29,7 +31,12 @@ export interface UpdateInfo {
   current: string
   latest: string
   url: string
+  notes: string
+  // RFC 3339 publication time, or ''.
+  date: string
   newer: boolean
+  // binary | appimage | app | installer | managed (see internal/update).
+  install: string
 }
 
 declare global {
@@ -93,6 +100,25 @@ export async function openFileDialog(title: string, kind = '', pattern = ''): Pr
 // checkForUpdate asks the backend about newer releases; null outside the app.
 export async function checkForUpdate(): Promise<UpdateInfo | null> {
   return (await app()?.CheckForUpdate?.()) ?? null
+}
+
+// installUpdate installs a release and restarts into it; it resolves only
+// when the install failed before the restart.
+export async function installUpdate(version: string): Promise<void> {
+  const a = app()
+  if (!a?.InstallUpdate) throw new Error('updates need the desktop app')
+  await a.InstallUpdate(version)
+}
+
+// takeReconnect returns the connections open before an update restart.
+export async function takeReconnect(): Promise<string[]> {
+  return (await app()?.TakeReconnect?.()) ?? []
+}
+
+// onEvent subscribes to a backend event; a no-op outside the app.
+export function onEvent(name: string, fn: (...args: unknown[]) => void): () => void {
+  const rt = typeof window === 'undefined' ? undefined : window.runtime
+  return rt ? rt.EventsOn(name, fn) : () => {}
 }
 
 // openURL opens a link in the system browser.

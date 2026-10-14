@@ -4,6 +4,7 @@
   import Icon from '../ui/Icon.svelte'
   import { notify } from '../app/notify.svelte'
   import { tabs } from '../app/tabs.svelte'
+  import { updates } from '../app/updates.svelte'
 
   const tab = $derived(tabs.active)
   const cfg = $derived(tab ? connections.config(tab.connId) : undefined)
@@ -43,6 +44,11 @@
     </span>
   {/each}
   {#if tab?.path}<span class="path" title={tab.path}>{tab.path}</span>{/if}
+  {#if updates.available}
+    <button class="update" type="button" title="Release notes and update" onclick={() => (updates.open = true)}>
+      <span class="dot"></span>Update {updates.info?.latest}
+    </button>
+  {/if}
 </footer>
 
 <style>
@@ -66,6 +72,32 @@
 
   .name {
     color: var(--text);
+  }
+
+  .update {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 8px;
+    height: 18px;
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .update:hover {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  .update .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
   }
 
   .env {
