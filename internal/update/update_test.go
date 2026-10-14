@@ -99,7 +99,9 @@ func TestCheckerBadTag(t *testing.T) {
 }
 
 func TestDetect(t *testing.T) {
-	env := func(m map[string]string) func(string) string { return func(k string) string { return filepath.FromSlash(m[k]) } }
+	env := func(m map[string]string) func(string) string {
+		return func(k string) string { return filepath.FromSlash(m[k]) }
+	}
 	yes := func(string) bool { return true }
 	no := func(string) bool { return false }
 	for _, tc := range []struct {
