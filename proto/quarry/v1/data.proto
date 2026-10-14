@@ -21,6 +21,8 @@ service DataService {
   rpc ApplyChanges(ApplyChangesRequest) returns (ApplyChangesResponse);
   // SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
   rpc SetTTL(SetTTLRequest) returns (SetTTLResponse);
+  // CountRows counts the rows the data view's filter matches.
+  rpc CountRows(CountRowsRequest) returns (CountRowsResponse);
 }
 
 message OpenDataRequest {
@@ -77,3 +79,13 @@ message SetTTLRequest {
 }
 
 message SetTTLResponse {}
+
+message CountRowsRequest {
+  string conn_id = 1;
+  Node node = 2;
+  string filter = 3;
+}
+
+message CountRowsResponse {
+  int64 count = 1;
+}

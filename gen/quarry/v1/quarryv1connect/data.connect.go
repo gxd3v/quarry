@@ -42,6 +42,8 @@ const (
 	DataServiceApplyChangesProcedure = "/quarry.v1.DataService/ApplyChanges"
 	// DataServiceSetTTLProcedure is the fully-qualified name of the DataService's SetTTL RPC.
 	DataServiceSetTTLProcedure = "/quarry.v1.DataService/SetTTL"
+	// DataServiceCountRowsProcedure is the fully-qualified name of the DataService's CountRows RPC.
+	DataServiceCountRowsProcedure = "/quarry.v1.DataService/CountRows"
 )
 
 // DataServiceClient is a client for the quarry.v1.DataService service.
@@ -56,6 +58,8 @@ type DataServiceClient interface {
 	ApplyChanges(context.Context, *connect.Request[v1.ApplyChangesRequest]) (*connect.Response[v1.ApplyChangesResponse], error)
 	// SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
 	SetTTL(context.Context, *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error)
+	// CountRows counts the rows the data view's filter matches.
+	CountRows(context.Context, *connect.Request[v1.CountRowsRequest]) (*connect.Response[v1.CountRowsResponse], error)
 }
 
 // NewDataServiceClient constructs a client for the quarry.v1.DataService service. By default, it
@@ -93,6 +97,12 @@ func NewDataServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(dataServiceMethods.ByName("SetTTL")),
 			connect.WithClientOptions(opts...),
 		),
+		countRows: connect.NewClient[v1.CountRowsRequest, v1.CountRowsResponse](
+			httpClient,
+			baseURL+DataServiceCountRowsProcedure,
+			connect.WithSchema(dataServiceMethods.ByName("CountRows")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -102,6 +112,7 @@ type dataServiceClient struct {
 	rowKey       *connect.Client[v1.RowKeyRequest, v1.RowKeyResponse]
 	applyChanges *connect.Client[v1.ApplyChangesRequest, v1.ApplyChangesResponse]
 	setTTL       *connect.Client[v1.SetTTLRequest, v1.SetTTLResponse]
+	countRows    *connect.Client[v1.CountRowsRequest, v1.CountRowsResponse]
 }
 
 // OpenData calls quarry.v1.DataService.OpenData.
@@ -124,6 +135,11 @@ func (c *dataServiceClient) SetTTL(ctx context.Context, req *connect.Request[v1.
 	return c.setTTL.CallUnary(ctx, req)
 }
 
+// CountRows calls quarry.v1.DataService.CountRows.
+func (c *dataServiceClient) CountRows(ctx context.Context, req *connect.Request[v1.CountRowsRequest]) (*connect.Response[v1.CountRowsResponse], error) {
+	return c.countRows.CallUnary(ctx, req)
+}
+
 // DataServiceHandler is an implementation of the quarry.v1.DataService service.
 type DataServiceHandler interface {
 	// OpenData runs the table's data query in a query tab (see QueryService),
@@ -136,6 +152,8 @@ type DataServiceHandler interface {
 	ApplyChanges(context.Context, *connect.Request[v1.ApplyChangesRequest]) (*connect.Response[v1.ApplyChangesResponse], error)
 	// SetTTL changes a key's expiry (Redis); ttl_ms <= 0 removes it.
 	SetTTL(context.Context, *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error)
+	// CountRows counts the rows the data view's filter matches.
+	CountRows(context.Context, *connect.Request[v1.CountRowsRequest]) (*connect.Response[v1.CountRowsResponse], error)
 }
 
 // NewDataServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -169,6 +187,12 @@ func NewDataServiceHandler(svc DataServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(dataServiceMethods.ByName("SetTTL")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dataServiceCountRowsHandler := connect.NewUnaryHandler(
+		DataServiceCountRowsProcedure,
+		svc.CountRows,
+		connect.WithSchema(dataServiceMethods.ByName("CountRows")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/quarry.v1.DataService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DataServiceOpenDataProcedure:
@@ -179,6 +203,8 @@ func NewDataServiceHandler(svc DataServiceHandler, opts ...connect.HandlerOption
 			dataServiceApplyChangesHandler.ServeHTTP(w, r)
 		case DataServiceSetTTLProcedure:
 			dataServiceSetTTLHandler.ServeHTTP(w, r)
+		case DataServiceCountRowsProcedure:
+			dataServiceCountRowsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -202,4 +228,8 @@ func (UnimplementedDataServiceHandler) ApplyChanges(context.Context, *connect.Re
 
 func (UnimplementedDataServiceHandler) SetTTL(context.Context, *connect.Request[v1.SetTTLRequest]) (*connect.Response[v1.SetTTLResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.DataService.SetTTL is not implemented"))
+}
+
+func (UnimplementedDataServiceHandler) CountRows(context.Context, *connect.Request[v1.CountRowsRequest]) (*connect.Response[v1.CountRowsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.DataService.CountRows is not implemented"))
 }
