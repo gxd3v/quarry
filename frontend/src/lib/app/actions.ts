@@ -221,6 +221,17 @@ export function exportNode(connId: string, node: Pick<TreeNode, 'path' | 'name' 
   }
 }
 
+// canImport reports whether rows can be imported into a node of the
+// connection (PostgreSQL tables on writable connections).
+export function canImport(connId: string, kind: string): boolean {
+  const cfg = connections.config(connId)
+  return cfg?.kind === 'postgres' && !cfg.readOnly && kind === 'table'
+}
+
+export function importCsv(connId: string, node: Pick<TreeNode, 'path' | 'name' | 'kind'>) {
+  ui.importingCsv = { connId, node: { path: [...node.path], kind: node.kind, name: node.name } }
+}
+
 // exportTableData exports a table tab's rows with its filter and order.
 export function exportTableData(tab: Tab) {
   const t = tab.table

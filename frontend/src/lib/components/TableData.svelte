@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, tick, untrack } from 'svelte'
-  import { guard } from '../app/actions'
+  import { canImport, guard, importCsv } from '../app/actions'
   import { connections } from '../app/connections.svelte'
   import type { MenuEntry } from '../app/menu.svelte'
   import {
@@ -297,6 +297,9 @@
     {/if}
     {#if t.editable}
       <button class="icon-btn" type="button" title={showDocs ? 'Add document' : 'Add row (Insert)'} onclick={addRow}><Icon name="rowAdd" /></button>
+    {/if}
+    {#if canImport(tab.connId, t.node.kind)}
+      <button class="icon-btn" type="button" title="Import CSV…" onclick={() => importCsv(tab.connId, t.node)}><Icon name="open" /></button>
     {/if}
     <button class="icon-btn" type="button" title="Export data…" onclick={onexport}><Icon name="export" /></button>
   </div>

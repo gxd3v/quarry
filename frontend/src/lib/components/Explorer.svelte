@@ -11,6 +11,8 @@
     openObject,
     renameGroup,
     openTerminal,
+    canImport,
+    importCsv,
     selectFrom,
     setFavorite,
   } from '../app/actions'
@@ -95,6 +97,7 @@
         { label: `Open ${n.kind}`, icon: n.kind === 'view' ? 'view' : n.kind === 'key' ? 'key' : 'table', hint: 'Enter', run: () => openObject(r.connId, n) },
         ...(SQL_OBJECT.has(n.kind) && n.path.length > 2 ? [{ label: 'New script with SELECT', icon: 'play', run: () => selectFrom(r.connId, n) }] : []),
         { label: 'Export data…', icon: 'export', run: () => exportNode(r.connId, n) },
+        ...(canImport(r.connId, n.kind) ? [{ label: 'Import CSV…', icon: 'open', run: () => importCsv(r.connId, n) }] : []),
         'separator',
       )
     }

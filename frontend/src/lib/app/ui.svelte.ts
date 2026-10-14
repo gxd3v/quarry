@@ -28,6 +28,12 @@ export interface ExportRequest {
   name: string
 }
 
+// The table a CSV file is imported into.
+export interface ImportRequest {
+  connId: string
+  node: { path: string[]; kind: string; name: string }
+}
+
 export interface ConnectionRequest {
   title: string
   resolve: (connId: string | null) => void
@@ -49,6 +55,7 @@ class UI {
   cellEdit = $state.raw<CellEditRequest | null>(null)
   exporting = $state.raw<ExportRequest | null>(null)
   importingConnections = $state(false)
+  importingCsv = $state.raw<ImportRequest | null>(null)
   layout = $state<Layout>({ ...DEFAULT_LAYOUT })
 
   // pickConnection shows the connection picker; null when dismissed.

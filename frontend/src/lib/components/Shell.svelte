@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { closeTab, exportTableData, guard, pickAndNewScript, pickAndOpenTerminal, run, saveTab } from '../app/actions'
+  import { canImport, closeTab, exportTableData, guard, importCsv, pickAndNewScript, pickAndOpenTerminal, run, saveTab } from '../app/actions'
   import { onBeforeClose } from '../api/server'
   import { connections } from '../app/connections.svelte'
   import { exportTasks } from '../app/exports.svelte'
@@ -27,6 +27,7 @@
   import Explorer from './Explorer.svelte'
   import GotoObject from './GotoObject.svelte'
   import ImportConnectionsDialog from './ImportConnectionsDialog.svelte'
+  import ImportCsvDialog from './ImportCsvDialog.svelte'
   import PromptDialogs from './PromptDialogs.svelte'
   import ResultsPanel from './ResultsPanel.svelte'
   import ScopePicker from './ScopePicker.svelte'
@@ -147,6 +148,12 @@
       { id: 'table.apply', category: 'Table', title: 'Apply pending changes', run: withTable(applyTable) },
       { id: 'table.discard', category: 'Table', title: 'Discard pending changes', run: withTable((t) => t.table && table.discardChanges(t.table)) },
       { id: 'table.export', category: 'Table', title: 'Export data…', run: withTable(exportTableData) },
+      {
+        id: 'table.importCsv',
+        category: 'Table',
+        title: 'Import CSV…',
+        run: withTable((t) => (t.table && canImport(t.connId, t.table.node.kind) ? importCsv(t.connId, t.table.node) : false)),
+      },
       {
         id: 'results.export',
         category: 'Results',
@@ -367,6 +374,9 @@
 {/if}
 {#if ui.importingConnections}
   <ImportConnectionsDialog onclose={() => (ui.importingConnections = false)} />
+{/if}
+{#if ui.importingCsv}
+  <ImportCsvDialog request={ui.importingCsv} onclose={() => (ui.importingCsv = null)} />
 {/if}
 {#if ui.exporting}
   <ExportDialog request={ui.exporting} onclose={() => (ui.exporting = null)} />
