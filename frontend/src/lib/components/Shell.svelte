@@ -133,6 +133,15 @@
       { id: 'run.statement', category: 'Run', title: 'Run statement or selection', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, false) : undefined)) },
       { id: 'run.script', category: 'Run', title: 'Run script', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, true) : undefined)) },
       {
+        id: 'editor.format',
+        category: 'Editor',
+        title: 'Format SQL (selection or statement)',
+        run: withTab((t) => {
+          if (t.kind !== 'script' || t.language !== 'sql') return false
+          guard('Format SQL', () => tabs.format(t))
+        }),
+      },
+      {
         id: 'run.listen',
         category: 'Run',
         title: 'Listen to notifications (LISTEN)…',

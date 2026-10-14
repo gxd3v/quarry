@@ -38,6 +38,7 @@ export const DEFAULT_BINDINGS: Readonly<Record<string, string>> = {
   'Mod+Shift+H': 'results.history',
   'Mod+Shift+T': 'terminal.open',
   'Mod+E': 'run.explain',
+  'Alt+Shift+F': 'editor.format',
   'Mod+Shift+E': 'run.explainAnalyze',
 }
 

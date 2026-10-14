@@ -4,6 +4,7 @@ import type { Row } from '../gen/quarry/v1/common_pb'
 import { dataClient, queryClient, workspaceClient } from '../api/clients'
 import { errorMessage, isAbort, needsConfirmation, notConnected, tabBusy, unimplemented, unknownTab } from '../api/errors'
 import type { CompleteReply } from '../editor/complete'
+import { formatSql } from '../editor/format'
 import { createScriptState, errorPos, setError, setStatement } from '../editor/script'
 import { statementAt, type Range } from '../editor/statements'
 import { RunMode, type PlanNode } from '../gen/quarry/v1/query_pb'
@@ -573,6 +574,28 @@ class Tabs {
       tab.analyzed = { doc, ranges: res.statements.map((r) => ({ start: r.start, end: r.end })) }
     }
     this.highlight(tab)
+  }
+
+  // format reformats the selection, or the statement at the cursor, in the
+  // connection's SQL dialect.
+  async format(tab: Tab): Promise<boolean> {
+    if (tab.language !== 'sql') return false
+    let st = this.state(tab)
+    let { from, to } = st.selection.main
+    if (from === to) {
+      await this.analyze(tab)
+      st = this.state(tab)
+      const a = tab.analyzed
+      const i = a && a.doc === st.doc ? statementAt(a.ranges, st.doc.toString(), st.selection.main.head) : -1
+      if (i < 0) return false
+      ;({ start: from, end: to } = a!.ranges[i])
+    }
+    const doc = st.doc
+    const text = doc.sliceString(from, to)
+    const out = await formatSql(text, connections.config(tab.connId)?.kind ?? '')
+    if (this.state(tab).doc !== doc || out === text) return true
+    this.update(tab, { changes: { from, to, insert: out }, selection: { anchor: from, head: from + out.length } })
+    return true
   }
 
   // highlight marks the statement at the cursor from the last analysis.
