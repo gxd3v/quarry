@@ -89,3 +89,23 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go test -race ./internal/driver/... ./service/...
+
+  oracle:
+    runs-on: ubuntu-latest
+    services:
+      oracle:
+        image: gvenzl/oracle-free:23-slim-faststart
+        env:
+          ORACLE_PASSWORD: quarry
+        ports: ["51521:1521"]
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s --health-timeout 5s --health-retries 30
+    env:
+      QUARRY_TEST_ORA_DSN: oracle://system:quarry@localhost:51521/FREEPDB1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go test -race ./internal/driver/oracle/
