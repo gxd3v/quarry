@@ -247,6 +247,12 @@ type DataViewer interface {
 	DataQuery(target *Node, filter string, orderBy []string) (string, error)
 }
 
+// Counter is implemented by connections that count the rows of a data view
+// with a filter (see DataViewer), on demand since it may be slow.
+type Counter interface {
+	CountRows(ctx context.Context, target *Node, filter string) (int64, error)
+}
+
 // Describer returns what the object viewer shows for a table or view (E-05..E-08).
 type Describer interface {
 	Describe(ctx context.Context, target *Node) (*ObjectDetails, error)

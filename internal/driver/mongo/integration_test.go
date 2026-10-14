@@ -246,6 +246,13 @@ func TestITEdit(t *testing.T) {
 		t.Fatalf("data query %q: %v", q, rows)
 	}
 
+	if n, err := c.(driver.Counter).CountRows(ctx, node, `{a: "x"}`); err != nil || n != 1 {
+		t.Fatalf("count: %d %v", n, err)
+	}
+	if n, err := c.(driver.Counter).CountRows(ctx, node, ""); err != nil || n != 2 {
+		t.Fatalf("count all: %d %v", n, err)
+	}
+
 	ed := c.(driver.Editable)
 	key, err := ed.RowKey(ctx, node)
 	if err != nil || len(key) != 1 || key[0] != "_id" {
