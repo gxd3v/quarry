@@ -1,6 +1,6 @@
 // Flattening of the explorer tree into visible rows. Pure, so the store can
 // stay a thin reactive wrapper.
-import { quoteIdent } from '../sql'
+import { quoteIdent, schemaOfObject } from '../sql'
 
 export interface TreeNode {
   path: string[]
@@ -141,9 +141,9 @@ const BARE = new Set(['database', 'schema', 'column', 'index', 'key'])
 // dragName is the text a node inserts when dropped into the editor: the
 // schema-qualified name of objects, the plain name of columns and the like,
 // quoted where PostgreSQL needs it. '' when the node is not draggable.
-export function dragName(n: TreeNode): string {
+export function dragName(n: TreeNode, dbKind = 'postgres'): string {
   if (QUALIFIED.has(n.kind)) {
-    const schema = n.path.length >= 4 ? n.path[1] : ''
+    const schema = schemaOfObject(n.path, dbKind)
     return schema ? `${quoteIdent(schema)}.${quoteIdent(n.name)}` : quoteIdent(n.name)
   }
   return BARE.has(n.kind) ? quoteIdent(n.name) : ''

@@ -5,7 +5,7 @@ import { EditorView } from '@codemirror/view'
 import { ConnectionConfigSchema, type ConnectionConfig } from '../gen/quarry/v1/connection_pb'
 import { RunMode } from '../gen/quarry/v1/query_pb'
 import type { ResultSet } from '../run/model'
-import { scopeOfPath, selectAll, type ScopeLike } from '../sql'
+import { schemaOfObject, scopeOfPath, selectAll, type ScopeLike } from '../sql'
 import { MAX_TERMINALS, TerminalSession } from '../terminal/session.svelte'
 import { orderBy } from '../table/order'
 import { connections } from './connections.svelte'
@@ -86,8 +86,9 @@ export function openObject(connId: string, node: Pick<TreeNode, 'path' | 'name' 
 
 // selectFrom opens a new script that selects from a table or view, and runs it.
 export function selectFrom(connId: string, node: Pick<TreeNode, 'path' | 'name'>) {
-  const scope = scopeOfPath(node.path)
-  const text = selectAll(scope.schema, node.name)
+  const kind = connections.config(connId)?.kind
+  const scope = scopeOfPath(node.path, kind)
+  const text = selectAll(schemaOfObject(node.path, kind), node.name)
   const tab = newScript(connId, scope, text, node.name)
   void run(tab, { mode: RunMode.RANGE, start: 0, end: text.length })
 }
@@ -205,17 +206,18 @@ export async function deleteConnection(id: string): Promise<boolean> {
   return true
 }
 
-function qualified(path: readonly string[], name: string): string {
-  return path[1] ? `${path[1]}.${name}` : name
+function qualified(connId: string, path: readonly string[], name: string): string {
+  const schema = schemaOfObject(path, connections.config(connId)?.kind)
+  return schema ? `${schema}.${name}` : name
 }
 
 // exportNode opens the export dialog for all rows of a table or view.
 export function exportNode(connId: string, node: Pick<TreeNode, 'path' | 'name' | 'kind'>) {
   ui.exporting = {
     connId,
-    scope: scopeOfPath(node.path),
+    scope: scopeOfPath(node.path, connections.config(connId)?.kind),
     source: { data: { node: { path: node.path, kind: node.kind, name: node.name }, filter: '', orderBy: [] } },
-    name: qualified(node.path, node.name),
+    name: qualified(connId, node.path, node.name),
   }
 }
 
@@ -227,7 +229,7 @@ export function exportTableData(tab: Tab) {
     connId: tab.connId,
     scope: { ...tab.scope },
     source: { data: { node: t.node, filter: t.filter, orderBy: orderBy(t.order) } },
-    name: qualified(t.node.path, t.node.name),
+    name: qualified(tab.connId, t.node.path, t.node.name),
   }
 }
 

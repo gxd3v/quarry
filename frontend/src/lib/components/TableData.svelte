@@ -22,7 +22,7 @@
   import type { CopyOptions } from '../grid/copy'
   import Grid from '../grid/Grid.svelte'
   import DocumentsView from './DocumentsView.svelte'
-  import { quoteIdent } from '../sql'
+  import { quoteIdent, schemaOfObject } from '../sql'
   import { cycleOrder, orderBy, sortOf } from '../table/order'
   import Icon from '../ui/Icon.svelte'
 
@@ -233,7 +233,7 @@
   }
 
   function copyOptions(): CopyOptions {
-    const schema = t.node.path[1] ?? ''
+    const schema = schemaOfObject(t.node.path, connections.config(tab.connId)?.kind)
     return { table: schema ? `${quoteIdent(schema)}.${quoteIdent(t.node.name)}` : quoteIdent(t.node.name), dialect: connections.config(tab.connId)?.kind ?? '' }
   }
 

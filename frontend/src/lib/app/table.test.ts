@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { flavorOf, redisKey, scopeOfNode, viewsFor } from './table.svelte'
+import { scopeOfPath, schemaOfObject } from '../sql'
+import { flavorOf, redisKey, tableNode, viewsFor } from './table.svelte'
 
 describe('data tabs by backend', () => {
   it('decodes marked Redis keys', () => {
@@ -13,7 +14,13 @@ describe('data tabs by backend', () => {
     expect(flavorOf('oracle')).toBe('sql')
     expect(viewsFor('redis').map((v) => v.view)).toEqual(['data', 'stats'])
     expect(viewsFor('sql').length).toBe(7)
-    expect(scopeOfNode('mongo', ['app', 'orders'])).toEqual({ database: 'app', schema: '' })
-    expect(scopeOfNode('sql', ['app', 'public', 'tables', 't'])).toEqual({ database: 'app', schema: 'public' })
+    expect(scopeOfPath(['app', 'orders'], 'mongodb')).toEqual({ database: 'app', schema: '' })
+    expect(scopeOfPath(['app', 'public', 'tables', 't'])).toEqual({ database: 'app', schema: 'public' })
+    expect(scopeOfPath(['HR', 'tables', 'EMP'], 'oracle')).toEqual({ database: '', schema: 'HR' })
+    expect(schemaOfObject(['HR', 'tables', 'EMP'], 'oracle')).toBe('HR')
+    expect(schemaOfObject(['app', 'public', 'tables', 't'], 'postgres')).toBe('public')
+    expect(schemaOfObject(['app', 'orders'], 'mongodb')).toBe('')
+    expect(tableNode('oracle', '', 'HR', 'EMP', 'table').path).toEqual(['HR', 'tables', 'EMP'])
+    expect(tableNode('postgres', 'app', 'public', 'v', 'view', 'materialized view').path).toEqual(['app', 'public', 'matviews', 'v'])
   })
 })

@@ -2,6 +2,7 @@
   import { exportTableData, guard } from '../app/actions'
   import { connections } from '../app/connections.svelte'
   import { prompts } from '../app/prompts.svelte'
+  import { schemaOfObject } from '../sql'
   import { flavorOf, keyTTL, loadDescribe, redisKey, setTTL, viewsFor, type TableView } from '../app/table.svelte'
   import type { Tab } from '../app/tabs.svelte'
   import TableData from './TableData.svelte'
@@ -61,7 +62,8 @@
   }
 
   const kindLabel = $derived(t.node.kind === 'view' || t.node.kind === 'collection' || t.node.kind === 'key' ? t.node.kind : flavor === 'redis' ? 'keys' : 'table')
-  const qualifier = $derived(flavor === 'sql' && t.node.path[1] ? `${t.node.path[1]}.` : '')
+  const schema = $derived(schemaOfObject(t.node.path, connections.config(tab.connId)?.kind))
+  const qualifier = $derived(schema ? `${schema}.` : '')
   const select = (v: TableView) => (t.view = v)
 </script>
 

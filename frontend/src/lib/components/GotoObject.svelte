@@ -51,7 +51,7 @@
     onclose()
     if (!e.altKey && OPENABLE.has(o.kind)) {
       const db = tab.scope.database || connections.config(tab.connId)?.database || ''
-      openTable(tab.connId, tableNode(db, o.schema, o.name, o.kind, o.detail))
+      openTable(tab.connId, tableNode(connections.config(tab.connId)?.kind ?? '', db, o.schema, o.name, o.kind, o.detail))
       return
     }
     setTimeout(() => insertText(quoted(o)), 0)

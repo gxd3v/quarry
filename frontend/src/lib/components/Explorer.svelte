@@ -99,7 +99,7 @@
       )
     }
     if (n.path.length >= 1) {
-      const scope = scopeOfPath(n.path)
+      const scope = scopeOfPath(n.path, connections.config(r.connId)?.kind)
       out.push({
         label: SCOPED.has(n.kind) ? `New script in ${n.name}` : 'New script here',
         icon: 'script',
@@ -121,7 +121,7 @@
   }
 
   function ondragstart(e: DragEvent, r: Row) {
-    const name = r.type === 'node' ? dragName(r.node) : ''
+    const name = r.type === 'node' ? dragName(r.node, connections.config(r.connId)?.kind) : ''
     if (!name || !e.dataTransfer) {
       e.preventDefault()
       return
@@ -269,7 +269,7 @@
         tabindex="-1"
         data-i={i}
         style:padding-left="{6 + r.depth * 14}px"
-        draggable={r.type === 'node' && !!dragName(r.node)}
+        draggable={r.type === 'node' && !!dragName(r.node, connections.config(r.connId)?.kind)}
         ondragstart={(e) => ondragstart(e, r)}
         onclick={() => (explorer.selected = r.key)}
         ondblclick={() => activate(r)}

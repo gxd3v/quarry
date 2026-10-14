@@ -28,10 +28,27 @@ export interface ScopeLike {
   schema: string
 }
 
-// scopeOfPath reads the scope of a PostgreSQL explorer node: path[0] is the
-// database and path[1] the schema.
-export function scopeOfPath(path: readonly string[]): ScopeLike {
+// Explorer paths by backend: PostgreSQL [database, schema, folder, name],
+// Oracle [schema, folder, name], MongoDB [database, collection] and Redis
+// [db, folders..., key].
+
+// scopeOfPath reads the session scope of an explorer node.
+export function scopeOfPath(path: readonly string[], dbKind = 'postgres'): ScopeLike {
+  switch (dbKind) {
+    case 'oracle':
+      return { database: '', schema: path[0] ?? '' }
+    case 'mongodb':
+    case 'redis':
+      return { database: path[0] ?? '', schema: '' }
+  }
   return { database: path[0] ?? '', schema: path[1] ?? '' }
+}
+
+// schemaOfObject is the schema that qualifies an object node's name, or ''.
+export function schemaOfObject(path: readonly string[], dbKind = 'postgres'): string {
+  if (dbKind === 'oracle') return path.length >= 3 ? path[0] : ''
+  if (dbKind === 'postgres') return path.length >= 4 ? path[1] : ''
+  return ''
 }
 
 // scopeLabel renders a scope as "database.schema", falling back to the
