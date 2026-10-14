@@ -58,6 +58,8 @@ const (
 	QueryServiceRollbackProcedure = "/quarry.v1.QueryService/Rollback"
 	// QueryServiceCompleteProcedure is the fully-qualified name of the QueryService's Complete RPC.
 	QueryServiceCompleteProcedure = "/quarry.v1.QueryService/Complete"
+	// QueryServiceExplainProcedure is the fully-qualified name of the QueryService's Explain RPC.
+	QueryServiceExplainProcedure = "/quarry.v1.QueryService/Explain"
 )
 
 // QueryServiceClient is a client for the quarry.v1.QueryService service.
@@ -83,6 +85,10 @@ type QueryServiceClient interface {
 	// Complete suggests completions at the cursor. It never waits for a
 	// running statement of the tab.
 	Complete(context.Context, *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error)
+	// Explain shows the execution plan of one statement. Like Run it holds the
+	// tab busy and Cancel stops it. With analyze the statement is executed and
+	// then rolled back, so it passes the same guards as Run.
+	Explain(context.Context, *connect.Request[v1.ExplainRequest]) (*connect.Response[v1.ExplainResponse], error)
 }
 
 // NewQueryServiceClient constructs a client for the quarry.v1.QueryService service. By default, it
@@ -168,6 +174,12 @@ func NewQueryServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(queryServiceMethods.ByName("Complete")),
 			connect.WithClientOptions(opts...),
 		),
+		explain: connect.NewClient[v1.ExplainRequest, v1.ExplainResponse](
+			httpClient,
+			baseURL+QueryServiceExplainProcedure,
+			connect.WithSchema(queryServiceMethods.ByName("Explain")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -185,6 +197,7 @@ type queryServiceClient struct {
 	commit        *connect.Client[v1.CommitRequest, v1.CommitResponse]
 	rollback      *connect.Client[v1.RollbackRequest, v1.RollbackResponse]
 	complete      *connect.Client[v1.CompleteRequest, v1.CompleteResponse]
+	explain       *connect.Client[v1.ExplainRequest, v1.ExplainResponse]
 }
 
 // OpenTab calls quarry.v1.QueryService.OpenTab.
@@ -247,6 +260,11 @@ func (c *queryServiceClient) Complete(ctx context.Context, req *connect.Request[
 	return c.complete.CallUnary(ctx, req)
 }
 
+// Explain calls quarry.v1.QueryService.Explain.
+func (c *queryServiceClient) Explain(ctx context.Context, req *connect.Request[v1.ExplainRequest]) (*connect.Response[v1.ExplainResponse], error) {
+	return c.explain.CallUnary(ctx, req)
+}
+
 // QueryServiceHandler is an implementation of the quarry.v1.QueryService service.
 type QueryServiceHandler interface {
 	OpenTab(context.Context, *connect.Request[v1.OpenTabRequest]) (*connect.Response[v1.OpenTabResponse], error)
@@ -270,6 +288,10 @@ type QueryServiceHandler interface {
 	// Complete suggests completions at the cursor. It never waits for a
 	// running statement of the tab.
 	Complete(context.Context, *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error)
+	// Explain shows the execution plan of one statement. Like Run it holds the
+	// tab busy and Cancel stops it. With analyze the statement is executed and
+	// then rolled back, so it passes the same guards as Run.
+	Explain(context.Context, *connect.Request[v1.ExplainRequest]) (*connect.Response[v1.ExplainResponse], error)
 }
 
 // NewQueryServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -351,6 +373,12 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(queryServiceMethods.ByName("Complete")),
 		connect.WithHandlerOptions(opts...),
 	)
+	queryServiceExplainHandler := connect.NewUnaryHandler(
+		QueryServiceExplainProcedure,
+		svc.Explain,
+		connect.WithSchema(queryServiceMethods.ByName("Explain")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/quarry.v1.QueryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case QueryServiceOpenTabProcedure:
@@ -377,6 +405,8 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 			queryServiceRollbackHandler.ServeHTTP(w, r)
 		case QueryServiceCompleteProcedure:
 			queryServiceCompleteHandler.ServeHTTP(w, r)
+		case QueryServiceExplainProcedure:
+			queryServiceExplainHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -432,4 +462,8 @@ func (UnimplementedQueryServiceHandler) Rollback(context.Context, *connect.Reque
 
 func (UnimplementedQueryServiceHandler) Complete(context.Context, *connect.Request[v1.CompleteRequest]) (*connect.Response[v1.CompleteResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.QueryService.Complete is not implemented"))
+}
+
+func (UnimplementedQueryServiceHandler) Explain(context.Context, *connect.Request[v1.ExplainRequest]) (*connect.Response[v1.ExplainResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.QueryService.Explain is not implemented"))
 }

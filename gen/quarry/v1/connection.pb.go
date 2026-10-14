@@ -581,8 +581,11 @@ type SaveConnectionRequest struct {
 	Password *string `protobuf:"bytes,2,opt,name=password,proto3,oneof" json:"password,omitempty"`
 	// Removes the stored password.
 	ForgetPassword bool `protobuf:"varint,3,opt,name=forget_password,json=forgetPassword,proto3" json:"forget_password,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// SSH tunnel secrets, stored in the keyring when set; "" removes them.
+	SshPassword   *string `protobuf:"bytes,4,opt,name=ssh_password,json=sshPassword,proto3,oneof" json:"ssh_password,omitempty"`
+	SshPassphrase *string `protobuf:"bytes,5,opt,name=ssh_passphrase,json=sshPassphrase,proto3,oneof" json:"ssh_passphrase,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SaveConnectionRequest) Reset() {
@@ -634,6 +637,20 @@ func (x *SaveConnectionRequest) GetForgetPassword() bool {
 		return x.ForgetPassword
 	}
 	return false
+}
+
+func (x *SaveConnectionRequest) GetSshPassword() string {
+	if x != nil && x.SshPassword != nil {
+		return *x.SshPassword
+	}
+	return ""
+}
+
+func (x *SaveConnectionRequest) GetSshPassphrase() string {
+	if x != nil && x.SshPassphrase != nil {
+		return *x.SshPassphrase
+	}
+	return ""
 }
 
 type SaveConnectionResponse struct {
@@ -1263,12 +1280,16 @@ const file_quarry_v1_connection_proto_rawDesc = "" +
 	"\adrivers\x18\x01 \x03(\v2\x15.quarry.v1.DriverInfoR\adrivers\"\x18\n" +
 	"\x16ListConnectionsRequest\"R\n" +
 	"\x17ListConnectionsResponse\x127\n" +
-	"\vconnections\x18\x01 \x03(\v2\x15.quarry.v1.ConnectionR\vconnections\"\xa3\x01\n" +
+	"\vconnections\x18\x01 \x03(\v2\x15.quarry.v1.ConnectionR\vconnections\"\x9b\x02\n" +
 	"\x15SaveConnectionRequest\x123\n" +
 	"\x06config\x18\x01 \x01(\v2\x1b.quarry.v1.ConnectionConfigR\x06config\x12\x1f\n" +
 	"\bpassword\x18\x02 \x01(\tH\x00R\bpassword\x88\x01\x01\x12'\n" +
-	"\x0fforget_password\x18\x03 \x01(\bR\x0eforgetPasswordB\v\n" +
-	"\t_password\"O\n" +
+	"\x0fforget_password\x18\x03 \x01(\bR\x0eforgetPassword\x12&\n" +
+	"\fssh_password\x18\x04 \x01(\tH\x01R\vsshPassword\x88\x01\x01\x12*\n" +
+	"\x0essh_passphrase\x18\x05 \x01(\tH\x02R\rsshPassphrase\x88\x01\x01B\v\n" +
+	"\t_passwordB\x0f\n" +
+	"\r_ssh_passwordB\x11\n" +
+	"\x0f_ssh_passphrase\"O\n" +
 	"\x16SaveConnectionResponse\x125\n" +
 	"\n" +
 	"connection\x18\x01 \x01(\v2\x15.quarry.v1.ConnectionR\n" +

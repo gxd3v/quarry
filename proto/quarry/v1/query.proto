@@ -34,6 +34,10 @@ service QueryService {
   // Complete suggests completions at the cursor. It never waits for a
   // running statement of the tab.
   rpc Complete(CompleteRequest) returns (CompleteResponse);
+  // Explain shows the execution plan of one statement. Like Run it holds the
+  // tab busy and Cancel stops it. With analyze the statement is executed and
+  // then rolled back, so it passes the same guards as Run.
+  rpc Explain(ExplainRequest) returns (ExplainResponse);
 }
 
 message TxState {
@@ -258,4 +262,46 @@ message CompleteResponse {
   int32 start = 1;
   int32 end = 2;
   repeated CompletionItem items = 3;
+}
+
+message ExplainRequest {
+  string tab_id = 1;
+  string script = 2;
+  // Selects the statement as Run does; RUN_MODE_RANGE must cover exactly one.
+  RunMode mode = 3;
+  int32 start = 4;
+  int32 end = 5;
+  map<string, string> params = 6;
+  // Execute the statement to report actual times and rows (EXPLAIN ANALYZE).
+  bool analyze = 7;
+  // As in RunRequest; only checked with analyze.
+  bool confirmed = 8;
+}
+
+// PlanNode is one operator of an execution plan.
+message PlanNode {
+  // e.g. "Seq Scan", "Hash Join", "HashAggregate".
+  string op = 1;
+  // Relation, index, CTE or function the operator reads, if any.
+  string target = 2;
+  // Planner total cost and row estimate.
+  double cost = 3;
+  double rows = 4;
+  // Actual time in ms and rows over all loops; -1 without analyze.
+  double actual = 5;
+  double act_rows = 6;
+  // Other details worth showing: filters, conditions, sort keys, buffers...
+  map<string, string> props = 7;
+  repeated PlanNode children = 8;
+}
+
+message ExplainResponse {
+  // Unset when error is set.
+  PlanNode plan = 1;
+  // The server rejected the statement; positions refer to the script.
+  QueryError error = 2;
+  // The statement explained.
+  StatementRange range = 3;
+  repeated ServerMessage messages = 4;
+  TxState tx = 5;
 }

@@ -89,6 +89,9 @@ message SaveConnectionRequest {
   optional string password = 2;
   // Removes the stored password.
   bool forget_password = 3;
+  // SSH tunnel secrets, stored in the keyring when set; "" removes them.
+  optional string ssh_password = 4;
+  optional string ssh_passphrase = 5;
 }
 
 message SaveConnectionResponse {

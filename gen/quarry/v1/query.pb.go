@@ -2151,6 +2151,294 @@ func (x *CompleteResponse) GetItems() []*CompletionItem {
 	return nil
 }
 
+type ExplainRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	TabId  string                 `protobuf:"bytes,1,opt,name=tab_id,json=tabId,proto3" json:"tab_id,omitempty"`
+	Script string                 `protobuf:"bytes,2,opt,name=script,proto3" json:"script,omitempty"`
+	// Selects the statement as Run does; RUN_MODE_RANGE must cover exactly one.
+	Mode   RunMode           `protobuf:"varint,3,opt,name=mode,proto3,enum=quarry.v1.RunMode" json:"mode,omitempty"`
+	Start  int32             `protobuf:"varint,4,opt,name=start,proto3" json:"start,omitempty"`
+	End    int32             `protobuf:"varint,5,opt,name=end,proto3" json:"end,omitempty"`
+	Params map[string]string `protobuf:"bytes,6,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Execute the statement to report actual times and rows (EXPLAIN ANALYZE).
+	Analyze bool `protobuf:"varint,7,opt,name=analyze,proto3" json:"analyze,omitempty"`
+	// As in RunRequest; only checked with analyze.
+	Confirmed     bool `protobuf:"varint,8,opt,name=confirmed,proto3" json:"confirmed,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExplainRequest) Reset() {
+	*x = ExplainRequest{}
+	mi := &file_quarry_v1_query_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExplainRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExplainRequest) ProtoMessage() {}
+
+func (x *ExplainRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExplainRequest.ProtoReflect.Descriptor instead.
+func (*ExplainRequest) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *ExplainRequest) GetTabId() string {
+	if x != nil {
+		return x.TabId
+	}
+	return ""
+}
+
+func (x *ExplainRequest) GetScript() string {
+	if x != nil {
+		return x.Script
+	}
+	return ""
+}
+
+func (x *ExplainRequest) GetMode() RunMode {
+	if x != nil {
+		return x.Mode
+	}
+	return RunMode_RUN_MODE_UNSPECIFIED
+}
+
+func (x *ExplainRequest) GetStart() int32 {
+	if x != nil {
+		return x.Start
+	}
+	return 0
+}
+
+func (x *ExplainRequest) GetEnd() int32 {
+	if x != nil {
+		return x.End
+	}
+	return 0
+}
+
+func (x *ExplainRequest) GetParams() map[string]string {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *ExplainRequest) GetAnalyze() bool {
+	if x != nil {
+		return x.Analyze
+	}
+	return false
+}
+
+func (x *ExplainRequest) GetConfirmed() bool {
+	if x != nil {
+		return x.Confirmed
+	}
+	return false
+}
+
+// PlanNode is one operator of an execution plan.
+type PlanNode struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// e.g. "Seq Scan", "Hash Join", "HashAggregate".
+	Op string `protobuf:"bytes,1,opt,name=op,proto3" json:"op,omitempty"`
+	// Relation, index, CTE or function the operator reads, if any.
+	Target string `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+	// Planner total cost and row estimate.
+	Cost float64 `protobuf:"fixed64,3,opt,name=cost,proto3" json:"cost,omitempty"`
+	Rows float64 `protobuf:"fixed64,4,opt,name=rows,proto3" json:"rows,omitempty"`
+	// Actual time in ms and rows over all loops; -1 without analyze.
+	Actual  float64 `protobuf:"fixed64,5,opt,name=actual,proto3" json:"actual,omitempty"`
+	ActRows float64 `protobuf:"fixed64,6,opt,name=act_rows,json=actRows,proto3" json:"act_rows,omitempty"`
+	// Other details worth showing: filters, conditions, sort keys, buffers...
+	Props         map[string]string `protobuf:"bytes,7,rep,name=props,proto3" json:"props,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Children      []*PlanNode       `protobuf:"bytes,8,rep,name=children,proto3" json:"children,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlanNode) Reset() {
+	*x = PlanNode{}
+	mi := &file_quarry_v1_query_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanNode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanNode) ProtoMessage() {}
+
+func (x *PlanNode) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanNode.ProtoReflect.Descriptor instead.
+func (*PlanNode) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *PlanNode) GetOp() string {
+	if x != nil {
+		return x.Op
+	}
+	return ""
+}
+
+func (x *PlanNode) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+func (x *PlanNode) GetCost() float64 {
+	if x != nil {
+		return x.Cost
+	}
+	return 0
+}
+
+func (x *PlanNode) GetRows() float64 {
+	if x != nil {
+		return x.Rows
+	}
+	return 0
+}
+
+func (x *PlanNode) GetActual() float64 {
+	if x != nil {
+		return x.Actual
+	}
+	return 0
+}
+
+func (x *PlanNode) GetActRows() float64 {
+	if x != nil {
+		return x.ActRows
+	}
+	return 0
+}
+
+func (x *PlanNode) GetProps() map[string]string {
+	if x != nil {
+		return x.Props
+	}
+	return nil
+}
+
+func (x *PlanNode) GetChildren() []*PlanNode {
+	if x != nil {
+		return x.Children
+	}
+	return nil
+}
+
+type ExplainResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unset when error is set.
+	Plan *PlanNode `protobuf:"bytes,1,opt,name=plan,proto3" json:"plan,omitempty"`
+	// The server rejected the statement; positions refer to the script.
+	Error *QueryError `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	// The statement explained.
+	Range         *StatementRange  `protobuf:"bytes,3,opt,name=range,proto3" json:"range,omitempty"`
+	Messages      []*ServerMessage `protobuf:"bytes,4,rep,name=messages,proto3" json:"messages,omitempty"`
+	Tx            *TxState         `protobuf:"bytes,5,opt,name=tx,proto3" json:"tx,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExplainResponse) Reset() {
+	*x = ExplainResponse{}
+	mi := &file_quarry_v1_query_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExplainResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExplainResponse) ProtoMessage() {}
+
+func (x *ExplainResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_query_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExplainResponse.ProtoReflect.Descriptor instead.
+func (*ExplainResponse) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_query_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *ExplainResponse) GetPlan() *PlanNode {
+	if x != nil {
+		return x.Plan
+	}
+	return nil
+}
+
+func (x *ExplainResponse) GetError() *QueryError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+func (x *ExplainResponse) GetRange() *StatementRange {
+	if x != nil {
+		return x.Range
+	}
+	return nil
+}
+
+func (x *ExplainResponse) GetMessages() []*ServerMessage {
+	if x != nil {
+		return x.Messages
+	}
+	return nil
+}
+
+func (x *ExplainResponse) GetTx() *TxState {
+	if x != nil {
+		return x.Tx
+	}
+	return nil
+}
+
 var File_quarry_v1_query_proto protoreflect.FileDescriptor
 
 const file_quarry_v1_query_proto_rawDesc = "" +
@@ -2296,11 +2584,42 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\x10CompleteResponse\x12\x14\n" +
 	"\x05start\x18\x01 \x01(\x05R\x05start\x12\x10\n" +
 	"\x03end\x18\x02 \x01(\x05R\x03end\x12/\n" +
-	"\x05items\x18\x03 \x03(\v2\x19.quarry.v1.CompletionItemR\x05items*O\n" +
+	"\x05items\x18\x03 \x03(\v2\x19.quarry.v1.CompletionItemR\x05items\"\xc1\x02\n" +
+	"\x0eExplainRequest\x12\x15\n" +
+	"\x06tab_id\x18\x01 \x01(\tR\x05tabId\x12\x16\n" +
+	"\x06script\x18\x02 \x01(\tR\x06script\x12&\n" +
+	"\x04mode\x18\x03 \x01(\x0e2\x12.quarry.v1.RunModeR\x04mode\x12\x14\n" +
+	"\x05start\x18\x04 \x01(\x05R\x05start\x12\x10\n" +
+	"\x03end\x18\x05 \x01(\x05R\x03end\x12=\n" +
+	"\x06params\x18\x06 \x03(\v2%.quarry.v1.ExplainRequest.ParamsEntryR\x06params\x12\x18\n" +
+	"\aanalyze\x18\a \x01(\bR\aanalyze\x12\x1c\n" +
+	"\tconfirmed\x18\b \x01(\bR\tconfirmed\x1a9\n" +
+	"\vParamsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xae\x02\n" +
+	"\bPlanNode\x12\x0e\n" +
+	"\x02op\x18\x01 \x01(\tR\x02op\x12\x16\n" +
+	"\x06target\x18\x02 \x01(\tR\x06target\x12\x12\n" +
+	"\x04cost\x18\x03 \x01(\x01R\x04cost\x12\x12\n" +
+	"\x04rows\x18\x04 \x01(\x01R\x04rows\x12\x16\n" +
+	"\x06actual\x18\x05 \x01(\x01R\x06actual\x12\x19\n" +
+	"\bact_rows\x18\x06 \x01(\x01R\aactRows\x124\n" +
+	"\x05props\x18\a \x03(\v2\x1e.quarry.v1.PlanNode.PropsEntryR\x05props\x12/\n" +
+	"\bchildren\x18\b \x03(\v2\x13.quarry.v1.PlanNodeR\bchildren\x1a8\n" +
+	"\n" +
+	"PropsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xf2\x01\n" +
+	"\x0fExplainResponse\x12'\n" +
+	"\x04plan\x18\x01 \x01(\v2\x13.quarry.v1.PlanNodeR\x04plan\x12+\n" +
+	"\x05error\x18\x02 \x01(\v2\x15.quarry.v1.QueryErrorR\x05error\x12/\n" +
+	"\x05range\x18\x03 \x01(\v2\x19.quarry.v1.StatementRangeR\x05range\x124\n" +
+	"\bmessages\x18\x04 \x03(\v2\x18.quarry.v1.ServerMessageR\bmessages\x12\"\n" +
+	"\x02tx\x18\x05 \x01(\v2\x12.quarry.v1.TxStateR\x02tx*O\n" +
 	"\aRunMode\x12\x18\n" +
 	"\x14RUN_MODE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12RUN_MODE_STATEMENT\x10\x01\x12\x12\n" +
-	"\x0eRUN_MODE_RANGE\x10\x022\xa2\x06\n" +
+	"\x0eRUN_MODE_RANGE\x10\x022\xe4\x06\n" +
 	"\fQueryService\x12@\n" +
 	"\aOpenTab\x12\x19.quarry.v1.OpenTabRequest\x1a\x1a.quarry.v1.OpenTabResponse\x12=\n" +
 	"\x06Rebind\x12\x18.quarry.v1.RebindRequest\x1a\x19.quarry.v1.RebindResponse\x12C\n" +
@@ -2313,7 +2632,8 @@ const file_quarry_v1_query_proto_rawDesc = "" +
 	"\rSetAutoCommit\x12\x1f.quarry.v1.SetAutoCommitRequest\x1a .quarry.v1.SetAutoCommitResponse\x12=\n" +
 	"\x06Commit\x12\x18.quarry.v1.CommitRequest\x1a\x19.quarry.v1.CommitResponse\x12C\n" +
 	"\bRollback\x12\x1a.quarry.v1.RollbackRequest\x1a\x1b.quarry.v1.RollbackResponse\x12C\n" +
-	"\bComplete\x12\x1a.quarry.v1.CompleteRequest\x1a\x1b.quarry.v1.CompleteResponseB0Z.github.com/gxd3v/quarry/gen/quarry/v1;quarryv1b\x06proto3"
+	"\bComplete\x12\x1a.quarry.v1.CompleteRequest\x1a\x1b.quarry.v1.CompleteResponse\x12@\n" +
+	"\aExplain\x12\x19.quarry.v1.ExplainRequest\x1a\x1a.quarry.v1.ExplainResponseB0Z.github.com/gxd3v/quarry/gen/quarry/v1;quarryv1b\x06proto3"
 
 var (
 	file_quarry_v1_query_proto_rawDescOnce sync.Once
@@ -2328,7 +2648,7 @@ func file_quarry_v1_query_proto_rawDescGZIP() []byte {
 }
 
 var file_quarry_v1_query_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_quarry_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
+var file_quarry_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
 var file_quarry_v1_query_proto_goTypes = []any{
 	(RunMode)(0),                  // 0: quarry.v1.RunMode
 	(*TxState)(nil),               // 1: quarry.v1.TxState
@@ -2366,23 +2686,28 @@ var file_quarry_v1_query_proto_goTypes = []any{
 	(*CompleteRequest)(nil),       // 33: quarry.v1.CompleteRequest
 	(*CompletionItem)(nil),        // 34: quarry.v1.CompletionItem
 	(*CompleteResponse)(nil),      // 35: quarry.v1.CompleteResponse
-	nil,                           // 36: quarry.v1.RunRequest.ParamsEntry
-	(*Scope)(nil),                 // 37: quarry.v1.Scope
-	(*Column)(nil),                // 38: quarry.v1.Column
-	(*Row)(nil),                   // 39: quarry.v1.Row
+	(*ExplainRequest)(nil),        // 36: quarry.v1.ExplainRequest
+	(*PlanNode)(nil),              // 37: quarry.v1.PlanNode
+	(*ExplainResponse)(nil),       // 38: quarry.v1.ExplainResponse
+	nil,                           // 39: quarry.v1.RunRequest.ParamsEntry
+	nil,                           // 40: quarry.v1.ExplainRequest.ParamsEntry
+	nil,                           // 41: quarry.v1.PlanNode.PropsEntry
+	(*Scope)(nil),                 // 42: quarry.v1.Scope
+	(*Column)(nil),                // 43: quarry.v1.Column
+	(*Row)(nil),                   // 44: quarry.v1.Row
 }
 var file_quarry_v1_query_proto_depIdxs = []int32{
-	37, // 0: quarry.v1.OpenTabRequest.scope:type_name -> quarry.v1.Scope
-	37, // 1: quarry.v1.RebindRequest.scope:type_name -> quarry.v1.Scope
+	42, // 0: quarry.v1.OpenTabRequest.scope:type_name -> quarry.v1.Scope
+	42, // 1: quarry.v1.RebindRequest.scope:type_name -> quarry.v1.Scope
 	8,  // 2: quarry.v1.AnalyzeResponse.statements:type_name -> quarry.v1.StatementRange
 	0,  // 3: quarry.v1.RunRequest.mode:type_name -> quarry.v1.RunMode
-	36, // 4: quarry.v1.RunRequest.params:type_name -> quarry.v1.RunRequest.ParamsEntry
+	39, // 4: quarry.v1.RunRequest.params:type_name -> quarry.v1.RunRequest.ParamsEntry
 	0,  // 5: quarry.v1.InspectRequest.mode:type_name -> quarry.v1.RunMode
 	8,  // 6: quarry.v1.StatementCheck.range:type_name -> quarry.v1.StatementRange
 	13, // 7: quarry.v1.InspectResponse.statements:type_name -> quarry.v1.StatementCheck
 	8,  // 8: quarry.v1.StatementStarted.range:type_name -> quarry.v1.StatementRange
-	38, // 9: quarry.v1.ResultColumns.columns:type_name -> quarry.v1.Column
-	39, // 10: quarry.v1.RowBatch.rows:type_name -> quarry.v1.Row
+	43, // 9: quarry.v1.ResultColumns.columns:type_name -> quarry.v1.Column
+	44, // 10: quarry.v1.RowBatch.rows:type_name -> quarry.v1.Row
 	1,  // 11: quarry.v1.RunFinished.tx:type_name -> quarry.v1.TxState
 	16, // 12: quarry.v1.RunEvent.started:type_name -> quarry.v1.RunStarted
 	17, // 13: quarry.v1.RunEvent.statement:type_name -> quarry.v1.StatementStarted
@@ -2396,35 +2721,46 @@ var file_quarry_v1_query_proto_depIdxs = []int32{
 	1,  // 21: quarry.v1.CommitResponse.tx:type_name -> quarry.v1.TxState
 	1,  // 22: quarry.v1.RollbackResponse.tx:type_name -> quarry.v1.TxState
 	34, // 23: quarry.v1.CompleteResponse.items:type_name -> quarry.v1.CompletionItem
-	2,  // 24: quarry.v1.QueryService.OpenTab:input_type -> quarry.v1.OpenTabRequest
-	4,  // 25: quarry.v1.QueryService.Rebind:input_type -> quarry.v1.RebindRequest
-	6,  // 26: quarry.v1.QueryService.CloseTab:input_type -> quarry.v1.CloseTabRequest
-	9,  // 27: quarry.v1.QueryService.Analyze:input_type -> quarry.v1.AnalyzeRequest
-	12, // 28: quarry.v1.QueryService.Inspect:input_type -> quarry.v1.InspectRequest
-	11, // 29: quarry.v1.QueryService.Run:input_type -> quarry.v1.RunRequest
-	15, // 30: quarry.v1.QueryService.Fetch:input_type -> quarry.v1.FetchRequest
-	25, // 31: quarry.v1.QueryService.Cancel:input_type -> quarry.v1.CancelRequest
-	27, // 32: quarry.v1.QueryService.SetAutoCommit:input_type -> quarry.v1.SetAutoCommitRequest
-	29, // 33: quarry.v1.QueryService.Commit:input_type -> quarry.v1.CommitRequest
-	31, // 34: quarry.v1.QueryService.Rollback:input_type -> quarry.v1.RollbackRequest
-	33, // 35: quarry.v1.QueryService.Complete:input_type -> quarry.v1.CompleteRequest
-	3,  // 36: quarry.v1.QueryService.OpenTab:output_type -> quarry.v1.OpenTabResponse
-	5,  // 37: quarry.v1.QueryService.Rebind:output_type -> quarry.v1.RebindResponse
-	7,  // 38: quarry.v1.QueryService.CloseTab:output_type -> quarry.v1.CloseTabResponse
-	10, // 39: quarry.v1.QueryService.Analyze:output_type -> quarry.v1.AnalyzeResponse
-	14, // 40: quarry.v1.QueryService.Inspect:output_type -> quarry.v1.InspectResponse
-	24, // 41: quarry.v1.QueryService.Run:output_type -> quarry.v1.RunEvent
-	24, // 42: quarry.v1.QueryService.Fetch:output_type -> quarry.v1.RunEvent
-	26, // 43: quarry.v1.QueryService.Cancel:output_type -> quarry.v1.CancelResponse
-	28, // 44: quarry.v1.QueryService.SetAutoCommit:output_type -> quarry.v1.SetAutoCommitResponse
-	30, // 45: quarry.v1.QueryService.Commit:output_type -> quarry.v1.CommitResponse
-	32, // 46: quarry.v1.QueryService.Rollback:output_type -> quarry.v1.RollbackResponse
-	35, // 47: quarry.v1.QueryService.Complete:output_type -> quarry.v1.CompleteResponse
-	36, // [36:48] is the sub-list for method output_type
-	24, // [24:36] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	0,  // 24: quarry.v1.ExplainRequest.mode:type_name -> quarry.v1.RunMode
+	40, // 25: quarry.v1.ExplainRequest.params:type_name -> quarry.v1.ExplainRequest.ParamsEntry
+	41, // 26: quarry.v1.PlanNode.props:type_name -> quarry.v1.PlanNode.PropsEntry
+	37, // 27: quarry.v1.PlanNode.children:type_name -> quarry.v1.PlanNode
+	37, // 28: quarry.v1.ExplainResponse.plan:type_name -> quarry.v1.PlanNode
+	21, // 29: quarry.v1.ExplainResponse.error:type_name -> quarry.v1.QueryError
+	8,  // 30: quarry.v1.ExplainResponse.range:type_name -> quarry.v1.StatementRange
+	22, // 31: quarry.v1.ExplainResponse.messages:type_name -> quarry.v1.ServerMessage
+	1,  // 32: quarry.v1.ExplainResponse.tx:type_name -> quarry.v1.TxState
+	2,  // 33: quarry.v1.QueryService.OpenTab:input_type -> quarry.v1.OpenTabRequest
+	4,  // 34: quarry.v1.QueryService.Rebind:input_type -> quarry.v1.RebindRequest
+	6,  // 35: quarry.v1.QueryService.CloseTab:input_type -> quarry.v1.CloseTabRequest
+	9,  // 36: quarry.v1.QueryService.Analyze:input_type -> quarry.v1.AnalyzeRequest
+	12, // 37: quarry.v1.QueryService.Inspect:input_type -> quarry.v1.InspectRequest
+	11, // 38: quarry.v1.QueryService.Run:input_type -> quarry.v1.RunRequest
+	15, // 39: quarry.v1.QueryService.Fetch:input_type -> quarry.v1.FetchRequest
+	25, // 40: quarry.v1.QueryService.Cancel:input_type -> quarry.v1.CancelRequest
+	27, // 41: quarry.v1.QueryService.SetAutoCommit:input_type -> quarry.v1.SetAutoCommitRequest
+	29, // 42: quarry.v1.QueryService.Commit:input_type -> quarry.v1.CommitRequest
+	31, // 43: quarry.v1.QueryService.Rollback:input_type -> quarry.v1.RollbackRequest
+	33, // 44: quarry.v1.QueryService.Complete:input_type -> quarry.v1.CompleteRequest
+	36, // 45: quarry.v1.QueryService.Explain:input_type -> quarry.v1.ExplainRequest
+	3,  // 46: quarry.v1.QueryService.OpenTab:output_type -> quarry.v1.OpenTabResponse
+	5,  // 47: quarry.v1.QueryService.Rebind:output_type -> quarry.v1.RebindResponse
+	7,  // 48: quarry.v1.QueryService.CloseTab:output_type -> quarry.v1.CloseTabResponse
+	10, // 49: quarry.v1.QueryService.Analyze:output_type -> quarry.v1.AnalyzeResponse
+	14, // 50: quarry.v1.QueryService.Inspect:output_type -> quarry.v1.InspectResponse
+	24, // 51: quarry.v1.QueryService.Run:output_type -> quarry.v1.RunEvent
+	24, // 52: quarry.v1.QueryService.Fetch:output_type -> quarry.v1.RunEvent
+	26, // 53: quarry.v1.QueryService.Cancel:output_type -> quarry.v1.CancelResponse
+	28, // 54: quarry.v1.QueryService.SetAutoCommit:output_type -> quarry.v1.SetAutoCommitResponse
+	30, // 55: quarry.v1.QueryService.Commit:output_type -> quarry.v1.CommitResponse
+	32, // 56: quarry.v1.QueryService.Rollback:output_type -> quarry.v1.RollbackResponse
+	35, // 57: quarry.v1.QueryService.Complete:output_type -> quarry.v1.CompleteResponse
+	38, // 58: quarry.v1.QueryService.Explain:output_type -> quarry.v1.ExplainResponse
+	46, // [46:59] is the sub-list for method output_type
+	33, // [33:46] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_quarry_v1_query_proto_init() }
@@ -2450,7 +2786,7 @@ func file_quarry_v1_query_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_quarry_v1_query_proto_rawDesc), len(file_quarry_v1_query_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   36,
+			NumMessages:   41,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
