@@ -341,3 +341,24 @@ func TestConnect(t *testing.T) {
 		t.Fatalf("dir = %v", es)
 	}
 }
+
+func TestParams(t *testing.T) {
+	c := newConn(map[string]fakeStmt{"select x where id = 7 and name = 'o''k'": {cols: 2, rows: 1}})
+	s := New(&fakeLive{conn: c, kind: driver.Postgres})
+	path := filepath.Join(t.TempDir(), "out.csv")
+	req := sqlReq(path, "select x where id = :id and name = $1", &quarryv1.ExportOptions{Format: "csv"})
+	req.Params = map[string]string{"id": "7", "1": "o'k"}
+	var r recorder
+	if err := s.export(t.Context(), req, r.send); err != nil {
+		t.Fatal(err)
+	}
+	if want := "select x where id = 7 and name = 'o''k'"; !slices.Equal(c.executed, []string{want}) {
+		t.Fatalf("executed = %q, want %q", c.executed, want)
+	}
+
+	req.Params = map[string]string{"id": "7"}
+	err := s.export(t.Context(), req, r.send)
+	if ce, ok := errors.AsType[*connect.Error](err); !ok || ce.Code() != connect.CodeInvalidArgument || !strings.Contains(err.Error(), "$1") {
+		t.Fatalf("missing value: %v", err)
+	}
+}

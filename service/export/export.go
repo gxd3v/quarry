@@ -22,6 +22,7 @@ import (
 	"github.com/gxd3v/quarry/internal/driver/oracle"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
 	"github.com/gxd3v/quarry/internal/export"
+	"github.com/gxd3v/quarry/internal/params"
 	"github.com/gxd3v/quarry/internal/sqlsafe"
 	"github.com/gxd3v/quarry/service"
 )
@@ -134,10 +135,27 @@ func source(conn driver.Conn, kind driver.Kind, req *quarryv1.ExportRequest) (dr
 	case len(stmts) > 1:
 		return driver.Statement{}, "", invalid("export runs exactly one statement, got %d", len(stmts))
 	}
-	if sqlsafe.IsWrite(language(kind), stmts[0].Text) {
+	st := stmts[0]
+	if sqlsafe.IsWrite(language(kind), st.Text) {
 		return driver.Statement{}, "", invalid("export only runs statements that do not modify data")
 	}
-	return stmts[0], table, nil
+	if found := params.Find(language(kind), st.Text); len(found) > 0 {
+		var missing []string
+		for _, p := range found {
+			if _, ok := req.Params[p.Name]; !ok {
+				missing = append(missing, st.Text[p.Positions[0]:p.Positions[0]+1]+p.Name)
+			}
+		}
+		if len(missing) > 0 {
+			return driver.Statement{}, "", invalid("no value for parameter %s", strings.Join(missing, ", "))
+		}
+		text, err := params.Substitute(language(kind), st.Text, req.Params, string(kind))
+		if err != nil {
+			return driver.Statement{}, "", invalid("%v", err)
+		}
+		st.Text = text
+	}
+	return st, table, nil
 }
 
 func split(kind driver.Kind, script string) []driver.Statement {
