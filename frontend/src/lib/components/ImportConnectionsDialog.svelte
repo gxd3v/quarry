@@ -84,7 +84,7 @@
     {#if busy === 'scan' && !found.length}
       <p class="muted"><span class="spinner"></span> Looking for files…</p>
     {:else if !found.length}
-      <p class="muted">Nothing new found. Add a file to read it too.</p>
+      <p class="muted">No new connections found.</p>
     {:else}
       <div class="list" role="list">
         <label class="row head">

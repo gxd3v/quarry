@@ -61,7 +61,7 @@ export async function pickAndNewScript() {
 // xterm.js loads with the first one.
 export async function openTerminal(connId: string, scope?: ScopeLike): Promise<Tab | null> {
   if (tabs.tabs.filter((t) => t.kind === 'terminal').length >= MAX_TERMINALS) {
-    notify.toast('error', `At most ${MAX_TERMINALS} terminals can be open; close one first`)
+    notify.toast('error', `A maximum of ${MAX_TERMINALS} terminals can be open at once`)
     return null
   }
   const cfg = connections.config(connId)
@@ -269,7 +269,7 @@ export function exportTableData(tab: Tab) {
 // exportResult exports a result by running its statement again on the server.
 export function exportResult(tab: Tab, r: ResultSet) {
   if (!r.sql.trim()) {
-    notify.toast('error', 'The statement of this result is unknown; run it again to export it')
+    notify.toast('error', 'The statement behind this result is unknown, so it cannot be exported')
     return
   }
   ui.exporting = { connId: tab.connId, scope: { ...tab.scope }, source: { sql: r.sql, params: { ...tab.params } }, name: `${tab.title} result ${r.statement + 1}` }

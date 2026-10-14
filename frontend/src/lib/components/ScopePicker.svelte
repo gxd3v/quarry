@@ -119,7 +119,7 @@
 
 <Modal title="Connection and scope for {tab.title}" width={460} {onclose}>
   <PickerList {items} placeholder="Connection, database or schema" onpick={pick} ontoggle={toggle} />
-  <p class="hint">Enter picks · → expands · Changing it closes the tab's session.</p>
+  <p class="hint">Enter: select · →: expand · A new connection or scope closes the tab's session.</p>
 </Modal>
 
 <style>

@@ -151,7 +151,7 @@
         <input id="param-{i}" class="field mono" type="text" data-param={f.name} bind:value={params[f.name]} autofocus={i === 0} />
       {/each}
     </form>
-    <p class="hint">Numbers are inserted bare, anything else as a quoted string. <code>NULL</code> means NULL; wrap a value in single quotes to force a string.</p>
+    <p class="hint">Numbers are inserted as numbers and other values as quoted strings. <code>NULL</code> is NULL; a value in single quotes is always a string.</p>
     {#snippet footer()}
       <button class="btn" type="button" onclick={() => req.resolve(null)}>Cancel</button>
       <button class="btn primary" type="submit" form="params-form">Run</button>

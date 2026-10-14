@@ -484,7 +484,7 @@
           class:sortable={!!onsort}
           style:left="{gutter + offsets[c]}px"
           style:width="{widths[c]}px"
-          title="{col.name} {col.type}{onsort ? ' (click to sort, Shift+click to add)' : ''}"
+          title="{col.name} {col.type}{onsort ? ' (click: sort · Shift+click: add to the sort)' : ''}"
           onclick={(e) => {
             if (onsort && !(e.target as Element).closest('.resize')) onsort(c, e.shiftKey)
           }}

@@ -354,7 +354,7 @@
     {:else}
       <div class="welcome" bind:this={center}>
         <h1>Quarry</h1>
-        <p>Every script runs on exactly one connection. Pick one to start.</p>
+        <p>Every script runs on exactly one connection.</p>
         <div class="actions">
           <button class="btn primary" type="button" onclick={() => pickAndNewScript()}>New script <span class="kbd">{hint('tab.new')}</span></button>
           <button class="btn" type="button" onclick={() => guard('Open file', () => workspace.openFile())}>Open file <span class="kbd">{hint('file.open')}</span></button>

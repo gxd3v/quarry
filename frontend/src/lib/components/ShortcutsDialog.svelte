@@ -89,12 +89,12 @@
               <span class="kbd">{label(conflict.chord)}</span> runs “{conflict.other ? name(conflict.other) : conflict.otherId}”.
             </span>
             <button class="btn small" type="button" onclick={() => assign(r.a.id, conflict!.chord)}>Reassign</button>
-            <button class="btn small" type="button" onclick={() => (conflict = null)}>Try another</button>
+            <button class="btn small" type="button" onclick={() => (conflict = null)}>Choose another</button>
           {:else}
-            <span class="hint">Press a key combination · Esc cancels</span>
+            <span class="hint">Waiting for a key combination · Esc cancels</span>
           {/if}
         {:else}
-          <button class="keys" type="button" title="Click to record a new shortcut" onclick={() => ((recording = r.a.id), (conflict = null))}>
+          <button class="keys" type="button" title="Record a new shortcut" onclick={() => ((recording = r.a.id), (conflict = null))}>
             {#each r.keys as k (k)}<span class="kbd">{label(k)}</span>{:else}<span class="none">unbound</span>{/each}
           </button>
           <span class="actions">

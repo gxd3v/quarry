@@ -50,7 +50,7 @@
       const path = await saveExportDialog(fileName(request.name, form.format), form.format)
       if (path) form.path = path
     } catch (err) {
-      notify.error(err, 'Choose file')
+      notify.error(err, 'File dialog')
     }
   }
 

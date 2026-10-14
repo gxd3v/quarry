@@ -30,7 +30,7 @@
 </script>
 
 <Modal title="Command palette" width={560} {onclose}>
-  <FuzzyList items={actions} key={name} onpick={pick} placeholder="Type a command">
+  <FuzzyList items={actions} key={name} onpick={pick} placeholder="Command">
     {#snippet row(a, segs)}
       <span class="label">{#each segs as s, i (i)}{#if s.hit}<mark>{s.text}</mark>{:else}{s.text}{/if}{/each}</span>
       <span class="keys">

@@ -281,7 +281,7 @@
       {/if}
     </div>
     {#if t.order.length}
-      <span class="order" title="Server-side order; click headers to change">ORDER BY {orderBy(t.order).join(', ')}</span>
+      <span class="order" title="Server-side order, set from the column headers">ORDER BY {orderBy(t.order).join(', ')}</span>
     {/if}
     <div class="quick" title="Filter loaded rows">
       <Icon name="search" size={12} />

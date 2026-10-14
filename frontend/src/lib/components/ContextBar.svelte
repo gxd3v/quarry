@@ -53,7 +53,7 @@
       class="commit-mode"
       class:manual={!tab.tx.autoCommit}
       type="button"
-      title={tab.tx.autoCommit ? 'Auto-commit: each statement commits. Click for manual transactions.' : 'Manual: commit or roll back yourself. Click for auto-commit.'}
+      title={tab.tx.autoCommit ? 'Auto-commit: each statement commits on its own. Switches to manual transactions.' : 'Manual transactions: changes stay open until Commit or Rollback. Switches to auto-commit.'}
       disabled={tab.busy !== ''}
       onclick={() => guard('Change commit mode', () => tabs.setAutoCommit(tab, !tab.tx.autoCommit))}
     >

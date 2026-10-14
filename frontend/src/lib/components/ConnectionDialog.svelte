@@ -125,7 +125,7 @@
       <input
         class="field"
         type="text"
-        placeholder="Paste a URI, e.g. postgres://user:pass@host:5432/db?sslmode=disable"
+        placeholder="Connection URI, e.g. postgres://user:pass@host:5432/db?sslmode=disable"
         bind:value={uri}
         onpaste={() => setTimeout(parse)}
         onkeydown={(e) => {

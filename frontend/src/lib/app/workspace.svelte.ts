@@ -123,7 +123,7 @@ class Workspace {
       tabs.activate(tab)
       const ok = await prompts.ask({
         title: 'Pending changes',
-        text: `${tab.title} has ${pending} pending ${pending === 1 ? 'change' : 'changes'} that were not applied. Close and discard them?`,
+        text: `${tab.title} has ${pending} pending ${pending === 1 ? 'change' : 'changes'} that were not applied.`,
         confirm: 'Discard and close',
         danger: true,
       })
@@ -133,7 +133,7 @@ class Workspace {
       tabs.activate(tab)
       const choice = await prompts.choose({
         title: 'Unsaved changes',
-        text: `Save the changes to ${tab.title}?`,
+        text: `${tab.title} has unsaved changes.`,
         choices: [
           { value: 'cancel', label: 'Cancel' },
           { value: 'discard', label: "Don't save", danger: true },

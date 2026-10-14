@@ -83,7 +83,7 @@
   async function clear() {
     const ok = await prompts.ask({
       title: 'Clear history',
-      text: `Clear the query history of ${connections.name(tab.connId)}?`,
+      text: `Clears the query history of ${connections.name(tab.connId)}.`,
       confirm: 'Clear',
       danger: true,
     })
@@ -156,7 +156,7 @@
       </p>
     {/each}
   </div>
-  <footer>Click inserts into the editor · double-click (or Shift+Enter) runs it</footer>
+  <footer>Click: insert into the editor · Double-click or Shift+Enter: run</footer>
 </div>
 
 <style>

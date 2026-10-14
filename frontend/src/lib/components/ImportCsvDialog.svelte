@@ -79,7 +79,7 @@
     const confirm = () =>
       prompts.ask({
         title: env === 'prod' ? `Import on PROD: ${connections.name(request.connId)}` : 'Confirm import',
-        text: `Insert every row of ${path.split(/[\\/]/).pop()} into ${target}?`,
+        text: `Inserts every row of ${path.split(/[\\/]/).pop()} into ${target} in one transaction.`,
         confirm: 'Import',
         danger: true,
         env,
