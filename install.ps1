@@ -53,7 +53,7 @@ try {
         $link.Save()
     }
     Write-Host "Installed Quarry in $dir"
-    Write-Host 'It starts from the Start menu (Quarry).'
+    if ($env:QUARRY_NO_SHORTCUT -ne '1') { Write-Host 'It starts from the Start menu (Quarry).' } else { Write-Host "It starts with $exe" }
 }
 finally {
     Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
