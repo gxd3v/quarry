@@ -108,9 +108,14 @@ func Validate(cfg driver.Config, others []driver.Config) error {
 	if name == "" {
 		return errors.New("Name is required")
 	}
+	// Names are unique within a folder; the same name may live in several.
+	group := GroupPath(cfg.Group)
 	for _, o := range others {
-		if o.ID != cfg.ID && strings.EqualFold(strings.TrimSpace(o.Name), name) {
-			return fmt.Errorf("A connection named %q already exists", name)
+		if o.ID != cfg.ID && strings.EqualFold(strings.TrimSpace(o.Name), name) && strings.EqualFold(GroupPath(o.Group), group) {
+			if group == "" {
+				return fmt.Errorf("A connection named %q already exists", name)
+			}
+			return fmt.Errorf("A connection named %q already exists in %s", name, group)
 		}
 	}
 	switch cfg.Kind {
@@ -127,6 +132,18 @@ func Validate(cfg driver.Config, others []driver.Config) error {
 		return fmt.Errorf("Environment must be one of %s", strings.Join(Envs, ", "))
 	}
 	return nil
+}
+
+// GroupPath normalizes a connection folder: nested folders are separated by
+// "/", with blank parts and surrounding spaces dropped ("A / PRD/" is "A/PRD").
+func GroupPath(g string) string {
+	var parts []string
+	for p := range strings.SplitSeq(g, "/") {
+		if p = strings.TrimSpace(p); p != "" {
+			parts = append(parts, p)
+		}
+	}
+	return strings.Join(parts, "/")
 }
 
 // DefaultPort is the port used when a connection leaves it at 0.

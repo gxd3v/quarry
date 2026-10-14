@@ -265,6 +265,7 @@ func (m *Manager) save(cfg driver.Config, password *string, forget bool) (driver
 		return cfg, notFound(cfg.ID)
 	}
 	cfg.Name = strings.TrimSpace(cfg.Name)
+	cfg.Group = store.GroupPath(cfg.Group)
 	if err := store.Validate(cfg, old); err != nil {
 		return cfg, connect.NewError(connect.CodeInvalidArgument, err)
 	}

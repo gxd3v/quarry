@@ -207,6 +207,7 @@ func TestValidate(t *testing.T) {
 		{"same entry keeps its name", with(func(c *driver.Config) { c.ID = existing.ID; c.Name = "orders" }), ""},
 		{"no name", with(func(c *driver.Config) { c.Name = "  " }), "Name is required"},
 		{"duplicate name", with(func(c *driver.Config) { c.Name = " ORDERS " }), "already exists"},
+		{"same name in another folder", with(func(c *driver.Config) { c.Name = "orders"; c.Group = "Acme/PRD" }), ""},
 		{"no kind", with(func(c *driver.Config) { c.Kind = "" }), "type is required"},
 		{"bad kind", with(func(c *driver.Config) { c.Kind = "mysql" }), "Unknown database type"},
 		{"negative port", with(func(c *driver.Config) { c.Port = -1 }), "Port"},
@@ -223,6 +224,19 @@ func TestValidate(t *testing.T) {
 				t.Fatalf("got %v, want error containing %q", err, tt.err)
 			}
 		})
+	}
+}
+
+func TestGroupPath(t *testing.T) {
+	for in, want := range map[string]string{"": "", " A / PRD/ ": "A/PRD", "A//B": "A/B", "/": "", "Acme": "Acme"} {
+		if got := GroupPath(in); got != want {
+			t.Errorf("GroupPath(%q) = %q, want %q", in, got, want)
+		}
+	}
+	others := []driver.Config{{ID: uuid.NewV7(), Name: "postgres", Kind: driver.Postgres, Group: "Acme/PRD"}}
+	err := Validate(driver.Config{ID: uuid.NewV7(), Name: "Postgres", Kind: driver.Postgres, Group: " acme / prd "}, others)
+	if err == nil || !strings.Contains(err.Error(), "in acme/prd") {
+		t.Fatalf("duplicate in the same folder: %v", err)
 	}
 }
 
