@@ -26,7 +26,7 @@ FROM plan_table WHERE statement_id = :1 ORDER BY id`
 func (s *session) Explain(ctx context.Context, stmt driver.Statement, analyze bool) (*driver.PlanNode, error) {
 	s.closeCur()
 	if analyze {
-		return nil, errors.New("Oracle cannot explain with actual times here; run a plain explain")
+		return nil, errors.New("explain analyze is not available for Oracle; a plain explain is")
 	}
 	toks := codeTokens(stmt.Text)
 	if len(toks) == 0 {

@@ -350,7 +350,7 @@ type doer interface {
 	Do(ctx context.Context, args ...any) *goredis.Cmd
 }
 
-var errStale = errors.New("connection lost: run the command again to reconnect")
+var errStale = errors.New("connection lost; the next command reconnects")
 
 // do runs one command; a nil reply is returned as (nil, nil).
 func (s *session) do(ctx context.Context, args []string) (any, error) {

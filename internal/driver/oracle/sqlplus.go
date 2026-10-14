@@ -31,7 +31,7 @@ func (s *session) sqlplus(ctx context.Context, text string, toks []token) (drive
 	rest := strings.TrimRight(strings.TrimSpace(text[toks[0].end:]), "; \t\r\n")
 	switch {
 	case toks[0].kind != tokWord || slices.Contains(unsupportedCommands, toks[0].low):
-		return nil, fmt.Errorf("SQL*Plus command %s is not supported here; use the Shell", strings.Fields(text[toks[0].start:])[0])
+		return nil, fmt.Errorf("SQL*Plus command %s is not supported in scripts; it runs in the terminal", strings.Fields(text[toks[0].start:])[0])
 	case cmd == "EXEC" || cmd == "EXECUTE":
 		return s.exec(ctx, text, rest)
 	case cmd == "PROMPT" || cmd == "PRO":

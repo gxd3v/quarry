@@ -16,7 +16,7 @@ import (
 	"github.com/gxd3v/quarry/internal/driver"
 )
 
-var errCopy = errors.New("COPY is not supported yet; use the Shell")
+var errCopy = errors.New("COPY FROM STDIN and TO STDOUT are not supported in scripts; they run in the terminal")
 
 // session is one editor tab's dedicated connection. Like pgx.Conn it is not
 // safe for concurrent use, except DrainMessages and InTx which may be called

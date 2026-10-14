@@ -121,7 +121,7 @@ func TestFind(t *testing.T) {
 	}
 
 	_, err := Find(driver.Postgres, "")
-	if err == nil || err.Error() != "psql not found in PATH (set shell_path in the connection options)" {
+	if err == nil || err.Error() != "psql not found in PATH; the shell_path connection option sets its location" {
 		t.Errorf("missing psql: %v", err)
 	}
 	_, err = Find(driver.Redis, "")

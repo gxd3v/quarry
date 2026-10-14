@@ -543,7 +543,7 @@ func (m *Manager) tunnel(ctx context.Context, cfg *driver.Config) (*tunnel.Tunne
 	}
 	t, err := tunnel.Open(ctx, tc, net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)))
 	if errors.Is(err, tunnel.ErrHostKeyUnknown) {
-		return nil, fmt.Errorf("%w; set the ssh_accept_new option to trust it on first use", err)
+		return nil, fmt.Errorf("%w; it is accepted with the SSH option \"Trust an unknown host key on first connect\" (ssh_accept_new)", err)
 	}
 	if err != nil {
 		return nil, err

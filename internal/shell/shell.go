@@ -64,7 +64,7 @@ func Find(kind driver.Kind, override string) (string, error) {
 			return p, nil
 		}
 	}
-	return "", fmt.Errorf("%s not found in PATH (set shell_path in the connection options)", strings.Join(names, " or "))
+	return "", fmt.Errorf("%s not found in PATH; the shell_path connection option sets its location", strings.Join(names, " or "))
 }
 
 // Command builds the client process for cfg, authenticated with password and

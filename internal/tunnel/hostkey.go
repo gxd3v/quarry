@@ -95,7 +95,7 @@ func (v *verifier) verify(hostname string, remote net.Addr, key ssh.PublicKey) e
 	case errors.As(err, &ke):
 		fp := ssh.FingerprintSHA256(key)
 		if v.accept == nil {
-			return fmt.Errorf("%w for %s (%s %s); add it to %s", ErrHostKeyUnknown, hostname, key.Type(), fp, tildePath(v.path))
+			return fmt.Errorf("%w for %s (%s %s); it is not in %s", ErrHostKeyUnknown, hostname, key.Type(), fp, tildePath(v.path))
 		}
 		v.pause()
 		ok := v.accept(hostname, remote, key)
