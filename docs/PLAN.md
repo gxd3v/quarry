@@ -77,7 +77,6 @@ server/               montagem Connect (auth, CORS, interceptors de log/recover)
 service/              implementação dos serviços (usa internal/)
 internal/             pacotes reaproveitados (§5)
 frontend/             Vite + Svelte 5 + TS (src/lib/api gerado pelo buf)
-_wip/                 trabalho parcial da fase TUI, não revisto (§6)
 docs/                 PLAN.md (este), HANDOFF.md
 ```
 
@@ -88,7 +87,7 @@ Todos estes pacotes têm testes e passam `go vet` e `-race`. O Postgres passa ta
 | Pacote | O que faz | API principal | Notas para a app |
 |---|---|---|---|
 | `internal/driver` | Contrato de backends | `Driver`, `Conn` (`Children`, `NewSession(scope)`), `Session` (`Split`, `Execute`), `Result` (`Columns`, `Next(n)`, `Affected`), `Scope`, `QueryError` (com posição), capacidades opcionais `Transactional`, `MessageSource`, `Catalog`, `DataViewer`, `Describer`, `Editable`, `Explainer`; `Register`/`Lookup`. `Config` com `ID uuid`, `Env`, `Group`, `Favorite`, `ReadOnly`, `AskPassword`, `Options`. | Valores normalizados: nil, bool, int64, float64, `Number`, string, []byte, time.Time, `JSON`, []any. Mapeiam 1:1 para a mensagem protobuf `Value`. |
-| `internal/driver/postgres` | Driver PG (pgx v5) | `New()`, `Split`, `StatementAt`, `BuiltinFunctions`; Conn: explorer completo, `Objects`, `DataQuery`, `Describe` (DDL fiel), `RowKey`/`Apply`, `Ping`; Session: cancelamento server‑side (a sessão sobrevive), notices, transações, `SearchPath`, `Alive`. | Ainda não implementa `Explainer` nem LISTEN/NOTIFY (há fixtures em `_wip/postgres-explain-testdata`). Pede PG ≥ 12. |
+| `internal/driver/postgres` | Driver PG (pgx v5) | `New()`, `Split`, `StatementAt`, `BuiltinFunctions`; Conn: explorer completo, `Objects`, `DataQuery`, `Describe` (DDL fiel), `RowKey`/`Apply`, `Ping`; Session: cancelamento server‑side (a sessão sobrevive), notices, transações, `SearchPath`, `Alive`. | Também `Explainer` (EXPLAIN JSON, ANALYZE sempre revertido), `Importer` (COPY) e `Listener` (LISTEN/NOTIFY). Pede PG ≥ 12. |
 | `internal/store` | Config e segredos | `ConfigDir`, `StateDir`, `ConnectionsFile`, `Load/SaveConnections` (TOML atómico, 0600), `Validate`, `DefaultPort`, `ParseURI`/`FormatURI`, `Secrets` (`Keyring()`, `NewMemory()`), `ErrNoSecret`, `ErrKeyringUnavailable`, `Envs` | `Validate` aceita local/dev/qa/prod. |
 | `internal/workspace` | Ficheiros, scratches, sessão, histórico | `Open(stateDir)`, `ReadFile`/`WriteFile` (atómico, CRLF/BOM), `Bind`/`Binding` (ficheiro→conexão, fora do ficheiro), `NewScratch`, `Scratches`, `Load/SaveSession`, `AppendHistory`/`History`/`ClearHistory` (JSONL com rotação) | `Session`/`TabState` têm campos de layout da TUI (SideW, ResH…). Na app, adaptar para guardar o layout do frontend como JSON opaco. |
 | `internal/export` | Export em streaming | `Write`/`WriteFile(ctx, path, cols, src, opts, progress)` para CSV, TSV, JSON, NDJSON, SQL INSERT (PG/Oracle/genérico) e Markdown; `Text`, `JSONValue`, `SQLLiteral`, `QuoteIdent`, `UniqueNames`, `FormatFromExt` | Memória constante (1M linhas ≈ 1,3 MB). |
@@ -97,20 +96,18 @@ Todos estes pacotes têm testes e passam `go vet` e `-race`. O Postgres passa ta
 | `internal/shell` | CLI nativa autenticada | `Command(cfg, password, scope) *Launch{Cmd, Cleanup, Display}`, `Find` | psql, `sql`/`sqlplus`, `mongosh`, `redis-cli`; credenciais nunca no argv. Na app: correr num terminal embutido (PTY + xterm.js, §8) ou abrir o emulador do sistema. |
 | `internal/complete` | Motor de autocomplete | `Suggest(Request{Lang, Text, Cursor, Objects, SearchPath}) Result{Start, End, Prefix, Items}` | SQL com aliases, qualificação e quoting; Mongo; Redis. Exposto por RPC ao CM6 (`CompletionSource` assíncrono). |
 
-## 6. Trabalho parcial em `_wip/` (não revisto, pode não compilar)
+## 6. Pacotes acrescentados na app (2026-10-14)
 
-O Go ignora diretórios que começam por `_`. Cada um volta para `internal/` quando estiver terminado e revisto.
+O `_wip/` foi esvaziado e removido; tudo passou para `internal/` com testes (unitários e de integração).
 
-| Diretório | Estado quando parou | O que falta |
-|---|---|---|
-| `_wip/driver/redis` | Compilava; o agente ia começar os testes unitários | Testes (unit + integração com `redis:7`), revisão. Brief: UniversalClient (single/cluster/sentinel), árvore de keys por `:`, respostas em tabela, `Editable` por tipo, `SetTTL`. |
-| `_wip/driver/mongo` | Parser mongosh e executor a meio; não compila (falta `go get` das dependências do mongo-driver v2.9.2) | Terminar executor, Catalog/DataViewer/Describer/Editable/Explainer, testes com `mongo:7 --replSet rs0`. |
-| `_wip/driver/oracle` | Só o início (2 ficheiros) | Quase tudo. Brief: go-ora v2, splitter PL/SQL com `/`, DBMS_OUTPUT, ROWID como chave, `DBMS_METADATA.GET_DDL`, EXPLAIN PLAN, container `gvenzl/oracle-free:23-slim-faststart`. |
-| `_wip/tunnel` | 3 ficheiros, compilava | Testes com um servidor SSH em processo; integração (abrir o túnel antes de `driver.Open` e reescrever Host/Port). |
-| `_wip/importcsv` | 1 ficheiro (Sniff/Preview) | `AutoMap`, `Run` com INSERTs em batch, testes. |
-| `_wip/postgres-explain-testdata` | Fixtures JSON de `EXPLAIN (FORMAT JSON)` | Implementar `driver.Explainer` no driver PG. |
-
-Dependências a voltar a adicionar quando forem precisas: `github.com/sijms/go-ora/v2`, `go.mongodb.org/mongo-driver/v2`, `github.com/redis/go-redis/v9`, `golang.org/x/crypto` (ssh), `github.com/creack/pty` + `github.com/charmbracelet/x/conpty` (terminal embutido).
+| Pacote | O que faz |
+|---|---|
+| `internal/driver/oracle` | go-ora v2: splitter PL/SQL com `/`, comandos SQL*Plus, DBMS_OUTPUT, cancelamento, catálogo, `Describe` com DDL, edição por ROWID, `EXPLAIN PLAN`. Testes contra `gvenzl/oracle-free` (`QUARRY_TEST_ORA_DSN`). |
+| `internal/driver/mongo` | mongo-driver v2: subconjunto de mongosh (lexer/parser próprios), cursores, transações (replica set), edição por `_id`, `explain`. Testes contra `mongo:7 --replSet rs0` (`QUARRY_TEST_MONGO_DSN`). |
+| `internal/driver/redis` | go-redis v9: single/cluster/sentinel, árvore por `:`, valores por tipo, `SetTTL`. |
+| `internal/tunnel` | Túnel SSH (jump hosts, known_hosts com TOFU opcional, keepalive, religação); aberto pelo `service/connection` quando há opções `ssh_*`. |
+| `internal/importers` | `.pgpass`, `pg_service.conf`, `tnsnames.ora` → `ConnectionService.DiscoverConnections`. |
+| `internal/importcsv` | Deteção de formato/encoding, leitura em streaming e mapeamento de colunas → `ImportService` (`driver.Importer`, só PG). |
 
 ## 7. API Connect (esboço inicial)
 
@@ -206,35 +203,35 @@ Highlighting SQL ao estilo Catppuccin:
 
 ## 9. Features (IDs herdados da spec original)
 
-Estado do backend: **✓ pronto** em `internal/`, **◐ parcial** em `_wip/`, **○ por fazer**. A UI está toda por fazer.
+Estado do backend: **✓ pronto**, **○ por fazer**. A UI de A1–A3 está feita; o resto está na ordem da §10.
 
 | Área | IDs | Backend |
 |---|---|---|
 | Conexões: gestor, TOML + keyring, colar URI, várias ativas, ambiente/cor, read-only, TLS (sslmode) | C-01..C-08 | ✓ |
 | Resiliência: ping/latência, reconexão | C-09 | ✓ (`Ping`/`Alive`; a lógica de reconexão é para refazer no `service/`) |
-| SSH tunnel | C-10 | ◐ |
+| SSH tunnel | C-10 | ✓ (`tunnel`) |
 | Grupos/favoritos | C-11 | ✓ (campos em `Config`) |
-| Importar pgpass/pg_service/tnsnames | C-12 | ○ |
+| Importar pgpass/pg_service/tnsnames | C-12 | ✓ (`importers`, `DiscoverConnections`) |
 | Explorer lazy, cache de metadados, ações, filtro, go to object | E-01..E-04 | ✓ (PG) |
 | Gerar SQL, viewer de objeto, DDL, stats, arrastar para o editor | E-05..E-09 | ✓ (PG: `Describe`) |
 | Editor: edição, seleção, clipboard, undo, highlighting, procurar/substituir | D-01..D-03, D-06..D-08, D-10 | CM6 (frontend) |
-| Splitter, statement no cursor | D-04, D-05 | ✓ (PG; Oracle ◐) |
+| Splitter, statement no cursor | D-04, D-05 | ✓ (PG, Oracle, Mongo, Redis) |
 | Autocomplete | D-09 | ✓ (`complete` + `Catalog`) |
 | Marca de erro na posição | D-11 | ✓ (`QueryError.Position`) |
 | Ficheiros e scratches com binding à conexão | D-12 | ✓ (`workspace`) |
 | Parâmetros | D-13 | ✓ (`params`) |
-| Formatador SQL | D-14 | ○ |
+| Formatador SQL | D-14 | ○ (frontend) |
 | Execução assíncrona, cancelamento, mensagens, vários resultados, fetch progressivo, tipos | X-01..X-08 | ✓ (PG) |
 | Viewer de célula, copiar como, histórico | X-09..X-11 | ✓ (`export`, `workspace`) |
 | Ordenar/congelar, transações visíveis, proteções PROD | X-12..X-14 | ✓ (`sqlsafe`, `Transactional`) |
-| EXPLAIN visual | X-15 | ◐ (fixtures) |
+| EXPLAIN visual | X-15 | ✓ (`QueryService.Explain`: PG, Oracle, Mongo) |
 | Vista de dados com filtro, ordenação e filtro rápido | V-01..V-04 | ✓ (`DataViewer`) |
 | Edição inline (alterações pendentes, Apply numa transação, chave PK/unique/ROWID/_id) | V-05..V-08 | ✓ (PG `Editable`) |
 | Export CSV/JSON/NDJSON/INSERT/Markdown em streaming | V-09, V-10 | ✓ |
-| Import CSV | V-11 | ◐ |
-| Documentos Mongo, valores Redis | V-12, V-13 | ◐ |
+| Import CSV | V-11 | ✓ (`ImportService`, PG) |
+| Documentos Mongo, valores Redis | V-12, V-13 | ✓ (drivers) |
 | Shell nativa autenticada | S-01..S-05 | ✓ (`shell`); a UI tem de passar a terminal embutido |
-| Terminal embutido | S-06 | ○ (PTY: creack/pty + conpty; frontend: xterm.js) |
+| Terminal embutido | S-06 | ✓ (`ShellService` com PTY; frontend: xterm.js) |
 | Temas (Latte/Frappé/Macchiato), ícones | U-12, U-13 | ○ (CSS) |
 | Command palette, keymap configurável, restauro do workspace | U-06..U-11 | ✓ (`workspace`) / frontend |
 
@@ -260,26 +257,29 @@ Cada fase fecha com um critério de aceitação testável. Implementação: agen
 
 Notas: no WSLg o WebKitGTK não tinha acesso a `/dev/dri` (render por software), por isso os números do Linux são o pior caso. A descodificação protobuf corre na thread da UI e causa 4–5 frames longos (até 300 ms) durante o stream de 100k linhas; se incomodar, passar a descodificação para um Web Worker.
 
-**A1 · PostgreSQL de ponta a ponta.** Aceite quando se cria uma conexão PG, se navegam os schemas e se corre e cancela uma query de 1M linhas sem a UI parar.
+**A1 · PostgreSQL de ponta a ponta (feita).** Aceite quando se cria uma conexão PG, se navegam os schemas e se corre e cancela uma query de 1M linhas sem a UI parar.
 - Serviços Connection/Explorer/Query sobre `internal/`.
 - UI: diálogo de conexão, explorer, tabs com binding, barra de contexto, editor, grelha, Messages, Stop, toasts.
 
-**A2 · Editor IDE e produtividade.** Aceite com um dia de trabalho real em PG sem abrir o DBeaver.
+**A2 · Editor IDE e produtividade (feita).** Aceite com um dia de trabalho real em PG sem abrir o DBeaver.
 - Autocomplete por RPC, marca de erro, ficheiros/scratches, restauro da sessão, histórico, command palette, keymap configurável, go to object, viewer de célula, arrastar para o editor, grupos e favoritos.
 
-**A3 · Dados e segurança.** Aceite quando se editam e aplicam 50 alterações numa transação e se exporta 1M linhas para CSV em streaming.
+**A3 · Dados e segurança (feita a 2026-10-14).** Aceite quando se editam e aplicam 50 alterações numa transação e se exporta 1M linhas para CSV em streaming.
 - Vista de tabela (filtro, ordenação no servidor, filtro rápido, edição, Apply, confirmação PROD), Describe/DDL, export com progresso, guardas de risco e read-only, parâmetros, transações visíveis, reconexão.
 
 **A4 · Oracle e shell.** Aceite com A1–A3 a funcionar contra Oracle Free e a shell a abrir autenticada no scope.
-- Terminar `_wip/driver/oracle`.
-- Terminal embutido (PTY em Go + xterm.js) a correr `internal/shell`.
+- [x] Driver Oracle (`internal/driver/oracle`), com CI contra Oracle Free.
+- [x] Backend do terminal: `ShellService` com PTY (creack/pty, conpty).
+- [ ] UI: terminal embutido com xterm.js.
 
 **A5 · MongoDB e Redis.** Aceite quando se consultam, filtram e editam documentos e keys.
-- Terminar `_wip/driver/mongo` e `_wip/driver/redis`.
-- UI de documentos (árvore/JSON) e de valores por tipo, com TTL.
+- [x] Drivers MongoDB e Redis, com CI.
+- [ ] UI de documentos (árvore/JSON) e de valores por tipo, com TTL.
 
 **A6 · Polimento e distribuição (v1.0).** Aceite com a v1.0 publicada (deb/rpm/AppImage, AUR, Homebrew, Scoop, winget).
-- SSH tunnel, EXPLAIN visual, LISTEN/NOTIFY, formatador SQL, import CSV, importers de conexões, temas Catppuccin, auto-update.
+- [x] Backend: SSH tunnel, EXPLAIN (PG/Oracle/Mongo), LISTEN/NOTIFY, import CSV, importers de conexões.
+- [ ] UI: campos SSH, EXPLAIN visual, painel de notificações, import CSV, importar conexões, formatador SQL, temas Catppuccin.
+- [ ] Auto-update.
 - Migração para Wails v3 se já for estável (multi-janela, tray).
 - Empacotamento: `wails build` por plataforma; Linux com CGO e webkit2gtk-4.1.
 
