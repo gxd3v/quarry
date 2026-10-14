@@ -4,11 +4,14 @@ import { clone } from '@bufbuild/protobuf'
 import { EditorView } from '@codemirror/view'
 import { ConnectionConfigSchema, type ConnectionConfig } from '../gen/quarry/v1/connection_pb'
 import { RunMode } from '../gen/quarry/v1/query_pb'
+import type { ResultSet } from '../run/model'
 import { scopeOfPath, selectAll, type ScopeLike } from '../sql'
+import { orderBy } from '../table/order'
 import { connections } from './connections.svelte'
 import { explorer, type TreeNode } from './explorer.svelte'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
+import { loadData, openTable } from './table.svelte'
 import { editorHost, tabs, type Tab } from './tabs.svelte'
 import { ui } from './ui.svelte'
 import { workspace } from './workspace.svelte'
@@ -52,8 +55,13 @@ export async function pickAndNewScript() {
   if (id) newScript(id)
 }
 
-// openObject opens a new script that selects from a table or view, and runs it.
-export function openObject(connId: string, node: Pick<TreeNode, 'path' | 'name'>) {
+// openObject opens the table tab of a table or view.
+export function openObject(connId: string, node: Pick<TreeNode, 'path' | 'name' | 'kind'>) {
+  openTable(connId, { path: node.path, kind: node.kind, name: node.name })
+}
+
+// selectFrom opens a new script that selects from a table or view, and runs it.
+export function selectFrom(connId: string, node: Pick<TreeNode, 'path' | 'name'>) {
   const scope = scopeOfPath(node.path)
   const text = selectAll(scope.schema, node.name)
   const tab = newScript(connId, scope, text, node.name)
@@ -134,9 +142,11 @@ export async function renameGroup(name: string) {
   }
 }
 
-export async function run(tab: Tab, target = tabs.target(tab, false)) {
+// run runs a script tab's statement, or reloads a table tab.
+export async function run(tab: Tab, target?: ReturnType<typeof tabs.target>) {
   try {
-    await tabs.run(tab, target)
+    if (tab.kind === 'table') await loadData(tab)
+    else await tabs.run(tab, target ?? tabs.target(tab, false))
   } catch (err) {
     notify.error(err, 'Run')
   }
@@ -169,6 +179,41 @@ export async function deleteConnection(id: string): Promise<boolean> {
   for (const t of bound) await workspace.closeTab(t).catch(() => {})
   notify.flash(`Deleted ${name}`)
   return true
+}
+
+function qualified(path: readonly string[], name: string): string {
+  return path[1] ? `${path[1]}.${name}` : name
+}
+
+// exportNode opens the export dialog for all rows of a table or view.
+export function exportNode(connId: string, node: Pick<TreeNode, 'path' | 'name' | 'kind'>) {
+  ui.exporting = {
+    connId,
+    scope: scopeOfPath(node.path),
+    source: { data: { node: { path: node.path, kind: node.kind, name: node.name }, filter: '', orderBy: [] } },
+    name: qualified(node.path, node.name),
+  }
+}
+
+// exportTableData exports a table tab's rows with its filter and order.
+export function exportTableData(tab: Tab) {
+  const t = tab.table
+  if (!t) return
+  ui.exporting = {
+    connId: tab.connId,
+    scope: { ...tab.scope },
+    source: { data: { node: t.node, filter: t.filter, orderBy: orderBy(t.order) } },
+    name: qualified(t.node.path, t.node.name),
+  }
+}
+
+// exportResult exports a result by running its statement again on the server.
+export function exportResult(tab: Tab, r: ResultSet) {
+  if (!r.sql.trim()) {
+    notify.toast('error', 'The statement of this result is unknown; run it again to export it')
+    return
+  }
+  ui.exporting = { connId: tab.connId, scope: { ...tab.scope }, source: { sql: r.sql }, name: `${tab.title} result ${r.statement + 1}` }
 }
 
 // guard runs a background action, reporting its failure as a toast.

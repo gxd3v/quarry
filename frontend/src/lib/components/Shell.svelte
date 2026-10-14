@@ -1,25 +1,29 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { closeTab, guard, pickAndNewScript, run, saveTab } from '../app/actions'
+  import { closeTab, exportTableData, guard, pickAndNewScript, run, saveTab } from '../app/actions'
   import { onBeforeClose } from '../api/server'
   import { connections } from '../app/connections.svelte'
+  import { exportTasks } from '../app/exports.svelte'
   import { clampLayout } from '../app/layout'
   import { menu } from '../app/menu.svelte'
   import { notify } from '../app/notify.svelte'
   import { settings } from '../app/settings.svelte'
+  import * as table from '../app/table.svelte'
   import { editorHost, HISTORY, tabs } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
   import { workspace } from '../app/workspace.svelte'
   import { COPY_FORMATS } from '../grid/copy'
-  import { keymap, label } from '../keymap'
+  import { chordOf, keymap, label } from '../keymap'
   import { clipboard } from '../ui/clipboard'
   import ContextMenu from '../ui/ContextMenu.svelte'
   import { startDrag } from '../ui/drag'
+  import CellEditor from './CellEditor.svelte'
   import CellViewer from './CellViewer.svelte'
   import CommandPalette from './CommandPalette.svelte'
   import ConnectionDialog from './ConnectionDialog.svelte'
   import ConnectionPicker from './ConnectionPicker.svelte'
   import ContextBar from './ContextBar.svelte'
+  import ExportDialog from './ExportDialog.svelte'
   import Explorer from './Explorer.svelte'
   import GotoObject from './GotoObject.svelte'
   import PromptDialogs from './PromptDialogs.svelte'
@@ -28,12 +32,14 @@
   import ScriptEditor from './ScriptEditor.svelte'
   import ShortcutsDialog from './ShortcutsDialog.svelte'
   import StatusBar from './StatusBar.svelte'
+  import TableView from './TableView.svelte'
   import TabBar from './TabBar.svelte'
   import Toasts from './Toasts.svelte'
 
   let center = $state<HTMLElement>()
   let explorerRef = $state<ReturnType<typeof Explorer>>()
   let resultsRef = $state<ReturnType<typeof ResultsPanel>>()
+  let tableRef = $state<ReturnType<typeof TableView>>()
 
   const layout = $derived(ui.layout)
 
@@ -61,6 +67,9 @@
   function onkeydown(e: KeyboardEvent) {
     if (document.querySelector('dialog[open]') || menu.current) return
     if (e.key === 'Escape' && document.querySelector('.cm-tooltip-autocomplete')) return
+    // A focused component may own some chords (e.g. Ctrl+Shift+N sets NULL in a table grid).
+    const own = e.target instanceof Element ? e.target.closest('[data-keys]')?.getAttribute('data-keys') : null
+    if (own && own.split(' ').includes(chordOf(e))) return
     if (keymap.handle(e)) {
       e.preventDefault()
       e.stopPropagation()
@@ -73,8 +82,16 @@
     f(t)
   }
 
-  // The grid of the active tab's shown result.
-  const shownGrid = () => resultsRef?.shownGrid() ?? null
+  const withTable = (f: (t: NonNullable<typeof tabs.active>) => unknown) => () => {
+    const t = tabs.active
+    if (t?.kind !== 'table') return false
+    f(t)
+  }
+
+  // The grid of the active tab's shown result, or of its table data.
+  const shownGrid = () => (tabs.active?.kind === 'table' ? (tableRef?.shownGrid() ?? null) : (resultsRef?.shownGrid() ?? null))
+
+  const applyTable = (t: NonNullable<typeof tabs.active>) => guard('Apply changes', () => table.applyChanges(t, tableRef?.scrollPos() ?? null))
 
   onMount(() => {
     const off = keymap.register(
@@ -82,13 +99,45 @@
       { id: 'tab.close', category: 'Tab', title: 'Close tab', run: withTab(closeTab) },
       { id: 'tab.next', category: 'Tab', title: 'Next tab', run: () => tabs.step(1) },
       { id: 'tab.prev', category: 'Tab', title: 'Previous tab', run: () => tabs.step(-1) },
-      { id: 'tab.changeConnection', category: 'Tab', title: 'Change connection or scope…', run: withTab(() => (ui.scoping = true)) },
+      {
+        id: 'tab.changeConnection',
+        category: 'Tab',
+        title: 'Change connection or scope…',
+        run: () => {
+          if (tabs.active?.kind !== 'script') return false
+          ui.scoping = true
+        },
+      },
       { id: 'file.newScratch', category: 'File', title: 'New scratch', run: () => guard('New scratch', () => workspace.newScratch()) },
       { id: 'file.open', category: 'File', title: 'Open file…', run: () => guard('Open file', () => workspace.openFile()) },
-      { id: 'file.save', category: 'File', title: 'Save', run: withTab((t) => saveTab(t)) },
-      { id: 'file.saveAs', category: 'File', title: 'Save as…', run: withTab((t) => saveTab(t, true)) },
-      { id: 'run.statement', category: 'Run', title: 'Run statement or selection', run: withTab((t) => run(t, tabs.target(t, false))) },
-      { id: 'run.script', category: 'Run', title: 'Run script', run: withTab((t) => run(t, tabs.target(t, true))) },
+      { id: 'file.save', category: 'File', title: 'Save (Apply in a table)', run: withTab((t) => (t.kind === 'table' ? applyTable(t) : saveTab(t))) },
+      {
+        id: 'file.saveAs',
+        category: 'File',
+        title: 'Save as…',
+        run: () => {
+          const t = tabs.active
+          if (t?.kind !== 'script') return false
+          saveTab(t, true)
+        },
+      },
+      { id: 'run.statement', category: 'Run', title: 'Run statement or selection', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, false) : undefined)) },
+      { id: 'run.script', category: 'Run', title: 'Run script', run: withTab((t) => run(t, t.kind === 'script' ? tabs.target(t, true) : undefined)) },
+      { id: 'table.refresh', category: 'Table', title: 'Refresh data', run: withTable((t) => run(t)) },
+      { id: 'table.apply', category: 'Table', title: 'Apply pending changes', run: withTable(applyTable) },
+      { id: 'table.discard', category: 'Table', title: 'Discard pending changes', run: withTable((t) => t.table && table.discardChanges(t.table)) },
+      { id: 'table.export', category: 'Table', title: 'Export data…', run: withTable(exportTableData) },
+      {
+        id: 'results.export',
+        category: 'Results',
+        title: 'Export result…',
+        run: () => {
+          const t = tabs.active
+          if (!t) return false
+          if (t.kind === 'table') exportTableData(t)
+          else if (!resultsRef?.exportShown()) return false
+        },
+      },
       {
         id: 'run.cancel',
         category: 'Run',
@@ -139,16 +188,24 @@
         category: 'View',
         title: 'Focus editor',
         run: () => {
+          if (tabs.active?.kind === 'table') return void tableRef?.focus()
           if (!editorHost.view) return false
           editorHost.view.focus()
         },
       },
-      { id: 'focus.results', category: 'View', title: 'Focus results', run: () => resultsRef?.focus() },
+      {
+        id: 'focus.results',
+        category: 'View',
+        title: 'Focus results',
+        run: () => (tabs.active?.kind === 'table' ? tableRef?.focus() : resultsRef?.focus()),
+      },
     )
     window.addEventListener('keydown', onkeydown, true)
     // Dev builds expose the stores to tooling (smoke tests over CDP).
     if (import.meta.env.DEV) {
-      Object.assign(window, { __quarry: { tabs, editorHost, connections, keymap, workspace, settings, ui, clipboard, shownGrid } })
+      Object.assign(window, {
+        __quarry: { tabs, editorHost, connections, keymap, workspace, settings, ui, clipboard, shownGrid, table, exportTasks, tableView: () => tableRef },
+      })
     }
 
     const flush = () => void workspace.flush()
@@ -180,7 +237,7 @@
   // moves schedule it from the editor.
   $effect(() => {
     void tabs.activeKey
-    for (const t of tabs.tabs) void [t.connId, t.scope.database, t.scope.schema, t.path, t.title, t.dirty]
+    for (const t of tabs.tabs) void [t.connId, t.scope.database, t.scope.schema, t.path, t.title, t.dirty, t.table?.filter, t.table?.order, t.table?.view]
     void [layout.explorer, layout.editor, layout.scratches]
     workspace.schedule()
   })
@@ -212,21 +269,27 @@
     {#if tabs.active}
       {@const tab = tabs.active}
       <ContextBar {tab} />
-      <div class="center" bind:this={center} style:grid-template-rows="{layout.editor * 100}% 5px minmax(0, 1fr)">
-        <div class="pane"><ScriptEditor {tab} /></div>
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (a focusable window splitter) -->
-        <div
-          class="split horizontal"
-          role="separator"
-          aria-orientation="horizontal"
-          aria-label="Resize editor"
-          aria-valuenow={Math.round(layout.editor * 100)}
-          tabindex="0"
-          onpointerdown={dragEditor}
-          onkeydown={(e) => resizeKey(e, 'editor')}
-        ></div>
-        <div class="pane"><ResultsPanel {tab} bind:this={resultsRef} /></div>
-      </div>
+      {#if tab.kind === 'table'}
+        <div class="center table" bind:this={center}>
+          {#key tab.key}<TableView {tab} bind:this={tableRef} />{/key}
+        </div>
+      {:else}
+        <div class="center" bind:this={center} style:grid-template-rows="{layout.editor * 100}% 5px minmax(0, 1fr)">
+          <div class="pane"><ScriptEditor {tab} /></div>
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (a focusable window splitter) -->
+          <div
+            class="split horizontal"
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize editor"
+            aria-valuenow={Math.round(layout.editor * 100)}
+            tabindex="0"
+            onpointerdown={dragEditor}
+            onkeydown={(e) => resizeKey(e, 'editor')}
+          ></div>
+          <div class="pane"><ResultsPanel {tab} bind:this={resultsRef} /></div>
+        </div>
+      {/if}
     {:else}
       <div class="welcome" bind:this={center}>
         <h1>Quarry</h1>
@@ -272,6 +335,12 @@
 {#if ui.cell}
   <CellViewer cell={ui.cell} onclose={() => (ui.cell = null)} />
 {/if}
+{#if ui.cellEdit}
+  <CellEditor request={ui.cellEdit} onclose={() => (ui.cellEdit = null)} />
+{/if}
+{#if ui.exporting}
+  <ExportDialog request={ui.exporting} onclose={() => (ui.exporting = null)} />
+{/if}
 <PromptDialogs />
 <ContextMenu />
 <Toasts />
@@ -308,6 +377,11 @@
 
   .pane {
     min-height: 0;
+    overflow: hidden;
+  }
+
+  .center.table {
+    display: block;
     overflow: hidden;
   }
 

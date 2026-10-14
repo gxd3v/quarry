@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_LAYOUT } from './layout'
-import { basename, encodeSession, restoreLayout, restoreTab, type StoredTab, type TabSnapshot } from './session'
+import { basename, encodeSession, isTablePath, restoreLayout, restoreTab, type StoredTab, type TabSnapshot } from './session'
 
 const conn = 'c1'
 const scope = { database: 'app', schema: 'public' }
@@ -67,5 +67,44 @@ describe('restoreTab', () => {
     expect(restoreLayout('')).toEqual(DEFAULT_LAYOUT)
     expect(basename('C:\\Users\\me\\a.sql')).toBe('a.sql')
     expect(basename('/home/me/b.sql')).toBe('b.sql')
+  })
+})
+
+describe('table tabs', () => {
+  const table: TabSnapshot = {
+    path: '',
+    title: 'orders',
+    connId: conn,
+    scope,
+    cursor: 0,
+    text: '',
+    dirty: false,
+    table: {
+      node: { path: ['app', 'public', 'tables', 'orders'], kind: 'table', name: 'orders' },
+      filter: "status = 'open'",
+      order: [{ column: 'id', dir: 'desc' }],
+      view: 'columns',
+    },
+  }
+
+  it('round-trips through a pseudo-path and JSON state', () => {
+    const s = encodeSession([table], 0, DEFAULT_LAYOUT)
+    const t = s.tabs![0]
+    expect(t.path).toBe('quarry-table:["app","public","tables","orders"]')
+    expect(isTablePath(t.path!)).toBe(true)
+    expect(JSON.parse(t.unsaved!)).toEqual({ kind: 'table', name: 'orders', filter: "status = 'open'", order: [{ column: 'id', dir: 'desc' }], view: 'columns' })
+    const stored: StoredTab = { path: t.path!, title: t.title!, connId: t.connId!, scope, cursor: 0, unsaved: t.unsaved!, dirty: false }
+    const r = restoreTab(stored, null, known)!
+    expect(r.path).toBe('')
+    expect(r.title).toBe('orders')
+    expect(r.table).toEqual(table.table)
+  })
+
+  it('drops malformed or orphaned table tabs', () => {
+    const t: StoredTab = { path: 'quarry-table:["a","b","tables","t"]', title: 't', connId: conn, scope, cursor: 0, unsaved: '{}', dirty: false }
+    expect(restoreTab(t, null, known)?.table).toEqual({ node: { path: ['a', 'b', 'tables', 't'], kind: 'table', name: 't' }, filter: '', order: [], view: 'data' })
+    expect(restoreTab({ ...t, path: 'quarry-table:nope' }, null, known)).toBeNull()
+    expect(restoreTab({ ...t, path: 'quarry-table:[]' }, null, known)).toBeNull()
+    expect(restoreTab({ ...t, connId: 'gone' }, null, known)).toBeNull()
   })
 })

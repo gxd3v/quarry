@@ -15,6 +15,15 @@ export interface GridColumn {
   kind?: ValueKind
 }
 
+// GridSource is what the grid renders: ResultBuffer, or a view over one.
+export interface GridSource {
+  readonly columns: GridColumn[]
+  readonly length: number
+  row(i: number): Cell[]
+  // Untruncated cell text for rows [r0, r1] and columns [c0, c1].
+  slice(r0: number, r1: number, c0: number, c1: number): Cell[][]
+}
+
 // Cells of a row are joined into one flat string, so a million rows cost a
 // million strings instead of millions of small strings and arrays. Display
 // text never contains C0 controls (see formatValue), which makes these safe.
@@ -114,6 +123,15 @@ export class ResultBuffer {
       out.push(line)
     }
     return out
+  }
+
+  // filter returns the rows whose display text contains needle, ignoring case.
+  filter(needle: string): Int32Array {
+    const q = needle.toLowerCase()
+    const out = new Int32Array(this.#rows.length)
+    let n = 0
+    for (let i = 0; i < this.#rows.length; i++) if (this.#rows[i].toLowerCase().includes(q)) out[n++] = i
+    return out.slice(0, n)
   }
 
   #learnKinds(row: Row) {

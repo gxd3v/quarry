@@ -1,17 +1,20 @@
 import { Text, type EditorState, type TransactionSpec } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { queryClient, workspaceClient } from '../api/clients'
+import type { Row } from '../gen/quarry/v1/common_pb'
+import { dataClient, queryClient, workspaceClient } from '../api/clients'
 import { errorMessage, isAbort, needsConfirmation, notConnected, tabBusy, unknownTab } from '../api/errors'
 import type { CompleteReply } from '../editor/complete'
 import { createScriptState, errorPos, setError, setStatement } from '../editor/script'
 import { statementAt, type Range } from '../editor/statements'
 import { RunMode } from '../gen/quarry/v1/query_pb'
-import { RunModel, type TxInfo } from '../run/model'
+import { decide, paramLabel } from '../run/guard'
+import { RunModel, type ResultSet, type TxInfo } from '../run/model'
 import type { ScopeLike } from '../sql'
 import { connections } from './connections.svelte'
 import { afterClose, cycle } from './layout'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
+import type { TableState } from './table.svelte'
 import { slicer } from './yield'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -30,10 +33,15 @@ export interface TabOptions {
   // Content last saved, which decides the dirty marker; defaults to the text.
   saved?: string
   cursor?: number
+  // Makes a table tab showing this table.
+  table?: TableState
 }
 
 export class Tab {
   readonly key: number
+  // A script editor, or a table view (see table.svelte.ts).
+  readonly kind: 'script' | 'table'
+  readonly table: TableState | null
   title = $state('')
   path = $state('')
   scratch = $state(false)
@@ -52,6 +60,8 @@ export class Tab {
   tx = $state<TxInfo>({ supported: true, autoCommit: true, inTx: false })
   // Selected result, or MESSAGES.
   view = $state(0)
+  // Last bind parameter values, by bare name.
+  params: Record<string, string> = {}
 
   // The editor state while the tab is not shown (the view holds it otherwise).
   editor: EditorState
@@ -64,6 +74,8 @@ export class Tab {
 
   constructor(key: number, connId: string, scope: ScopeLike, text: string, opts: TabOptions = {}) {
     this.key = key
+    this.kind = opts.table ? 'table' : 'script'
+    this.table = opts.table ?? null
     this.path = opts.path ?? ''
     this.title = opts.title || `Script ${key}`
     this.scratch = opts.scratch ?? false
@@ -246,12 +258,27 @@ class Tabs {
 
     let got = false
     let confirmed = false
+    let params: Record<string, string> = {}
     try {
+      const pre = await this.#preflight(tab, script, target, ctrl.signal)
+      if (pre.stop) {
+        if (pre.error) {
+          model.messages.push({ kind: 'error', text: pre.error })
+          model.errors++
+        } else {
+          model.info(pre.info)
+        }
+        model.finish(0, false)
+        return
+      }
+      confirmed = pre.confirmed
+      params = pre.params
+      tab.startedAt = performance.now()
       for (;;) {
         try {
           await this.#call(tab, async (tabId) => {
             const slice = slicer()
-            const req = { tabId, script, mode: target.mode, start: target.start, end: target.end, confirmed }
+            const req = { tabId, script, mode: target.mode, start: target.start, end: target.end, confirmed, params }
             for await (const ev of queryClient().run(req, { signal: ctrl.signal })) {
               got = true
               model.apply(ev)
@@ -286,11 +313,99 @@ class Tabs {
       }
     } finally {
       this.#end(tab, ctrl, model)
+      if (tab.run === model) {
+        if (model.errors > 0 || (model.results.length === 0 && model.messages.length)) tab.view = MESSAGES
+        if (model.errorAt >= 0 && this.state(tab).doc === doc) this.markError(tab, model.errorAt)
+      }
     }
+  }
 
-    if (tab.run !== model) return
-    if (model.errors > 0 || (model.results.length === 0 && model.messages.length)) tab.view = MESSAGES
-    if (model.errorAt >= 0 && this.state(tab).doc === doc) this.markError(tab, model.errorAt)
+  // #preflight inspects what a run would execute: it refuses writes on a
+  // read-only connection, asks for parameters and confirms risky statements.
+  // When Inspect fails, the run goes ahead and the server's own checks apply.
+  async #preflight(
+    tab: Tab,
+    script: string,
+    target: RunTarget,
+    signal: AbortSignal,
+  ): Promise<{ stop: true; error?: string; info: string } | { stop: false; confirmed: boolean; params: Record<string, string> }> {
+    let res
+    try {
+      res = await this.#call(tab, (tabId) => queryClient().inspect({ tabId, script, mode: target.mode, start: target.start, end: target.end }))
+    } catch (err) {
+      if (signal.aborted || isAbort(err)) return { stop: true, info: 'Run canceled' }
+      return { stop: false, confirmed: false, params: {} }
+    }
+    const name = connections.name(tab.connId)
+    const d = decide(res, script, name)
+    if (d.kind === 'blocked') return { stop: true, error: d.message, info: '' }
+    let params: Record<string, string> = {}
+    if (d.params.length) {
+      const dialect = connections.config(tab.connId)?.kind ?? ''
+      const values = await prompts.askParams({
+        title: d.params.length === 1 ? 'Parameter value' : 'Parameter values',
+        fields: d.params.map((n) => ({ name: n, label: paramLabel(n, dialect) })),
+        values: tab.params,
+      })
+      if (!values || signal.aborted) return { stop: true, info: 'Run canceled: no parameter values' }
+      tab.params = { ...tab.params, ...values }
+      params = values
+    }
+    if (d.confirm) {
+      const prod = d.prod
+      const ok = await prompts.reviewList({
+        title: prod ? `Run on PROD: ${name}` : 'Confirm run',
+        text: prod ? `These statements change data on the production connection ${name}.` : 'These statements can change a lot of data.',
+        items: d.confirm.map((r) => ({ title: r.verb, detail: r.reason, code: r.text })),
+        confirm: 'Run anyway',
+        env: connections.env(tab.connId),
+      })
+      if (!ok || signal.aborted) return { stop: true, info: 'Run not confirmed' }
+      return { stop: false, confirmed: true, params }
+    }
+    return { stop: false, confirmed: false, params }
+  }
+
+  // openData loads a table tab's rows (DataService.OpenData); more rows come
+  // with fetch. onRows sees every stored batch.
+  async openData(
+    tab: Tab,
+    req: { filter: string; orderBy: string[]; maxRows: number },
+    onRows?: (r: ResultSet, rows: readonly Row[], start: number, kept: number) => void,
+  ) {
+    const t = tab.table
+    if (!t) return
+    this.#abort(tab)
+    const ctrl = new AbortController()
+    tab.controller = ctrl
+    const model = new RunModel()
+    model.onRows = onRows
+    tab.run = model
+    tab.view = 0
+    tab.busy = 'run'
+    tab.canceling = false
+    tab.startedAt = performance.now()
+    tab.touch()
+    const node = { path: t.node.path, kind: t.node.kind, name: t.node.name }
+    let got = false
+    try {
+      await this.#call(tab, async (tabId) => {
+        const slice = slicer()
+        for await (const ev of dataClient().openData({ tabId, node, ...req }, { signal: ctrl.signal })) {
+          got = true
+          model.apply(ev)
+          tab.touch()
+          await slice()
+        }
+      }, () => !got)
+    } catch (err) {
+      if (!ctrl.signal.aborted && !isAbort(err)) {
+        model.messages.push({ kind: 'error', text: errorMessage(err) })
+        model.errors++
+      }
+    } finally {
+      this.#end(tab, ctrl, model)
+    }
   }
 
   async fetch(tab: Tab, all: boolean) {

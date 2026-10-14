@@ -7,10 +7,11 @@
   interface Props {
     // Initial document; later changes to the prop are ignored.
     value: string
+    readonly?: boolean
     onchange?: (doc: string) => void
   }
 
-  let { value, onchange }: Props = $props()
+  let { value, readonly = false, onchange }: Props = $props()
 
   let host: HTMLDivElement
 
@@ -22,6 +23,7 @@
         doc: untrack(() => value),
         extensions: [
           baseExtensions(),
+          EditorState.readOnly.of(untrack(() => readonly)),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) onchange?.(u.state.doc.toString())
           }),

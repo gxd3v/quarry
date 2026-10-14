@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { insertText, openObject } from '../app/actions'
+  import { insertText } from '../app/actions'
+  import { openTable, tableNode } from '../app/table.svelte'
   import { connections } from '../app/connections.svelte'
   import type { Tab } from '../app/tabs.svelte'
   import { explorerClient } from '../api/clients'
@@ -49,7 +50,8 @@
   function pick(o: CatalogObject, e: KeyboardEvent | MouseEvent) {
     onclose()
     if (!e.altKey && OPENABLE.has(o.kind)) {
-      openObject(tab.connId, { path: [tab.scope.database, o.schema], name: o.name })
+      const db = tab.scope.database || connections.config(tab.connId)?.database || ''
+      openTable(tab.connId, tableNode(db, o.schema, o.name, o.kind, o.detail))
       return
     }
     setTimeout(() => insertText(quoted(o)), 0)

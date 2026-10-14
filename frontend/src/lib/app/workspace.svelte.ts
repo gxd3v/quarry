@@ -10,7 +10,8 @@ import { connections } from './connections.svelte'
 import { parseLayout } from './layout'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
-import { basename, encodeSession, restoreTab, type FileRead, type TabSnapshot } from './session'
+import { basename, encodeSession, isTablePath, restoreTab, type FileRead, type TabSnapshot } from './session'
+import { openTable } from './table.svelte'
 import { tabs, type Tab } from './tabs.svelte'
 import { ui } from './ui.svelte'
 
@@ -117,6 +118,17 @@ class Workspace {
   // closeTab closes a tab, offering to save unsaved changes first; false
   // when the user kept it open.
   async closeTab(tab: Tab): Promise<boolean> {
+    const pending = tab.table?.changes ?? 0
+    if (pending) {
+      tabs.activate(tab)
+      const ok = await prompts.ask({
+        title: 'Pending changes',
+        text: `${tab.title} has ${pending} pending ${pending === 1 ? 'change' : 'changes'} that were not applied. Close and discard them?`,
+        confirm: 'Discard and close',
+        danger: true,
+      })
+      if (!ok) return false
+    }
     if (tab.dirty) {
       tabs.activate(tab)
       const choice = await prompts.choose({
@@ -177,7 +189,7 @@ class Workspace {
     const stored = session?.tabs ?? []
     const files = await Promise.all(
       stored.map((t) =>
-        t.path
+        t.path && !isTablePath(t.path)
           ? workspaceClient()
               .readFile({ path: t.path })
               .then(toFileRead)
@@ -193,7 +205,9 @@ class Workspace {
     for (let i = 0; i < stored.length; i++) {
       const r = restoreTab(stored[i], files[i], known)
       if (!r) continue
-      const tab = tabs.open(r.connId, r.scope, r.text, { path: r.path, title: r.title, scratch: r.scratch, saved: r.saved, cursor: r.cursor })
+      const tab = r.table
+        ? openTable(r.connId, r.table.node, r.table, r.title)
+        : tabs.open(r.connId, r.scope, r.text, { path: r.path, title: r.title, scratch: r.scratch, saved: r.saved, cursor: r.cursor })
       if (i === session?.active) active = tab
     }
     if (active) tabs.activate(active)
@@ -223,8 +237,9 @@ class Workspace {
         connId: t.connId,
         scope: { ...t.scope },
         cursor: st.selection.main.head,
-        text: keep ? st.doc.toString() : '',
+        text: keep && !t.table ? st.doc.toString() : '',
         dirty: t.dirty,
+        table: t.table?.snapshot(),
       }
     })
     const active = tabs.tabs.findIndex((t) => t.key === tabs.activeKey)

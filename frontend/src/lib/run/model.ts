@@ -1,4 +1,4 @@
-import type { Column } from '../gen/quarry/v1/common_pb'
+import type { Column, Row } from '../gen/quarry/v1/common_pb'
 import type { RunEvent, StatementDone, TxState } from '../gen/quarry/v1/query_pb'
 import { ResultBuffer } from '../grid/buffer'
 
@@ -53,6 +53,9 @@ export class RunModel {
   canceled = false
   finished = false
   tx: TxInfo | null = null
+  // Sees each batch after it was stored: the result, the batch, the index of
+  // its first row and how many rows were kept.
+  onRows?: (r: ResultSet, rows: readonly Row[], start: number, kept: number) => void
   #open: ResultSet | null = null
   #fetching = false
   readonly #limit: number
@@ -108,9 +111,14 @@ export class RunModel {
         this.#open = r
         break
       }
-      case 'rows':
-        this.#open?.buffer.appendRows(e.value.rows)
+      case 'rows': {
+        const r = this.#open
+        if (!r) break
+        const start = r.buffer.length
+        const kept = r.buffer.appendRows(e.value.rows)
+        this.onRows?.(r, e.value.rows, start, kept)
         break
+      }
       case 'done':
         this.#done(e.value)
         break

@@ -42,11 +42,47 @@ export interface InputRequest {
   resolve: (value: string | null) => void
 }
 
+export interface RiskEntry {
+  // e.g. "UPDATE", "2 rows deleted".
+  title: string
+  detail: string
+  // Statement text, shown in mono.
+  code: string
+}
+
+// A confirmation that lists what is about to happen, e.g. the risky
+// statements of a run or the changes of an Apply.
+export interface ReviewRequest {
+  title: string
+  text: string
+  items: RiskEntry[]
+  confirm: string
+  env: string
+  resolve: (ok: boolean) => void
+}
+
+export interface ParamField {
+  // Bare name, the key of RunRequest.params.
+  name: string
+  // As written in the script, e.g. "$1" or ":id".
+  label: string
+}
+
+export interface ParamsRequest {
+  title: string
+  fields: ParamField[]
+  values: Record<string, string>
+  // null when dismissed.
+  resolve: (values: Record<string, string> | null) => void
+}
+
 class Prompts {
   password = $state<PasswordRequest | null>(null)
   confirm = $state<ConfirmRequest | null>(null)
   choice = $state<ChoiceRequest | null>(null)
   input = $state<InputRequest | null>(null)
+  review = $state<ReviewRequest | null>(null)
+  params = $state<ParamsRequest | null>(null)
   #queue: Promise<unknown> = Promise.resolve()
 
   // askPassword resolves to the typed password, or null when dismissed.
@@ -117,6 +153,44 @@ class Prompts {
             confirm: opts.confirm ?? 'OK',
             resolve: (v) => {
               this.input = null
+              resolve(v)
+            },
+          }
+        }),
+    )
+  }
+
+  // reviewList asks to confirm a list of risky operations.
+  reviewList(opts: { title: string; text?: string; items: RiskEntry[]; confirm?: string; env?: string }): Promise<boolean> {
+    return this.#serial(
+      () =>
+        new Promise<boolean>((resolve) => {
+          this.review = {
+            title: opts.title,
+            text: opts.text ?? '',
+            items: opts.items,
+            confirm: opts.confirm ?? 'Run anyway',
+            env: opts.env ?? '',
+            resolve: (ok) => {
+              this.review = null
+              resolve(ok)
+            },
+          }
+        }),
+    )
+  }
+
+  // askParams asks for bind parameter values, prefilled with values.
+  askParams(opts: { title: string; fields: ParamField[]; values: Record<string, string> }): Promise<Record<string, string> | null> {
+    return this.#serial(
+      () =>
+        new Promise<Record<string, string> | null>((resolve) => {
+          this.params = {
+            title: opts.title,
+            fields: opts.fields,
+            values: opts.values,
+            resolve: (v) => {
+              this.params = null
               resolve(v)
             },
           }

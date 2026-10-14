@@ -1,10 +1,31 @@
 import type { ResultBuffer } from '../grid/buffer'
+import type { ScopeLike } from '../sql'
+import type { ExportSource } from './exports.svelte'
 import { DEFAULT_LAYOUT, type Layout } from './layout'
 
 export interface CellRef {
   buffer: ResultBuffer
   row: number
   col: number
+}
+
+// A cell opened in the cell editor (multi-line and JSON values).
+export interface CellEditRequest {
+  title: string
+  type: string
+  // null for NULL.
+  value: string | null
+  readonly: boolean
+  onsave: (value: string | null) => void
+}
+
+// What the export dialog exports.
+export interface ExportRequest {
+  connId: string
+  scope: ScopeLike
+  source: ExportSource
+  // Names the file and the export, e.g. "public.orders".
+  name: string
 }
 
 export interface ConnectionRequest {
@@ -25,6 +46,8 @@ class UI {
   shortcuts = $state(false)
   // The cell shown in the cell viewer.
   cell = $state.raw<CellRef | null>(null)
+  cellEdit = $state.raw<CellEditRequest | null>(null)
+  exporting = $state.raw<ExportRequest | null>(null)
   layout = $state<Layout>({ ...DEFAULT_LAYOUT })
 
   // pickConnection shows the connection picker; null when dismissed.

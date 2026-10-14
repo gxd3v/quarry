@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { closeTab as close, pickAndNewScript, saveTab } from '../app/actions'
+  import { closeTab as close, exportTableData, pickAndNewScript, run, saveTab } from '../app/actions'
   import { connections } from '../app/connections.svelte'
   import { menu } from '../app/menu.svelte'
   import { settings } from '../app/settings.svelte'
@@ -21,6 +21,16 @@
   }
 
   function oncontextmenu(e: MouseEvent, t: Tab) {
+    if (t.kind === 'table') {
+      menu.open(e, [
+        { label: 'Refresh', icon: 'refresh', run: () => void run(t) },
+        { label: 'Export data…', icon: 'export', run: () => exportTableData(t) },
+        'separator',
+        { label: 'Close', hint: hint('tab.close'), run: () => close(t) },
+        { label: 'Close others', run: () => tabs.tabs.filter((x) => x !== t).forEach(close) },
+      ])
+      return
+    }
     menu.open(e, [
       { label: 'Save', icon: 'save', hint: hint('file.save'), run: () => saveTab(t) },
       { label: 'Save as…', hint: hint('file.saveAs'), run: () => saveTab(t, true) },
@@ -44,7 +54,7 @@
         tabindex="0"
         aria-selected={t.key === tabs.activeKey}
         data-env={env}
-        title="{t.path || t.title} @ {connections.name(t.connId)}{t.dirty ? ' (unsaved)' : ''}"
+        title="{t.table ? t.table.node.path.join(' › ') : t.path || t.title} @ {connections.name(t.connId)}{t.dirty ? ' (unsaved)' : ''}{t.table?.changes ? ' (pending changes)' : ''}"
         onmousedown={(e) => {
           if (e.button === 0) tabs.activate(t)
           else if (e.button === 1) e.preventDefault()
@@ -57,13 +67,14 @@
       >
         <span class="env-dot" data-env={env}></span>
         {#if t.scratch}<span class="scratch" title="Scratch"><Icon name="scratch" size={12} /></span>{/if}
+        {#if t.table}<span class="tkind" title={t.table.node.kind}><Icon name={t.table.node.kind === 'view' ? 'view' : 'table'} size={12} /></span>{/if}
         <span class="title">{t.title}</span>
         <span class="conn">@{connections.name(t.connId)}</span>
         {#if t.busy}<span class="spinner small"></span>{/if}
         {#if t.tx.inTx}<span class="tx" title="Open transaction">●</span>{/if}
         <button
           class="close"
-          class:dirty={t.dirty}
+          class:dirty={t.dirty || !!t.table?.changes}
           type="button"
           tabindex="-1"
           title="Close ({hint('tab.close')})"
@@ -196,6 +207,10 @@
 
   .scratch {
     color: var(--overlay1);
+  }
+
+  .tkind {
+    color: var(--blue);
   }
 
   .close:hover {

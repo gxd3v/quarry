@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { guard } from '../app/actions'
+  import { exportResult, guard } from '../app/actions'
+  import type { MenuEntry } from '../app/menu.svelte'
   import { connections } from '../app/connections.svelte'
   import { HISTORY, MESSAGES, tabs, type Tab } from '../app/tabs.svelte'
   import { ui } from '../app/ui.svelte'
@@ -55,6 +56,15 @@
   function copyOptions(): CopyOptions {
     return { table: guessTable(current?.r.sql ?? ''), dialect: connections.config(tab.connId)?.kind ?? '' }
   }
+
+  // Exports the shown result (its statement runs again on the server).
+  export function exportShown(): boolean {
+    if (!current) return false
+    exportResult(tab, current.r)
+    return true
+  }
+
+  const menuItems = (): MenuEntry[] => [{ label: 'Export result…', icon: 'export', disabled: !current?.r.sql, run: () => void exportShown() }]
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
@@ -117,7 +127,7 @@
       <HistoryView {tab} />
     {:else if current}
       <div class="grid-wrap">
-        <Grid bind:this={grid} buffer={current.r.buffer} version={tab.version} oncell={openCell} {copyOptions} />
+        <Grid bind:this={grid} buffer={current.r.buffer} version={tab.version} oncell={openCell} {copyOptions} {menuItems} />
       </div>
       <footer>
         <span><b>{count(current.rows)}</b> {current.rows === 1 ? 'row' : 'rows'}</span>
@@ -129,6 +139,7 @@
         {:else if current.elapsedMs}
           <span class="muted">{count(current.elapsedMs)} ms</span>
         {/if}
+        <button class="btn small export" type="button" title="Export the whole result to a file" disabled={!current.r.sql} onclick={exportShown}>Export…</button>
         {#if current.hasMore}
           <span class="more">more rows available</span>
           <button class="btn small" type="button" disabled={!!tab.busy || snap.fetchable !== current.r} onclick={() => guard('Load more', () => tabs.fetch(tab, false))}
@@ -264,8 +275,12 @@
   }
 
   .more {
-    margin-left: auto;
     color: var(--yellow);
+  }
+
+  .export {
+    margin-left: auto;
+    order: 1;
   }
 
   .btn.small {

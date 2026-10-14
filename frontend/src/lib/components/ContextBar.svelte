@@ -33,12 +33,20 @@
 <div class="ctx" data-env={env}>
   <span class="badge" class:prod={env === 'prod'} title="Environment">{env.toUpperCase()}</span>
 
-  <button class="target" type="button" title="Change connection or scope" onclick={() => (ui.scoping = true)}>
+  <button
+    class="target"
+    type="button"
+    title={tab.kind === 'table' ? 'A table tab stays on its table' : 'Change connection or scope'}
+    disabled={tab.kind === 'table'}
+    onclick={() => (ui.scoping = true)}
+  >
     <span class="conn">{cfg?.name ?? 'unknown connection'}</span>
     {#if scope}<span class="sep">›</span><span class="scope">{scope}</span>{/if}
-    {#if cfg?.readOnly}<span class="ro" title="Read-only connection">RO</span>{/if}
-    <Icon name="chevron" size={10} />
+    {#if tab.kind === 'script'}<Icon name="chevron" size={10} />{/if}
   </button>
+  {#if cfg?.readOnly}
+    <span class="ro" title="Read-only connection: statements that write are refused"><Icon name="lock" size={11} /> READ-ONLY</span>
+  {/if}
 
   {#if tab.tx.supported}
     <button
@@ -70,9 +78,15 @@
       <span class="spinner"></span>{tab.canceling ? 'Canceling…' : fmt(elapsed)}
     </span>
   {/if}
-  <button class="btn small run" type="button" title="Run statement or selection (Ctrl+Enter) · whole script (Ctrl+Shift+Enter)" onclick={() => run(tab)}>
-    <Icon name="play" size={12} fill /> Run
-  </button>
+  {#if tab.kind === 'table'}
+    <button class="btn small run" type="button" title="Reload the rows (Ctrl+Enter)" disabled={!!tab.busy} onclick={() => run(tab)}>
+      <Icon name="refresh" size={12} /> Refresh
+    </button>
+  {:else}
+    <button class="btn small run" type="button" title="Run statement or selection (Ctrl+Enter) · whole script (Ctrl+Shift+Enter)" onclick={() => run(tab)}>
+      <Icon name="play" size={12} fill /> Run
+    </button>
+  {/if}
   <button class="btn small stop" type="button" title="Stop (Esc)" disabled={!tab.busy} onclick={() => tabs.cancel(tab)}>
     <Icon name="stop" size={12} fill /> Stop
   </button>
@@ -119,7 +133,11 @@
     cursor: pointer;
   }
 
-  .target:hover {
+  .target:disabled {
+    cursor: default;
+  }
+
+  .target:hover:not(:disabled) {
     background: var(--surface0);
     border-color: var(--surface1);
   }
@@ -146,12 +164,17 @@
   }
 
   .ro {
-    padding: 0 4px;
-    border-radius: 3px;
-    background: var(--surface1);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+    border: 1px solid var(--yellow);
+    border-radius: 4px;
     color: var(--yellow);
     font-size: 10px;
     font-weight: 700;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
   }
 
   .commit-mode {

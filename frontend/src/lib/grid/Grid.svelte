@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { tick } from 'svelte'
   import { menu, type MenuEntry } from '../app/menu.svelte'
   import { notify } from '../app/notify.svelte'
   import { chordOf } from '../keymap'
   import { copyText } from '../ui/clipboard'
-  import type { Cell, ResultBuffer } from './buffer'
+  import type { Cell, GridSource } from './buffer'
   import { COPY_FORMATS, copyPlain, formatCopy, type CopyFormat, type CopyOptions } from './copy'
   import {
     columnOffsets,
@@ -15,17 +16,60 @@
     spacerHeight,
   } from './layout'
 
+  interface Range {
+    r0: number
+    r1: number
+    c0: number
+    c1: number
+  }
+
   interface Props {
-    buffer: ResultBuffer
+    buffer: GridSource
     // Bumped by the owner after appending to the buffer.
     version: number
+    // Bumped by the owner when shown rows change in place (edits, filtering).
+    epoch?: number
     // Opens a cell in the viewer (double-click, Enter, F3).
     oncell?: (row: number, col: number) => void
     // Table and dialect for SQL INSERT copies.
     copyOptions?: () => CopyOptions
+    // Header sorting: a column's direction and rank, and clicks on headers.
+    sortOf?: (col: number) => { dir: 'asc' | 'desc'; rank: number } | null
+    onsort?: (col: number, add: boolean) => void
+    // Extra class names of rows and cells.
+    rowClass?: (row: number) => string
+    cellClass?: (row: number, col: number) => string
+    // In-place editing (double-click, F2, Enter or typing): begin returns the
+    // text to edit, or null when the owner handles the cell another way.
+    editable?: boolean
+    onbeginedit?: (row: number, col: number) => string | null
+    // text is null to set NULL.
+    oncommitedit?: (row: number, col: number, text: string | null) => void
+    // Keys for the owner (Delete, Insert, ...), given the chord; true when handled.
+    onkey?: (e: KeyboardEvent, chord: string) => boolean
+    // Context menu entries about the selection, shown after "View value".
+    menuItems?: () => MenuEntry[]
+    // Chords that, while the grid has focus, skip the global shortcuts.
+    ownKeys?: string
   }
 
-  let { buffer, version, oncell, copyOptions }: Props = $props()
+  let {
+    buffer,
+    version,
+    epoch = 0,
+    oncell,
+    copyOptions,
+    sortOf,
+    onsort,
+    rowClass,
+    cellClass,
+    editable = false,
+    onbeginedit,
+    oncommitedit,
+    onkey,
+    menuItems,
+    ownKeys = '',
+  }: Props = $props()
 
   const ROW_H = 22
   const HEADER_H = 40
@@ -41,6 +85,7 @@
 
   const rowCount = $derived.by(() => {
     void version
+    void epoch
     return buffer.length
   })
   const colCount = $derived(buffer.columns.length)
@@ -91,12 +136,14 @@
   const colEnd = $derived(win.colEnd)
 
   let cache = new Map<number, Cell[]>()
-  let cacheOwner: ResultBuffer | undefined
+  let cacheOwner: GridSource | undefined
+  let cacheEpoch = 0
 
   const rows = $derived.by(() => {
-    if (cacheOwner !== buffer) {
+    if (cacheOwner !== buffer || cacheEpoch !== epoch) {
       cache = new Map()
       cacheOwner = buffer
+      cacheEpoch = epoch
     }
     const next = new Map<number, Cell[]>()
     const out: { index: number; cells: Cell[] }[] = []
@@ -186,7 +233,60 @@
 
   function onDblClick(e: MouseEvent) {
     const at = cellAt(e.target)
-    if (at && at.col >= 0) oncell?.(at.row, at.col)
+    if (!at || at.col < 0) return
+    if (editable) beginEdit(at.row, at.col)
+    else oncell?.(at.row, at.col)
+  }
+
+  // --- in-place editing ---
+
+  let editing = $state<{ row: number; col: number; text: string; initial: string } | null>(null)
+  let editInput = $state<HTMLInputElement>()
+  const editBox = $derived.by(() => {
+    if (!editing || editing.col >= widths.length) return null
+    return { x: offsets[editing.col], y: rowTop + (editing.row - rowStart) * ROW_H, w: Math.max(widths[editing.col], 120) }
+  })
+
+  // beginEdit edits a cell in place, starting with seed when typing started it.
+  export function beginEdit(row: number, col: number, seed?: string) {
+    if (!editable || row < 0 || col < 0 || row >= rowCount || col >= colCount) return
+    const text = onbeginedit?.(row, col)
+    if (text === null || text === undefined) return
+    sel = { ar: row, ac: col, hr: row, hc: col }
+    reveal(row, col)
+    editing = { row, col, text: seed ?? text, initial: text }
+    void tick().then(() => {
+      if (!editInput) return
+      editInput.focus()
+      if (seed === undefined) editInput.select()
+    })
+  }
+
+  // finishEdit ends editing, committing value (undefined cancels) and moving
+  // the selection by dr rows and dc columns.
+  function finishEdit(value: string | null | undefined, dr = 0, dc = 0) {
+    const e = editing
+    if (!e) return
+    editing = null
+    if (value !== undefined && (value === null || value !== e.initial)) oncommitedit?.(e.row, e.col, value)
+    scroller.focus()
+    if (dr || dc) {
+      const hr = Math.min(Math.max(e.row + dr, 0), rowCount - 1)
+      const hc = Math.min(Math.max(e.col + dc, 0), colCount - 1)
+      sel = { ar: hr, ac: hc, hr, hc }
+      reveal(hr, hc)
+    }
+  }
+
+  function onEditKey(e: KeyboardEvent) {
+    e.stopPropagation()
+    const chord = chordOf(e)
+    if (e.key === 'Enter' && !e.altKey && !e.ctrlKey && !e.metaKey) finishEdit(editing?.text, e.shiftKey ? -1 : 1, 0)
+    else if (e.key === 'Tab') finishEdit(editing?.text, 0, e.shiftKey ? -1 : 1)
+    else if (e.key === 'Escape') finishEdit(undefined)
+    else if (chord === 'Mod+Shift+N') finishEdit(null)
+    else return
+    e.preventDefault()
   }
 
   function onContextMenu(e: MouseEvent) {
@@ -195,8 +295,10 @@
     const { r0, r1, c0, c1 } = range
     const inside = at.row >= r0 && at.row <= r1 && (at.col < 0 || (at.col >= c0 && at.col <= c1))
     if (!inside) select(at.row, at.col, false)
+    const extra = menuItems?.() ?? []
     const items: MenuEntry[] = [
-      { label: 'View value', icon: 'view', hint: 'Enter', disabled: !oncell || sel.hc < 0, run: () => oncell?.(sel.hr, sel.hc) },
+      { label: 'View value', icon: 'view', hint: editable ? 'F3' : 'Enter', disabled: !oncell || sel.hc < 0, run: () => oncell?.(sel.hr, sel.hc) },
+      ...(extra.length ? (['separator', ...extra] as MenuEntry[]) : []),
       'separator',
       { label: 'Copy', icon: 'copy', hint: 'Ctrl+C', run: () => void copy() },
       { label: 'Copy with headers', run: () => void copy('tsv') },
@@ -235,18 +337,45 @@
     reveal(hr, hc)
   }
 
+  // selection returns the selected range, or null.
+  export function selection(): Range | null {
+    return range.r0 >= 0 && range.c0 >= 0 ? { ...range } : null
+  }
+
+  // scrollPos also answers after unmount, from the last scroll seen.
+  export function scrollPos(): { top: number; left: number } {
+    return scroller ? { top: scroller.scrollTop, left: scroller.scrollLeft } : { top: scrollTop, left: scrollLeft }
+  }
+
+  export function scrollTo(p: { top: number; left: number }) {
+    scroller.scrollTo(p.left, p.top)
+  }
+
+  export function focus() {
+    scroller.focus()
+  }
+
   function selectAll() {
     if (rowCount && colCount) sel = { ar: 0, ac: 0, hr: rowCount - 1, hc: colCount - 1 }
   }
 
   function onKeydown(e: KeyboardEvent) {
-    if (rowCount === 0 || colCount === 0) return
     const chord = chordOf(e)
+    if (onkey?.(e, chord)) {
+      e.preventDefault()
+      return
+    }
+    if (rowCount === 0 || colCount === 0) return
+    const plain = !e.ctrlKey && !e.metaKey && !e.altKey
     if (chord === 'Mod+C') {
       void copy()
     } else if (chord === 'Mod+A') {
       selectAll()
-    } else if ((e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.altKey) || e.key === 'F3') {
+    } else if (editable && sel.hr >= 0 && ((e.key === 'Enter' && plain && !e.shiftKey) || e.key === 'F2')) {
+      beginEdit(sel.hr, sel.hc)
+    } else if (editable && sel.hr >= 0 && plain && e.key.length === 1) {
+      beginEdit(sel.hr, sel.hc, e.key)
+    } else if ((e.key === 'Enter' && plain) || e.key === 'F3') {
       const a = active()
       if (!a || !oncell) return
       oncell(a.row, a.col)
@@ -336,6 +465,7 @@
   ondblclick={onDblClick}
   oncontextmenu={onContextMenu}
   onkeydown={onKeydown}
+  data-keys={ownKeys || undefined}
   role="grid"
   tabindex="0"
   aria-rowcount={rowCount}
@@ -346,14 +476,20 @@
       <div class="corner" style:width="{gutter}px"></div>
       {#each cols as c (c)}
         {@const col = buffer.columns[c]}
+        {@const s = sortOf?.(c)}
+        <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions (sorting is a mouse shortcut) -->
         <div
           class="hcell"
           class:num={col.numeric}
+          class:sortable={!!onsort}
           style:left="{gutter + offsets[c]}px"
           style:width="{widths[c]}px"
-          title="{col.name} {col.type}"
+          title="{col.name} {col.type}{onsort ? ' (click to sort, Shift+click to add)' : ''}"
+          onclick={(e) => {
+            if (onsort && !(e.target as Element).closest('.resize')) onsort(c, e.shiftKey)
+          }}
         >
-          <span class="name">{col.name}</span><span class="type">{col.type}</span>
+          <span class="name">{col.name}{#if s}<span class="sort" data-dir={s.dir}>{s.dir === 'asc' ? '▲' : '▼'}<sub>{s.rank}</sub></span>{/if}</span><span class="type">{col.type}</span>
           <div
             class="resize"
             role="separator"
@@ -367,7 +503,12 @@
     <div class="gutter" style:width="{gutter}px" style:height="{spacer}px">
       <div class="block" style:transform="translateY({rowTop}px)">
         {#each rows as row (row.index)}
-          <div class="gcell" class:odd={row.index % 2 === 1} class:sel={row.index >= range.r0 && row.index <= range.r1} data-r={row.index}>
+          <div
+            class="gcell {rowClass?.(row.index) ?? ''}"
+            class:odd={row.index % 2 === 1}
+            class:sel={row.index >= range.r0 && row.index <= range.r1}
+            data-r={row.index}
+          >
             {row.index + 1}
           </div>
         {/each}
@@ -383,11 +524,11 @@
     >
       <div class="block" style:transform="translateY({rowTop}px)">
         {#each rows as row (row.index)}
-          <div class="row" class:odd={row.index % 2 === 1} data-r={row.index}>
+          <div class="row {rowClass?.(row.index) ?? ''}" class:odd={row.index % 2 === 1} data-r={row.index}>
             {#each cols as c (c)}
               {@const v = row.cells[c]}
               <div
-                class="cell"
+                class="cell {cellClass?.(row.index, c) ?? ''}"
                 class:null={v === null}
                 class:num={buffer.columns[c].numeric}
                 data-c={c}
@@ -411,6 +552,21 @@
           style:transform="translate({headBox.x}px, {headBox.y}px)"
           style:width="{headBox.w}px"
         ></div>
+      {/if}
+      {#if editing && editBox}
+        <input
+          class="cell-editor"
+          type="text"
+          spellcheck="false"
+          autocomplete="off"
+          data-keys="{ownKeys} Escape"
+          style:transform="translate({editBox.x}px, {editBox.y}px)"
+          style:width="{editBox.w}px"
+          bind:this={editInput}
+          bind:value={editing.text}
+          onkeydown={onEditKey}
+          onblur={() => finishEdit(editing?.text)}
+        />
       {/if}
     </div>
   </div>
@@ -579,6 +735,75 @@
     background: rgb(203 166 247 / 0.1);
     outline: 1px solid rgb(203 166 247 / 0.45);
     outline-offset: -1px;
+  }
+
+  .hcell.sortable {
+    cursor: pointer;
+  }
+
+  .hcell.sortable:hover {
+    background: var(--surface0);
+  }
+
+  .sort {
+    margin-left: 4px;
+    color: var(--accent);
+    font-size: 9px;
+  }
+
+  .sort sub {
+    font-size: 8px;
+  }
+
+  .row.new {
+    background: color-mix(in srgb, var(--green) 10%, transparent);
+  }
+
+  .gcell.new {
+    color: var(--green);
+    box-shadow: inset 2px 0 0 var(--green);
+  }
+
+  .row.deleted {
+    background: color-mix(in srgb, var(--red) 10%, transparent);
+  }
+
+  .row.deleted .cell {
+    color: var(--red);
+    text-decoration: line-through;
+  }
+
+  .gcell.deleted {
+    color: var(--red);
+    box-shadow: inset 2px 0 0 var(--red);
+  }
+
+  .cell.edited {
+    background: color-mix(in srgb, var(--peach) 18%, transparent);
+    color: var(--peach);
+  }
+
+  .cell.default {
+    color: var(--faint);
+    font-style: italic;
+  }
+
+  .cell-editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    height: 22px;
+    padding: 0 7px;
+    background: var(--crust);
+    border: 1px solid var(--accent);
+    border-radius: 0;
+    outline: none;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    box-shadow: 0 4px 12px var(--crust);
+    user-select: text;
   }
 
   .selection {

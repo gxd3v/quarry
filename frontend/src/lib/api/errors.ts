@@ -39,6 +39,10 @@ export function needsConfirmation(err: unknown): boolean {
   return err instanceof ConnectError && err.code === Code.FailedPrecondition && err.rawMessage.startsWith('confirmation required:')
 }
 
+export function readOnly(err: unknown): boolean {
+  return err instanceof ConnectError && err.code === Code.FailedPrecondition && /read-only/.test(err.rawMessage)
+}
+
 export function tabBusy(err: unknown): boolean {
   return err instanceof ConnectError && err.code === Code.FailedPrecondition && /tab is busy/.test(err.rawMessage)
 }

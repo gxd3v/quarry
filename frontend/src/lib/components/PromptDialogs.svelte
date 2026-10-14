@@ -4,6 +4,7 @@
 
   let password = $state('')
   let input = $state('')
+  let params = $state<Record<string, string>>({})
 
   $effect(() => {
     if (prompts.password) password = ''
@@ -11,6 +12,11 @@
 
   $effect(() => {
     if (prompts.input) input = prompts.input.value
+  })
+
+  $effect(() => {
+    const req = prompts.params
+    if (req) params = Object.fromEntries(req.fields.map((f) => [f.name, req.values[f.name] ?? '']))
   })
 </script>
 
@@ -106,7 +112,117 @@
   </Modal>
 {/if}
 
+{#if prompts.review}
+  {@const req = prompts.review}
+  <Modal title={req.title} width={560} env={req.env} onclose={() => req.resolve(false)}>
+    {#if req.env === 'prod'}<p class="prod">PRODUCTION</p>{/if}
+    {#if req.text}<p class="text">{req.text}</p>{/if}
+    <ul class="review">
+      {#each req.items as it, i (i)}
+        <li>
+          <span class="verb" class:danger={req.env === 'prod'}>{it.title}</span>
+          {#if it.detail}<span class="detail">{it.detail}</span>{/if}
+          {#if it.code}<code>{it.code}</code>{/if}
+        </li>
+      {/each}
+    </ul>
+    {#snippet footer()}
+      <!-- svelte-ignore a11y_autofocus -->
+      <button class="btn" type="button" onclick={() => req.resolve(false)} autofocus>Cancel</button>
+      <button class="btn danger solid" type="button" data-confirm onclick={() => req.resolve(true)}>{req.confirm}</button>
+    {/snippet}
+  </Modal>
+{/if}
+
+{#if prompts.params}
+  {@const req = prompts.params}
+  <Modal title={req.title} width={460} onclose={() => req.resolve(null)}>
+    <form
+      id="params-form"
+      class="params"
+      onsubmit={(e) => {
+        e.preventDefault()
+        req.resolve({ ...params })
+      }}
+    >
+      {#each req.fields as f, i (f.name)}
+        <label class="param" for="param-{i}">{f.label}</label>
+        <!-- svelte-ignore a11y_autofocus -->
+        <input id="param-{i}" class="field mono" type="text" data-param={f.name} bind:value={params[f.name]} autofocus={i === 0} />
+      {/each}
+    </form>
+    <p class="hint">Numbers are inserted bare, anything else as a quoted string. <code>NULL</code> means NULL; wrap a value in single quotes to force a string.</p>
+    {#snippet footer()}
+      <button class="btn" type="button" onclick={() => req.resolve(null)}>Cancel</button>
+      <button class="btn primary" type="submit" form="params-form">Run</button>
+    {/snippet}
+  </Modal>
+{/if}
+
 <style>
+  .review {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .review li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    align-items: baseline;
+    padding: 6px 8px;
+    background: var(--crust);
+    border: 1px solid var(--surface0);
+    border-radius: 5px;
+  }
+
+  .verb {
+    color: var(--peach);
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .verb.danger {
+    color: var(--red);
+  }
+
+  .detail {
+    color: var(--subtext0);
+  }
+
+  .review code {
+    grid-column: 1 / -1;
+    color: var(--subtext1);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    word-break: break-word;
+  }
+
+  .params {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    align-items: center;
+  }
+
+  .param {
+    color: var(--maroon);
+    font-family: var(--font-mono);
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .hint code {
+    color: var(--subtext1);
+  }
+
   .label {
     display: block;
     margin-bottom: 6px;

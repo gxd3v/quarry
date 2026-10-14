@@ -6,7 +6,16 @@
 <div class="toasts" role="status" aria-live="polite">
   {#each notify.toasts as t (t.id)}
     <div class="toast {t.kind}">
-      <span class="text">{t.text}</span>
+      <span class="text">
+        {t.text}
+        {#if t.actions.length}
+          <span class="actions">
+            {#each t.actions as a (a.label)}
+              <button class="btn small" type="button" onclick={() => a.run()}>{a.label}</button>
+            {/each}
+          </span>
+        {/if}
+      </span>
       <button class="icon-btn" type="button" title="Dismiss" onclick={() => notify.dismiss(t.id)}>
         <Icon name="close" size={11} />
       </button>
@@ -46,6 +55,18 @@
 
   .toast.success {
     border-left-color: var(--green);
+  }
+
+  .actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .btn.small {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 12px;
   }
 
   .text {

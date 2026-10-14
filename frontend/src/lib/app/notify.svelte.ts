@@ -2,10 +2,16 @@ import { Cancelled, errorMessage, isAbort } from '../api/errors'
 
 export type ToastKind = 'error' | 'info' | 'success'
 
+export interface ToastAction {
+  label: string
+  run: () => void
+}
+
 export interface Toast {
   id: number
   kind: ToastKind
   text: string
+  actions: ToastAction[]
 }
 
 class Notifier {
@@ -15,9 +21,9 @@ class Notifier {
   #seq = 0
   #statusTimer: ReturnType<typeof setTimeout> | undefined
 
-  toast(kind: ToastKind, text: string, ttl = kind === 'error' ? 8000 : 4000) {
+  toast(kind: ToastKind, text: string, ttl = kind === 'error' ? 8000 : 4000, actions: ToastAction[] = []) {
     const id = ++this.#seq
-    this.toasts = [...this.toasts.slice(-4), { id, kind, text }]
+    this.toasts = [...this.toasts.slice(-4), { id, kind, text, actions }]
     if (ttl > 0) setTimeout(() => this.dismiss(id), ttl)
   }
 

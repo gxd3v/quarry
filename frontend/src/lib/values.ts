@@ -70,7 +70,9 @@ function rawText(v: Value | undefined, limit: number): string | null {
   }
 }
 
-function displayText(s: string): string {
+// displayText makes text safe for one grid line: clipped, with line breaks
+// shown as ↵ and other control characters replaced.
+export function displayText(s: string): string {
   if (s.length > MAX_CELL_CHARS) s = s.slice(0, MAX_CELL_CHARS - 1) + '…'
   if (!CONTROL.test(s)) return s
   return s.replace(CONTROL_ALL, (c) => (c === '\t' ? ' ' : c === '\n' || c === '\r' || c === '\r\n' ? '↵' : '\ufffd'))

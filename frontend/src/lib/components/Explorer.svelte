@@ -4,11 +4,13 @@
     deleteConnection,
     disconnect,
     editConnection,
+    exportNode,
     guard,
     moveToGroup,
     newScript,
     openObject,
     renameGroup,
+    selectFrom,
     setFavorite,
   } from '../app/actions'
   import { connections, ConnectionState, stateLabel } from '../app/connections.svelte'
@@ -85,7 +87,14 @@
     }
     const n = r.node
     const out: MenuEntry[] = []
-    if (OPENABLE.has(n.kind)) out.push({ label: 'Select rows', icon: 'play', hint: 'Enter', run: () => openObject(r.connId, n) })
+    if (OPENABLE.has(n.kind)) {
+      out.push(
+        { label: n.kind === 'view' ? 'Open view' : 'Open table', icon: 'table', hint: 'Enter', run: () => openObject(r.connId, n) },
+        { label: 'New script with SELECT', icon: 'play', run: () => selectFrom(r.connId, n) },
+        { label: 'Export data…', icon: 'export', run: () => exportNode(r.connId, n) },
+        'separator',
+      )
+    }
     if (n.path.length >= 1) {
       const scope = scopeOfPath(n.path)
       out.push({
