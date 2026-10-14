@@ -210,6 +210,18 @@ type entry struct {
 	status *quarryv1.ConnectionStatus
 }
 
+// OpenIDs lists the connections that are open (or reconnecting).
+func (m *Manager) OpenIDs() []string {
+	var ids []string
+	for _, e := range m.list() {
+		switch e.status.GetState() {
+		case quarryv1.ConnectionState_CONNECTION_STATE_CONNECTED, quarryv1.ConnectionState_CONNECTION_STATE_LOST:
+			ids = append(ids, e.cfg.ID.String())
+		}
+	}
+	return ids
+}
+
 func (m *Manager) list() []entry {
 	m.mu.Lock()
 	defer m.mu.Unlock()
