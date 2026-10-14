@@ -18,6 +18,7 @@ import (
 	quarryv1 "github.com/gxd3v/quarry/gen/quarry/v1"
 	"github.com/gxd3v/quarry/gen/quarry/v1/quarryv1connect"
 	"github.com/gxd3v/quarry/internal/driver"
+	"github.com/gxd3v/quarry/internal/driver/mongo"
 	"github.com/gxd3v/quarry/internal/driver/oracle"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
 	"github.com/gxd3v/quarry/internal/export"
@@ -145,6 +146,8 @@ func split(kind driver.Kind, script string) []driver.Statement {
 		return postgres.Split(script)
 	case driver.Oracle:
 		return oracle.Split(script)
+	case driver.MongoDB:
+		return mongo.Split(script)
 	}
 	text := strings.TrimSpace(script)
 	if text == "" {

@@ -7,6 +7,7 @@ import (
 
 	quarryv1 "github.com/gxd3v/quarry/gen/quarry/v1"
 	"github.com/gxd3v/quarry/internal/driver"
+	"github.com/gxd3v/quarry/internal/driver/mongo"
 	"github.com/gxd3v/quarry/internal/driver/oracle"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
 	"github.com/gxd3v/quarry/internal/driver/redis"
@@ -21,6 +22,7 @@ type splitter struct {
 var splitters = map[driver.Kind]splitter{
 	driver.Postgres: {split: postgres.Split, at: postgres.StatementAt},
 	driver.Oracle:   {split: oracle.Split, at: oracle.StatementAt},
+	driver.MongoDB:  {split: mongo.Split, at: mongo.StatementAt},
 	driver.Redis:    {split: redis.Split, at: redis.StatementAt},
 }
 

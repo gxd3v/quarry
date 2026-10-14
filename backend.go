@@ -11,6 +11,7 @@ import (
 
 	"github.com/gxd3v/quarry/gen/quarry/v1/quarryv1connect"
 	"github.com/gxd3v/quarry/internal/driver"
+	"github.com/gxd3v/quarry/internal/driver/mongo"
 	"github.com/gxd3v/quarry/internal/driver/oracle"
 	"github.com/gxd3v/quarry/internal/driver/postgres"
 	"github.com/gxd3v/quarry/internal/driver/redis"
@@ -38,6 +39,7 @@ type backend struct {
 func startBackend(dev service.Dev) (*backend, error) {
 	driver.Register(postgres.New())
 	driver.Register(oracle.New())
+	driver.Register(mongo.New())
 	driver.Register(redis.New())
 	goredis.SetLogger(redisLog{})
 
