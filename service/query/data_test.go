@@ -239,3 +239,37 @@ func TestSetTTL(t *testing.T) {
 		t.Fatalf("read-only: %v", err)
 	}
 }
+
+type fakeCountConn struct {
+	*fakeConn
+	filter string
+}
+
+func (c *fakeCountConn) CountRows(_ context.Context, _ *driver.Node, filter string) (int64, error) {
+	c.filter = filter
+	if filter == "bad" {
+		return 0, &driver.QueryError{Msg: "syntax error"}
+	}
+	return 42, nil
+}
+
+func TestCountRows(t *testing.T) {
+	ctx := context.Background()
+	e := newEnv(t, nil)
+	cc := &fakeCountConn{fakeConn: e.conn}
+	e.live.add("cnt", driver.Postgres, cc)
+	d := e.s.Data()
+	req := func(id, filter string) *connect.Request[quarryv1.CountRowsRequest] {
+		return connect.NewRequest(&quarryv1.CountRowsRequest{ConnId: id, Node: tableNode, Filter: filter})
+	}
+	res, err := d.CountRows(ctx, req("cnt", "x > 1"))
+	if err != nil || res.Msg.Count != 42 || cc.filter != "x > 1" {
+		t.Fatalf("count: %v %v, filter %q", res, err, cc.filter)
+	}
+	if _, err := d.CountRows(ctx, req("cnt", "bad")); code(err) != connect.CodeInvalidArgument {
+		t.Fatalf("bad filter: %v", err)
+	}
+	if _, err := d.CountRows(ctx, req("pg", "")); code(err) != connect.CodeUnimplemented {
+		t.Fatalf("no counter: %v", err)
+	}
+}

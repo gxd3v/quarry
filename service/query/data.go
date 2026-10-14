@@ -106,6 +106,23 @@ func (d *DataService) SetTTL(ctx context.Context, req *connect.Request[quarryv1.
 	return connect.NewResponse(&quarryv1.SetTTLResponse{}), nil
 }
 
+func (d *DataService) CountRows(ctx context.Context, req *connect.Request[quarryv1.CountRowsRequest]) (*connect.Response[quarryv1.CountRowsResponse], error) {
+	m := req.Msg
+	conn, cfg, err := d.s.live.Live(m.ConnId)
+	if err != nil {
+		return nil, service.LiveError(err)
+	}
+	c, ok := conn.(driver.Counter)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("%s connections cannot count rows", cfg.Kind))
+	}
+	n, err := c.CountRows(ctx, service.NodeOf(m.Node), m.Filter)
+	if err != nil {
+		return nil, driverError(err)
+	}
+	return connect.NewResponse(&quarryv1.CountRowsResponse{Count: n}), nil
+}
+
 func (d *DataService) ApplyChanges(ctx context.Context, req *connect.Request[quarryv1.ApplyChangesRequest]) (*connect.Response[quarryv1.ApplyChangesResponse], error) {
 	m := req.Msg
 	conn, cfg, err := d.s.live.Live(m.ConnId)
