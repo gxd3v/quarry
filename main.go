@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"flag"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -22,10 +23,18 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// version is set at release builds: -ldflags "-X main.version=v1.2.3".
+var version = "dev"
+
 func main() {
 	debug := flag.Bool("debug", false, "verbose logging, also to stderr")
+	showVersion := flag.Bool("version", false, "print the version and exit")
 	benchOut := flag.String("bench-out", "", "run the frontend benchmark, write its JSON report to this file and quit")
 	flag.Parse()
+	if *showVersion {
+		fmt.Println("quarry", version)
+		return
+	}
 	closeLog := setupLog(*debug)
 	defer closeLog()
 

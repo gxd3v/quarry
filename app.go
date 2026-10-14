@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"sync/atomic"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"github.com/gxd3v/quarry/internal/update"
 )
 
 // App is bound to the frontend. It only hands out how to reach the Connect
@@ -96,6 +99,27 @@ func (a *App) OpenFileDialog(title, kind, pattern string) (string, error) {
 	}
 	filters = append(filters, runtime.FileFilter{DisplayName: "All files", Pattern: "*"})
 	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{Title: title, Filters: filters, ShowHiddenFiles: true})
+}
+
+type UpdateInfo struct {
+	Current string `json:"current"`
+	Latest  string `json:"latest"`
+	URL     string `json:"url"`
+	Newer   bool   `json:"newer"`
+}
+
+// CheckForUpdate looks for a newer release; development builds never have one.
+func (a *App) CheckForUpdate() (UpdateInfo, error) {
+	info := UpdateInfo{Current: version}
+	if version == "dev" {
+		return info, nil
+	}
+	r, err := update.Latest(a.ctx, http.DefaultClient, update.LatestURL)
+	if err != nil {
+		return info, err
+	}
+	info.Latest, info.URL, info.Newer = r.Version, r.URL, update.Newer(version, r.Version)
+	return info, nil
 }
 
 // RevealPath shows a file in the system file manager.
