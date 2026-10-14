@@ -5,5 +5,4 @@ O Go ignora diretórios que começam por `_`, por isso nada aqui é compilado ne
 | Diretório | Destino |
 |---|---|
 | `driver/mongo` | `internal/driver/mongo` (precisa de `go get go.mongodb.org/mongo-driver/v2@v2.9.2`) |
-| `driver/oracle` | `internal/driver/oracle` (precisa de `go get github.com/sijms/go-ora/v2`) |
 | `importcsv` | `internal/importcsv` |
