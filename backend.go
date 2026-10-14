@@ -24,6 +24,7 @@ import (
 	"github.com/gxd3v/quarry/service/explorer"
 	"github.com/gxd3v/quarry/service/export"
 	"github.com/gxd3v/quarry/service/importsvc"
+	"github.com/gxd3v/quarry/service/notify"
 	"github.com/gxd3v/quarry/service/query"
 	shellsvc "github.com/gxd3v/quarry/service/shell"
 	wsvc "github.com/gxd3v/quarry/service/workspace"
@@ -81,6 +82,7 @@ func startBackend(dev service.Dev) (*backend, error) {
 	mux.Handle(quarryv1connect.NewDataServiceHandler(b.query.Data(), opts...))
 	mux.Handle(quarryv1connect.NewExportServiceHandler(export.New(conns), opts...))
 	mux.Handle(quarryv1connect.NewImportServiceHandler(importsvc.New(conns), opts...))
+	mux.Handle(quarryv1connect.NewNotifyServiceHandler(notify.New(conns), opts...))
 	mux.Handle(quarryv1connect.NewShellServiceHandler(b.shells, opts...))
 	mux.Handle(quarryv1connect.NewWorkspaceServiceHandler(wsvc.New(ws, filepath.Join(configDir, "settings.json")), opts...))
 	if b.srv, err = server.Start(mux); err != nil {
