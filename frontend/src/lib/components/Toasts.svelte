@@ -6,6 +6,7 @@
 <div class="toasts" role="status" aria-live="polite">
   {#each notify.toasts as t (t.id)}
     <div class="toast {t.kind}">
+      <span class="mark"></span>
       <span class="text">
         {t.text}
         {#if t.actions.length}
@@ -26,53 +27,63 @@
 <style>
   .toasts {
     position: fixed;
-    right: 14px;
-    bottom: 34px;
+    right: 16px;
+    bottom: 38px;
     z-index: 40;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: min(420px, calc(100vw - 28px));
+    width: min(400px, calc(100vw - 32px));
     pointer-events: none;
   }
 
   .toast {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    padding: 8px 6px 8px 12px;
-    background: var(--mantle);
-    border: 1px solid var(--surface1);
-    border-left: 3px solid var(--blue);
-    border-radius: 6px;
-    box-shadow: 0 8px 24px var(--crust);
+    gap: 10px;
+    padding: 10px 8px 10px 12px;
+    background: var(--bg-main);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-pop);
     pointer-events: auto;
+    animation: in 0.18s ease-out;
   }
 
-  .toast.error {
-    border-left-color: var(--red);
+  @keyframes in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
   }
 
-  .toast.success {
-    border-left-color: var(--green);
+  .mark {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+
+  .toast.error .mark {
+    background: var(--red);
+  }
+
+  .toast.success .mark {
+    background: var(--green);
   }
 
   .actions {
     display: flex;
     gap: 6px;
-    margin-top: 6px;
-  }
-
-  .btn.small {
-    height: 22px;
-    padding: 0 8px;
-    font-size: 12px;
+    margin-top: 8px;
   }
 
   .text {
     flex: 1;
-    padding-top: 3px;
-    line-height: 1.4;
+    padding-top: 2px;
+    line-height: 1.45;
     word-break: break-word;
   }
 </style>

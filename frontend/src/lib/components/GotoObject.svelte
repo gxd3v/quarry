@@ -60,7 +60,7 @@
   const where = $derived(`${connections.name(tab.connId)}${scopeLabel(tab.scope) ? ' › ' + scopeLabel(tab.scope) : ''}`)
 </script>
 
-<Modal title="Go to object in {where}" width={620} {onclose}>
+<Modal title="Go to object in {where}" width={620} bare {onclose}>
   {#if error}
     <p class="error">{error} <button class="btn small" type="button" onclick={() => load(true)}>Retry</button></p>
   {/if}
@@ -69,7 +69,7 @@
     key={qualified}
     onpick={pick}
     {loading}
-    placeholder="Table, view, function or sequence"
+    placeholder={`Go to a table, view or function in ${where}`}
     empty={objects.length ? 'Nothing matches' : 'No objects'}
   >
     {#snippet row(o, segs)}
@@ -92,7 +92,7 @@
   }
 
   .detail {
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -100,7 +100,7 @@
 
   .k {
     margin-left: auto;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 11px;
   }
 
@@ -126,7 +126,7 @@
 
   .hint {
     margin: 8px 0 0;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
   }
 

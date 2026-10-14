@@ -130,25 +130,24 @@
     max-height: 340px;
     min-height: 120px;
     overflow: auto;
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
-    background: var(--crust);
-    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    padding: 4px;
   }
 
   .item {
     display: flex;
     align-items: center;
     gap: 7px;
-    height: 26px;
+    height: 28px;
     padding-right: 8px;
-    border-radius: 4px;
-    cursor: pointer;
+    border-radius: var(--radius);
+    cursor: default;
     white-space: nowrap;
   }
 
   .item.active {
-    background: var(--surface0);
+    background: var(--bg-active);
   }
 
   .item.current .label {
@@ -165,7 +164,7 @@
     padding: 0;
     background: none;
     border: none;
-    color: var(--overlay1);
+    color: var(--text-3);
     cursor: pointer;
     transition: transform 0.1s;
   }
@@ -175,7 +174,7 @@
   }
 
   .ico {
-    color: var(--overlay2);
+    color: var(--text-3);
   }
 
   .label {
@@ -185,7 +184,7 @@
 
   .detail {
     margin-left: auto;
-    color: var(--overlay0);
+    color: var(--text-3);
     font-size: 12px;
   }
 
@@ -200,6 +199,6 @@
 
   .empty {
     padding: 10px;
-    color: var(--overlay0);
+    color: var(--text-3);
   }
 </style>

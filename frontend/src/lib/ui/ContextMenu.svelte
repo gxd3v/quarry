@@ -97,36 +97,44 @@
   .menu {
     position: fixed;
     z-index: 51;
-    min-width: 190px;
-    padding: 4px;
-    background: var(--mantle);
-    border: 1px solid var(--surface1);
-    border-radius: 6px;
-    box-shadow: 0 8px 24px var(--crust);
+    min-width: 200px;
+    padding: 5px;
+    background: color-mix(in srgb, var(--surface0) 35%, var(--bg-main));
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-pop);
     outline: none;
+    animation: in 0.1s ease-out;
+  }
+
+  @keyframes in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
   }
 
   button {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     width: 100%;
-    height: 26px;
-    padding: 0 8px;
+    height: 28px;
+    padding: 0 9px;
     background: none;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius);
+    color: var(--text-1);
     text-align: left;
-    cursor: pointer;
+    cursor: default;
   }
 
   button.active {
-    background: var(--surface0);
+    background: var(--bg-active);
   }
 
   button:disabled {
     opacity: 0.4;
-    cursor: default;
   }
 
   .danger {
@@ -134,8 +142,9 @@
   }
 
   .ico {
+    display: inline-flex;
     width: 14px;
-    color: var(--overlay2);
+    color: var(--text-3);
   }
 
   .danger .ico {
@@ -148,7 +157,7 @@
 
   .sep {
     height: 1px;
-    margin: 4px 6px;
-    background: var(--surface0);
+    margin: 5px 4px;
+    background: var(--line);
   }
 </style>

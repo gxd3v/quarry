@@ -1,6 +1,7 @@
 <script lang="ts" generics="T">
   import type { Snippet } from 'svelte'
   import { rank, segments } from '../fuzzy'
+  import Icon from './Icon.svelte'
 
   type Segment = { text: string; hit: boolean }
 
@@ -62,8 +63,11 @@
 </script>
 
 <div class="fuzzy">
-  <!-- svelte-ignore a11y_autofocus -->
-  <input class="field" type="text" {placeholder} bind:value={query} {onkeydown} autofocus spellcheck="false" />
+  <div class="search">
+    <Icon name="search" size={15} />
+    <!-- svelte-ignore a11y_autofocus -->
+    <input type="text" {placeholder} bind:value={query} {onkeydown} autofocus spellcheck="false" />
+  </div>
   <div class="list" role="listbox" bind:this={list}>
     {#each shown as r, i (i)}
       <div
@@ -91,31 +95,52 @@
   .fuzzy {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 50px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-3);
+  }
+
+  .search input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-1);
+    font-size: 15px;
+  }
+
+  .search input::placeholder {
+    color: var(--text-3);
   }
 
   .list {
     height: min(420px, 60vh);
     overflow: auto;
-    border: 1px solid var(--surface0);
-    border-radius: 5px;
-    background: var(--crust);
-    padding: 3px;
+    padding: 6px;
   }
 
   .item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    min-height: 28px;
-    padding: 0 8px;
-    border-radius: 4px;
-    cursor: pointer;
+    gap: 9px;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: var(--radius);
+    color: var(--text-1);
+    cursor: default;
     white-space: nowrap;
   }
 
   .item.active {
-    background: var(--surface0);
+    background: var(--bg-active);
   }
 
   .item :global(mark) {
@@ -125,7 +150,7 @@
   }
 
   .empty {
-    padding: 10px;
-    color: var(--overlay0);
+    padding: 14px 12px;
+    color: var(--text-3);
   }
 </style>
