@@ -342,6 +342,7 @@
         {:else}
           <p>No connections yet.</p>
           <button class="btn primary" type="button" onclick={() => (ui.editing = '')}>New connection</button>
+          <button class="btn" type="button" onclick={() => (ui.importingConnections = true)}>Import from pgpass, tnsnames…</button>
         {/if}
       </div>
     {/each}

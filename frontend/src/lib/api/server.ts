@@ -11,6 +11,7 @@ interface AppBinding {
   OpenScriptDialog(): Promise<string>
   SaveScriptDialog(defaultName: string): Promise<string>
   SaveExportDialog(defaultName: string, format: string): Promise<string>
+  OpenFileDialog(title: string, kind: string, pattern: string): Promise<string>
   // Shows a file in the system file manager.
   RevealPath(path: string): Promise<void>
   // Lets the window close after the frontend saved its state.
@@ -71,6 +72,13 @@ export async function saveExportDialog(defaultName: string, format: string): Pro
   const a = app()
   if (!a?.SaveExportDialog) throw new Error('file dialogs need the desktop app')
   return a.SaveExportDialog(defaultName, format)
+}
+
+// openFileDialog asks for a file to read; '' means cancelled.
+export async function openFileDialog(title: string, kind = '', pattern = ''): Promise<string> {
+  const a = app()
+  if (!a?.OpenFileDialog) throw new Error('file dialogs need the desktop app')
+  return a.OpenFileDialog(title, kind, pattern)
 }
 
 // canReveal reports whether revealPath works here (desktop app only).

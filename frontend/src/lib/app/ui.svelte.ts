@@ -48,6 +48,7 @@ class UI {
   cell = $state.raw<CellRef | null>(null)
   cellEdit = $state.raw<CellEditRequest | null>(null)
   exporting = $state.raw<ExportRequest | null>(null)
+  importingConnections = $state(false)
   layout = $state<Layout>({ ...DEFAULT_LAYOUT })
 
   // pickConnection shows the connection picker; null when dismissed.

@@ -26,6 +26,7 @@
   import ExportDialog from './ExportDialog.svelte'
   import Explorer from './Explorer.svelte'
   import GotoObject from './GotoObject.svelte'
+  import ImportConnectionsDialog from './ImportConnectionsDialog.svelte'
   import PromptDialogs from './PromptDialogs.svelte'
   import ResultsPanel from './ResultsPanel.svelte'
   import ScopePicker from './ScopePicker.svelte'
@@ -168,6 +169,7 @@
         },
       },
       { id: 'connection.new', category: 'Connection', title: 'New connection…', run: () => void (ui.editing = '') },
+      { id: 'connection.import', category: 'Connection', title: 'Import connections (pgpass, pg_service, tnsnames)…', run: () => void (ui.importingConnections = true) },
       { id: 'terminal.open', category: 'Connection', title: 'Open terminal', run: () => void pickAndOpenTerminal() },
       { id: 'palette.commands', category: 'View', title: 'Command palette', run: () => void (ui.palette = 'commands') },
       { id: 'palette.objects', category: 'Go', title: 'Go to object…', run: withTab(() => (ui.palette = 'objects')) },
@@ -362,6 +364,9 @@
 {/if}
 {#if ui.cellEdit}
   <CellEditor request={ui.cellEdit} onclose={() => (ui.cellEdit = null)} />
+{/if}
+{#if ui.importingConnections}
+  <ImportConnectionsDialog onclose={() => (ui.importingConnections = false)} />
 {/if}
 {#if ui.exporting}
   <ExportDialog request={ui.exporting} onclose={() => (ui.exporting = null)} />
