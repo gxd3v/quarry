@@ -6,6 +6,8 @@
   import { ui } from '../app/ui.svelte'
   import { guessTable, type CopyOptions } from '../grid/copy'
   import Grid from '../grid/Grid.svelte'
+  import { TableSource } from '../table/source'
+  import DocumentsView from './DocumentsView.svelte'
   import ExplainView from './ExplainView.svelte'
   import HistoryView from './HistoryView.svelte'
   import NotificationsView from './NotificationsView.svelte'
@@ -48,6 +50,10 @@
             : tab.view,
   )
   const current = $derived(view < 0 ? null : snap.results[view])
+  // MongoDB results end with the whole document; they can show as trees.
+  const docCol = $derived(current ? current.r.buffer.columns.findIndex((c) => c.name === '{document}') : -1)
+  let asDocs = $state(true)
+  const docSource = $derived(current && docCol >= 0 ? new TableSource(current.r.buffer) : null)
 
   let panel = $state<HTMLElement>()
   let grid = $state<ReturnType<typeof Grid>>()
@@ -172,7 +178,11 @@
       {#key tab.plan}<ExplainView plan={tab.plan} />{/key}
     {:else if current}
       <div class="grid-wrap">
-        <Grid bind:this={grid} buffer={current.r.buffer} version={tab.version} oncell={openCell} {copyOptions} {menuItems} />
+        {#if docSource && asDocs}
+          <DocumentsView source={docSource} col={docCol} version={tab.version} editable={false} onedit={() => {}} ondelete={() => {}} />
+        {:else}
+          <Grid bind:this={grid} buffer={current.r.buffer} version={tab.version} oncell={openCell} {copyOptions} {menuItems} />
+        {/if}
       </div>
       <footer>
         <span><b>{count(current.rows)}</b> {current.rows === 1 ? 'row' : 'rows'}</span>
@@ -183,6 +193,9 @@
           <span class="muted">loading…</span>
         {:else if current.elapsedMs}
           <span class="muted">{count(current.elapsedMs)} ms</span>
+        {/if}
+        {#if docCol >= 0}
+          <button class="btn small" type="button" onclick={() => (asDocs = !asDocs)}>{asDocs ? 'Show as grid' : 'Show as documents'}</button>
         {/if}
         <button class="btn small export" type="button" title="Export the whole result to a file" disabled={!current.r.sql} onclick={exportShown}>Export…</button>
         {#if current.hasMore}
