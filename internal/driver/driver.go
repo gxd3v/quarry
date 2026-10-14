@@ -11,6 +11,7 @@ package driver
 import (
 	"context"
 	"errors"
+	"time"
 	"uuid"
 )
 
@@ -205,6 +206,23 @@ type Importer interface {
 	// types. progress, when set, is called with the rows sent so far,
 	// possibly from another goroutine.
 	Import(ctx context.Context, target *Node, columns []string, next func() ([]any, error), progress func(int64)) (int64, error)
+}
+
+// Listener is implemented by connections that deliver server notifications
+// (PostgreSQL LISTEN/NOTIFY).
+type Listener interface {
+	// Listen subscribes to channels on a dedicated session in scope, calls
+	// ready once subscribed, then fn for each notification, until ctx ends
+	// (which returns nil) or the session fails. ready and fn run on the
+	// caller's goroutine.
+	Listen(ctx context.Context, scope Scope, channels []string, ready func(), fn func(Notification)) error
+}
+
+type Notification struct {
+	At      time.Time
+	Channel string
+	Payload string
+	PID     uint32 // server process that sent it
 }
 
 // Catalog is implemented by connections that can list a scope's objects in
