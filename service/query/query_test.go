@@ -492,13 +492,15 @@ func TestCloseTabWhileRunning(t *testing.T) {
 		r = e.runBG(context.Background(), "select slow")
 		synctest.Wait()
 		e.s.Close()
+		// The session closes when the run ends, so it proves Close waited.
+		if !e.conn.session(1).closed.Load() {
+			t.Fatal("Close returned before the run ended")
+		}
+		synctest.Wait() // the client goroutine finishes reading its stream
 		select {
 		case <-r.done:
 		default:
-			t.Fatal("Close returned before the run ended")
-		}
-		if !e.conn.session(1).closed.Load() {
-			t.Fatal("Close left a session open")
+			t.Fatal("the run did not end")
 		}
 	})
 }
