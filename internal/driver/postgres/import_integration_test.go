@@ -66,7 +66,7 @@ func TestITImport(t *testing.T) {
 
 	// A bad value aborts the whole import.
 	_, err = im.Import(ctx, node, []string{"id", "price"}, rowsOf([][]any{{"200001", "1"}, {"200002", "abc"}}), nil)
-	if err == nil || !strings.Contains(err.Error(), "numeric") {
+	if err == nil || !strings.Contains(err.Error(), "numeric") || !strings.HasPrefix(err.Error(), "row 2: ") || !strings.Contains(err.Error(), "(column price)") {
 		t.Fatalf("bad value: %v", err)
 	}
 	_, err = im.Import(ctx, node, []string{"id", "price"}, rowsOf([][]any{{"200001", "1"}, {"200002"}}), nil)

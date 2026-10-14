@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/gxd3v/quarry/internal/driver"
 )
@@ -84,7 +86,7 @@ func (c *conn) Import(ctx context.Context, target *driver.Node, columns []string
 		return 0, werr
 	}
 	if err != nil {
-		return 0, queryError(err, "")
+		return 0, copyError(err)
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return 0, queryError(err, "")
@@ -93,6 +95,26 @@ func (c *conn) Import(ctx context.Context, target *driver.Node, columns []string
 		progress(rows)
 	}
 	return rows, nil
+}
+
+var copyWhere = regexp.MustCompile(`line (\d+)(?:, column ([^:]+))?`)
+
+// copyError says which row and column COPY rejected: its "line" counts the
+// rows sent, so it is the row number of the data.
+func copyError(err error) error {
+	qe := queryError(err, "")
+	pe, ok := errors.AsType[*pgconn.PgError](err)
+	q, isQE := qe.(*driver.QueryError)
+	if !ok || !isQE {
+		return qe
+	}
+	if m := copyWhere.FindStringSubmatch(pe.Where); m != nil {
+		q.Msg = "row " + m[1] + ": " + q.Msg
+		if m[2] != "" {
+			q.Msg += " (column " + m[2] + ")"
+		}
+	}
+	return q
 }
 
 // errRow marks errors in the rows given to Import.
