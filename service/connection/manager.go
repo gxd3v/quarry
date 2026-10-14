@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"maps"
 	"net"
 	"slices"
@@ -509,6 +510,16 @@ func (m *Manager) dial(ctx context.Context, d driver.Driver, cfg driver.Config, 
 
 // tunnel opens the SSH tunnel cfg's options ask for, if any, and points cfg
 // at its local end. Unknown host keys are trusted only with ssh_accept_new.
+// Tunnel opens cfg's SSH tunnel, when it has one, and points cfg at it; the
+// caller closes it. Used by native shells, which connect on their own.
+func (m *Manager) Tunnel(ctx context.Context, cfg *driver.Config) (io.Closer, error) {
+	t, err := m.tunnel(ctx, cfg)
+	if t == nil {
+		return nil, err
+	}
+	return t, nil
+}
+
 func (m *Manager) tunnel(ctx context.Context, cfg *driver.Config) (*tunnel.Tunnel, error) {
 	tc, ok := tunnel.FromOptions(cfg.Options)
 	if !ok {

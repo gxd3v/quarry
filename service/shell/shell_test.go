@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -432,5 +433,47 @@ func TestMissingCLI(t *testing.T) {
 	_, err := e.start(t, &quarryv1.StartShellRequest{ConnId: e.ids["missing"]}).end(t)
 	if connect.CodeOf(err) != connect.CodeFailedPrecondition || !strings.Contains(err.Error(), "quarry-missing-cli-x9") {
 		t.Errorf("err = %v, want FailedPrecondition naming the CLI", err)
+	}
+}
+
+type tunnelLive struct {
+	fakeLive
+	err    error
+	closed bool
+}
+
+func (l *tunnelLive) Tunnel(_ context.Context, cfg *driver.Config) (io.Closer, error) {
+	if l.err != nil {
+		return nil, l.err
+	}
+	cfg.Host, cfg.Port = "127.0.0.1", 4242
+	return closerFunc(func() error { l.closed = true; return nil }), nil
+}
+
+type closerFunc func() error
+
+func (f closerFunc) Close() error { return f() }
+
+func TestShellThroughTunnel(t *testing.T) {
+	cfg := driver.Config{ID: uuid.New(), Kind: driver.Postgres, Host: "db.internal", Port: 5432, Options: map[string]string{"ssh_host": "bastion"}}
+	live := &tunnelLive{fakeLive: fakeLive{cfg.ID.String(): cfg}}
+	var got driver.Config
+	s := New(live, &fakeSecrets{m: map[uuid.UUID]string{}}, WithLauncher(func(c driver.Config, _ string, _ driver.Scope) (*cli.Launch, error) {
+		got = c
+		return nil, errors.New("stop here")
+	}))
+	t.Cleanup(s.Close)
+	req := connect.NewRequest(&quarryv1.StartShellRequest{ConnId: cfg.ID.String(), Cols: 80, Rows: 24})
+	if err := s.StartShell(t.Context(), req, nil); err == nil {
+		t.Fatal("launch error lost")
+	}
+	if got.Host != "127.0.0.1" || got.Port != 4242 || !live.closed {
+		t.Fatalf("cli got %s:%d, tunnel closed %v", got.Host, got.Port, live.closed)
+	}
+
+	live.err = fmt.Errorf("ssh: %w", driver.ErrAuth)
+	err := s.StartShell(t.Context(), req, nil)
+	if ce, ok := errors.AsType[*connect.Error](err); !ok || ce.Code() != connect.CodePermissionDenied {
+		t.Fatalf("refused ssh login: %v", err)
 	}
 }

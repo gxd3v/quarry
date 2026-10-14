@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"sync"
 	"time"
 	"uuid"
@@ -35,6 +36,12 @@ type Option func(*Service)
 
 // WithLauncher replaces the default launcher (shell.Command).
 func WithLauncher(l Launcher) Option { return func(s *Service) { s.launch = l } }
+
+// tunneler opens a connection's SSH tunnel, if it has one, and points cfg
+// at it (see connection.Manager.Tunnel).
+type tunneler interface {
+	Tunnel(ctx context.Context, cfg *driver.Config) (io.Closer, error)
+}
 
 type Service struct {
 	live    service.Live
@@ -90,6 +97,19 @@ func (s *Service) StartShell(ctx context.Context, req *connect.Request[quarryv1.
 	cfg, ok := s.live.Config(m.ConnId)
 	if !ok {
 		return connect.NewError(connect.CodeNotFound, fmt.Errorf("connection %q not found", m.ConnId))
+	}
+	if tl, ok := s.live.(tunneler); ok {
+		t, err := tl.Tunnel(ctx, &cfg)
+		if err != nil {
+			code := connect.CodeUnavailable
+			if errors.Is(err, driver.ErrAuth) {
+				code = connect.CodePermissionDenied
+			}
+			return connect.NewError(code, fmt.Errorf("ssh tunnel: %w", err))
+		}
+		if t != nil {
+			defer t.Close()
+		}
 	}
 	pw, err := s.password(cfg, m.Password)
 	if err != nil {
