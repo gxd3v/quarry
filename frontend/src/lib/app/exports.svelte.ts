@@ -14,7 +14,8 @@ import { notify } from './notify.svelte'
 
 export const MAX_RUNNING = 2
 
-export type ExportSource = { sql: string } | { data: { node: TableNodeRef; filter: string; orderBy: string[] } }
+// A statement (with the values of its bind parameters) or a table's data.
+export type ExportSource = { sql: string; params?: Record<string, string> } | { data: { node: TableNodeRef; filter: string; orderBy: string[] } }
 
 export interface ExportJob {
   connId: string
@@ -60,7 +61,7 @@ export class ExportTask {
 
 function request(job: ExportJob): MessageInitShape<typeof ExportRequestSchema> {
   const base = { connId: job.connId, scope: { ...job.scope }, path: job.path, options: job.options }
-  if ('sql' in job.source) return { ...base, source: { case: 'sql', value: job.source.sql } }
+  if ('sql' in job.source) return { ...base, source: { case: 'sql', value: job.source.sql }, params: { ...job.source.params } }
   const d = job.source.data
   return {
     ...base,

@@ -272,7 +272,7 @@ export function exportResult(tab: Tab, r: ResultSet) {
     notify.toast('error', 'The statement of this result is unknown; run it again to export it')
     return
   }
-  ui.exporting = { connId: tab.connId, scope: { ...tab.scope }, source: { sql: r.sql }, name: `${tab.title} result ${r.statement + 1}` }
+  ui.exporting = { connId: tab.connId, scope: { ...tab.scope }, source: { sql: r.sql, params: { ...tab.params } }, name: `${tab.title} result ${r.statement + 1}` }
 }
 
 // guard runs a background action, reporting its failure as a toast.
