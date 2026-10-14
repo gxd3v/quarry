@@ -51,6 +51,9 @@ const (
 	// ConnectionServiceParseURIProcedure is the fully-qualified name of the ConnectionService's
 	// ParseURI RPC.
 	ConnectionServiceParseURIProcedure = "/quarry.v1.ConnectionService/ParseURI"
+	// ConnectionServiceDiscoverConnectionsProcedure is the fully-qualified name of the
+	// ConnectionService's DiscoverConnections RPC.
+	ConnectionServiceDiscoverConnectionsProcedure = "/quarry.v1.ConnectionService/DiscoverConnections"
 	// ConnectionServiceConnectProcedure is the fully-qualified name of the ConnectionService's Connect
 	// RPC.
 	ConnectionServiceConnectProcedure = "/quarry.v1.ConnectionService/Connect"
@@ -71,6 +74,10 @@ type ConnectionServiceClient interface {
 	DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error)
 	TestConnection(context.Context, *connect.Request[v1.TestConnectionRequest]) (*connect.Response[v1.TestConnectionResponse], error)
 	ParseURI(context.Context, *connect.Request[v1.ParseURIRequest]) (*connect.Response[v1.ParseURIResponse], error)
+	// DiscoverConnections reads .pgpass, pg_service.conf and tnsnames.ora from
+	// their usual locations, plus the given files, and returns the entries not
+	// saved yet.
+	DiscoverConnections(context.Context, *connect.Request[v1.DiscoverConnectionsRequest]) (*connect.Response[v1.DiscoverConnectionsResponse], error)
 	Connect(context.Context, *connect.Request[v1.ConnectRequest]) (*connect.Response[v1.ConnectResponse], error)
 	Disconnect(context.Context, *connect.Request[v1.DisconnectRequest]) (*connect.Response[v1.DisconnectResponse], error)
 	// WatchStatus sends the status of every connection, then each change. One
@@ -125,6 +132,12 @@ func NewConnectionServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(connectionServiceMethods.ByName("ParseURI")),
 			connect.WithClientOptions(opts...),
 		),
+		discoverConnections: connect.NewClient[v1.DiscoverConnectionsRequest, v1.DiscoverConnectionsResponse](
+			httpClient,
+			baseURL+ConnectionServiceDiscoverConnectionsProcedure,
+			connect.WithSchema(connectionServiceMethods.ByName("DiscoverConnections")),
+			connect.WithClientOptions(opts...),
+		),
 		connect: connect.NewClient[v1.ConnectRequest, v1.ConnectResponse](
 			httpClient,
 			baseURL+ConnectionServiceConnectProcedure,
@@ -148,15 +161,16 @@ func NewConnectionServiceClient(httpClient connect.HTTPClient, baseURL string, o
 
 // connectionServiceClient implements ConnectionServiceClient.
 type connectionServiceClient struct {
-	listDrivers      *connect.Client[v1.ListDriversRequest, v1.ListDriversResponse]
-	listConnections  *connect.Client[v1.ListConnectionsRequest, v1.ListConnectionsResponse]
-	saveConnection   *connect.Client[v1.SaveConnectionRequest, v1.SaveConnectionResponse]
-	deleteConnection *connect.Client[v1.DeleteConnectionRequest, v1.DeleteConnectionResponse]
-	testConnection   *connect.Client[v1.TestConnectionRequest, v1.TestConnectionResponse]
-	parseURI         *connect.Client[v1.ParseURIRequest, v1.ParseURIResponse]
-	connect          *connect.Client[v1.ConnectRequest, v1.ConnectResponse]
-	disconnect       *connect.Client[v1.DisconnectRequest, v1.DisconnectResponse]
-	watchStatus      *connect.Client[v1.WatchStatusRequest, v1.WatchStatusResponse]
+	listDrivers         *connect.Client[v1.ListDriversRequest, v1.ListDriversResponse]
+	listConnections     *connect.Client[v1.ListConnectionsRequest, v1.ListConnectionsResponse]
+	saveConnection      *connect.Client[v1.SaveConnectionRequest, v1.SaveConnectionResponse]
+	deleteConnection    *connect.Client[v1.DeleteConnectionRequest, v1.DeleteConnectionResponse]
+	testConnection      *connect.Client[v1.TestConnectionRequest, v1.TestConnectionResponse]
+	parseURI            *connect.Client[v1.ParseURIRequest, v1.ParseURIResponse]
+	discoverConnections *connect.Client[v1.DiscoverConnectionsRequest, v1.DiscoverConnectionsResponse]
+	connect             *connect.Client[v1.ConnectRequest, v1.ConnectResponse]
+	disconnect          *connect.Client[v1.DisconnectRequest, v1.DisconnectResponse]
+	watchStatus         *connect.Client[v1.WatchStatusRequest, v1.WatchStatusResponse]
 }
 
 // ListDrivers calls quarry.v1.ConnectionService.ListDrivers.
@@ -189,6 +203,11 @@ func (c *connectionServiceClient) ParseURI(ctx context.Context, req *connect.Req
 	return c.parseURI.CallUnary(ctx, req)
 }
 
+// DiscoverConnections calls quarry.v1.ConnectionService.DiscoverConnections.
+func (c *connectionServiceClient) DiscoverConnections(ctx context.Context, req *connect.Request[v1.DiscoverConnectionsRequest]) (*connect.Response[v1.DiscoverConnectionsResponse], error) {
+	return c.discoverConnections.CallUnary(ctx, req)
+}
+
 // Connect calls quarry.v1.ConnectionService.Connect.
 func (c *connectionServiceClient) Connect(ctx context.Context, req *connect.Request[v1.ConnectRequest]) (*connect.Response[v1.ConnectResponse], error) {
 	return c.connect.CallUnary(ctx, req)
@@ -213,6 +232,10 @@ type ConnectionServiceHandler interface {
 	DeleteConnection(context.Context, *connect.Request[v1.DeleteConnectionRequest]) (*connect.Response[v1.DeleteConnectionResponse], error)
 	TestConnection(context.Context, *connect.Request[v1.TestConnectionRequest]) (*connect.Response[v1.TestConnectionResponse], error)
 	ParseURI(context.Context, *connect.Request[v1.ParseURIRequest]) (*connect.Response[v1.ParseURIResponse], error)
+	// DiscoverConnections reads .pgpass, pg_service.conf and tnsnames.ora from
+	// their usual locations, plus the given files, and returns the entries not
+	// saved yet.
+	DiscoverConnections(context.Context, *connect.Request[v1.DiscoverConnectionsRequest]) (*connect.Response[v1.DiscoverConnectionsResponse], error)
 	Connect(context.Context, *connect.Request[v1.ConnectRequest]) (*connect.Response[v1.ConnectResponse], error)
 	Disconnect(context.Context, *connect.Request[v1.DisconnectRequest]) (*connect.Response[v1.DisconnectResponse], error)
 	// WatchStatus sends the status of every connection, then each change. One
@@ -263,6 +286,12 @@ func NewConnectionServiceHandler(svc ConnectionServiceHandler, opts ...connect.H
 		connect.WithSchema(connectionServiceMethods.ByName("ParseURI")),
 		connect.WithHandlerOptions(opts...),
 	)
+	connectionServiceDiscoverConnectionsHandler := connect.NewUnaryHandler(
+		ConnectionServiceDiscoverConnectionsProcedure,
+		svc.DiscoverConnections,
+		connect.WithSchema(connectionServiceMethods.ByName("DiscoverConnections")),
+		connect.WithHandlerOptions(opts...),
+	)
 	connectionServiceConnectHandler := connect.NewUnaryHandler(
 		ConnectionServiceConnectProcedure,
 		svc.Connect,
@@ -295,6 +324,8 @@ func NewConnectionServiceHandler(svc ConnectionServiceHandler, opts ...connect.H
 			connectionServiceTestConnectionHandler.ServeHTTP(w, r)
 		case ConnectionServiceParseURIProcedure:
 			connectionServiceParseURIHandler.ServeHTTP(w, r)
+		case ConnectionServiceDiscoverConnectionsProcedure:
+			connectionServiceDiscoverConnectionsHandler.ServeHTTP(w, r)
 		case ConnectionServiceConnectProcedure:
 			connectionServiceConnectHandler.ServeHTTP(w, r)
 		case ConnectionServiceDisconnectProcedure:
@@ -332,6 +363,10 @@ func (UnimplementedConnectionServiceHandler) TestConnection(context.Context, *co
 
 func (UnimplementedConnectionServiceHandler) ParseURI(context.Context, *connect.Request[v1.ParseURIRequest]) (*connect.Response[v1.ParseURIResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.ConnectionService.ParseURI is not implemented"))
+}
+
+func (UnimplementedConnectionServiceHandler) DiscoverConnections(context.Context, *connect.Request[v1.DiscoverConnectionsRequest]) (*connect.Response[v1.DiscoverConnectionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("quarry.v1.ConnectionService.DiscoverConnections is not implemented"))
 }
 
 func (UnimplementedConnectionServiceHandler) Connect(context.Context, *connect.Request[v1.ConnectRequest]) (*connect.Response[v1.ConnectResponse], error) {

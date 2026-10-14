@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "google/protobuf/timestamp.proto";
+import "quarry/v1/explorer.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// NotifyService listens for server notifications (PostgreSQL LISTEN/NOTIFY)
+// on a dedicated session.
+service NotifyService {
+  // Listen streams notifications on the channels until the stream closes.
+  rpc Listen(ListenRequest) returns (stream ListenResponse);
+}
+
+message ListenRequest {
+  string conn_id = 1;
+  Scope scope = 2;
+  repeated string channels = 3;
+}
+
+message Notification {
+  google.protobuf.Timestamp at = 1;
+  string channel = 2;
+  string payload = 3;
+  // Server process that sent it.
+  int32 pid = 4;
+}
+
+message ListenResponse {
+  oneof event {
+    // Sent once every channel is listened to.
+    bool listening = 1;
+    Notification notification = 2;
+  }
+}

@@ -494,6 +494,166 @@ func (x *ListDriversResponse) GetDrivers() []*DriverInfo {
 	return nil
 }
 
+type DiscoverConnectionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Paths         []string               `protobuf:"bytes,1,rep,name=paths,proto3" json:"paths,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DiscoverConnectionsRequest) Reset() {
+	*x = DiscoverConnectionsRequest{}
+	mi := &file_quarry_v1_connection_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiscoverConnectionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiscoverConnectionsRequest) ProtoMessage() {}
+
+func (x *DiscoverConnectionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_connection_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiscoverConnectionsRequest.ProtoReflect.Descriptor instead.
+func (*DiscoverConnectionsRequest) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DiscoverConnectionsRequest) GetPaths() []string {
+	if x != nil {
+		return x.Paths
+	}
+	return nil
+}
+
+type DiscoveredConnection struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// No id; saving it with SaveConnection creates the connection.
+	Config *ConnectionConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
+	// File the entry came from.
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// From .pgpass, when it has one for this entry.
+	Password      *string `protobuf:"bytes,3,opt,name=password,proto3,oneof" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DiscoveredConnection) Reset() {
+	*x = DiscoveredConnection{}
+	mi := &file_quarry_v1_connection_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiscoveredConnection) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiscoveredConnection) ProtoMessage() {}
+
+func (x *DiscoveredConnection) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_connection_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiscoveredConnection.ProtoReflect.Descriptor instead.
+func (*DiscoveredConnection) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DiscoveredConnection) GetConfig() *ConnectionConfig {
+	if x != nil {
+		return x.Config
+	}
+	return nil
+}
+
+func (x *DiscoveredConnection) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *DiscoveredConnection) GetPassword() string {
+	if x != nil && x.Password != nil {
+		return *x.Password
+	}
+	return ""
+}
+
+type DiscoverConnectionsResponse struct {
+	state       protoimpl.MessageState  `protogen:"open.v1"`
+	Connections []*DiscoveredConnection `protobuf:"bytes,1,rep,name=connections,proto3" json:"connections,omitempty"`
+	// Files that exist but could not be read or parsed.
+	Errors        []string `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DiscoverConnectionsResponse) Reset() {
+	*x = DiscoverConnectionsResponse{}
+	mi := &file_quarry_v1_connection_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiscoverConnectionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiscoverConnectionsResponse) ProtoMessage() {}
+
+func (x *DiscoverConnectionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_quarry_v1_connection_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiscoverConnectionsResponse.ProtoReflect.Descriptor instead.
+func (*DiscoverConnectionsResponse) Descriptor() ([]byte, []int) {
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DiscoverConnectionsResponse) GetConnections() []*DiscoveredConnection {
+	if x != nil {
+		return x.Connections
+	}
+	return nil
+}
+
+func (x *DiscoverConnectionsResponse) GetErrors() []string {
+	if x != nil {
+		return x.Errors
+	}
+	return nil
+}
+
 type ListConnectionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -502,7 +662,7 @@ type ListConnectionsRequest struct {
 
 func (x *ListConnectionsRequest) Reset() {
 	*x = ListConnectionsRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[6]
+	mi := &file_quarry_v1_connection_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -514,7 +674,7 @@ func (x *ListConnectionsRequest) String() string {
 func (*ListConnectionsRequest) ProtoMessage() {}
 
 func (x *ListConnectionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[6]
+	mi := &file_quarry_v1_connection_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -527,7 +687,7 @@ func (x *ListConnectionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConnectionsRequest.ProtoReflect.Descriptor instead.
 func (*ListConnectionsRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{6}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{9}
 }
 
 type ListConnectionsResponse struct {
@@ -539,7 +699,7 @@ type ListConnectionsResponse struct {
 
 func (x *ListConnectionsResponse) Reset() {
 	*x = ListConnectionsResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[7]
+	mi := &file_quarry_v1_connection_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -551,7 +711,7 @@ func (x *ListConnectionsResponse) String() string {
 func (*ListConnectionsResponse) ProtoMessage() {}
 
 func (x *ListConnectionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[7]
+	mi := &file_quarry_v1_connection_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -564,7 +724,7 @@ func (x *ListConnectionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConnectionsResponse.ProtoReflect.Descriptor instead.
 func (*ListConnectionsResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{7}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListConnectionsResponse) GetConnections() []*Connection {
@@ -590,7 +750,7 @@ type SaveConnectionRequest struct {
 
 func (x *SaveConnectionRequest) Reset() {
 	*x = SaveConnectionRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[8]
+	mi := &file_quarry_v1_connection_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -602,7 +762,7 @@ func (x *SaveConnectionRequest) String() string {
 func (*SaveConnectionRequest) ProtoMessage() {}
 
 func (x *SaveConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[8]
+	mi := &file_quarry_v1_connection_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -615,7 +775,7 @@ func (x *SaveConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveConnectionRequest.ProtoReflect.Descriptor instead.
 func (*SaveConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{8}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SaveConnectionRequest) GetConfig() *ConnectionConfig {
@@ -662,7 +822,7 @@ type SaveConnectionResponse struct {
 
 func (x *SaveConnectionResponse) Reset() {
 	*x = SaveConnectionResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[9]
+	mi := &file_quarry_v1_connection_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -674,7 +834,7 @@ func (x *SaveConnectionResponse) String() string {
 func (*SaveConnectionResponse) ProtoMessage() {}
 
 func (x *SaveConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[9]
+	mi := &file_quarry_v1_connection_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -687,7 +847,7 @@ func (x *SaveConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveConnectionResponse.ProtoReflect.Descriptor instead.
 func (*SaveConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{9}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SaveConnectionResponse) GetConnection() *Connection {
@@ -706,7 +866,7 @@ type DeleteConnectionRequest struct {
 
 func (x *DeleteConnectionRequest) Reset() {
 	*x = DeleteConnectionRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[10]
+	mi := &file_quarry_v1_connection_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -718,7 +878,7 @@ func (x *DeleteConnectionRequest) String() string {
 func (*DeleteConnectionRequest) ProtoMessage() {}
 
 func (x *DeleteConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[10]
+	mi := &file_quarry_v1_connection_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -731,7 +891,7 @@ func (x *DeleteConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteConnectionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{10}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DeleteConnectionRequest) GetId() string {
@@ -749,7 +909,7 @@ type DeleteConnectionResponse struct {
 
 func (x *DeleteConnectionResponse) Reset() {
 	*x = DeleteConnectionResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[11]
+	mi := &file_quarry_v1_connection_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -761,7 +921,7 @@ func (x *DeleteConnectionResponse) String() string {
 func (*DeleteConnectionResponse) ProtoMessage() {}
 
 func (x *DeleteConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[11]
+	mi := &file_quarry_v1_connection_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -774,7 +934,7 @@ func (x *DeleteConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteConnectionResponse.ProtoReflect.Descriptor instead.
 func (*DeleteConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{11}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{14}
 }
 
 type TestConnectionRequest struct {
@@ -788,7 +948,7 @@ type TestConnectionRequest struct {
 
 func (x *TestConnectionRequest) Reset() {
 	*x = TestConnectionRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[12]
+	mi := &file_quarry_v1_connection_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -800,7 +960,7 @@ func (x *TestConnectionRequest) String() string {
 func (*TestConnectionRequest) ProtoMessage() {}
 
 func (x *TestConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[12]
+	mi := &file_quarry_v1_connection_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -813,7 +973,7 @@ func (x *TestConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestConnectionRequest.ProtoReflect.Descriptor instead.
 func (*TestConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{12}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *TestConnectionRequest) GetConfig() *ConnectionConfig {
@@ -839,7 +999,7 @@ type TestConnectionResponse struct {
 
 func (x *TestConnectionResponse) Reset() {
 	*x = TestConnectionResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[13]
+	mi := &file_quarry_v1_connection_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -851,7 +1011,7 @@ func (x *TestConnectionResponse) String() string {
 func (*TestConnectionResponse) ProtoMessage() {}
 
 func (x *TestConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[13]
+	mi := &file_quarry_v1_connection_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -864,7 +1024,7 @@ func (x *TestConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestConnectionResponse.ProtoReflect.Descriptor instead.
 func (*TestConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{13}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *TestConnectionResponse) GetLatencyMs() int64 {
@@ -883,7 +1043,7 @@ type ParseURIRequest struct {
 
 func (x *ParseURIRequest) Reset() {
 	*x = ParseURIRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[14]
+	mi := &file_quarry_v1_connection_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -895,7 +1055,7 @@ func (x *ParseURIRequest) String() string {
 func (*ParseURIRequest) ProtoMessage() {}
 
 func (x *ParseURIRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[14]
+	mi := &file_quarry_v1_connection_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -908,7 +1068,7 @@ func (x *ParseURIRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseURIRequest.ProtoReflect.Descriptor instead.
 func (*ParseURIRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{14}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ParseURIRequest) GetUri() string {
@@ -928,7 +1088,7 @@ type ParseURIResponse struct {
 
 func (x *ParseURIResponse) Reset() {
 	*x = ParseURIResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[15]
+	mi := &file_quarry_v1_connection_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -940,7 +1100,7 @@ func (x *ParseURIResponse) String() string {
 func (*ParseURIResponse) ProtoMessage() {}
 
 func (x *ParseURIResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[15]
+	mi := &file_quarry_v1_connection_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -953,7 +1113,7 @@ func (x *ParseURIResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseURIResponse.ProtoReflect.Descriptor instead.
 func (*ParseURIResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{15}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ParseURIResponse) GetConfig() *ConnectionConfig {
@@ -981,7 +1141,7 @@ type ConnectRequest struct {
 
 func (x *ConnectRequest) Reset() {
 	*x = ConnectRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[16]
+	mi := &file_quarry_v1_connection_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -993,7 +1153,7 @@ func (x *ConnectRequest) String() string {
 func (*ConnectRequest) ProtoMessage() {}
 
 func (x *ConnectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[16]
+	mi := &file_quarry_v1_connection_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1006,7 +1166,7 @@ func (x *ConnectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectRequest.ProtoReflect.Descriptor instead.
 func (*ConnectRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{16}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ConnectRequest) GetId() string {
@@ -1032,7 +1192,7 @@ type ConnectResponse struct {
 
 func (x *ConnectResponse) Reset() {
 	*x = ConnectResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[17]
+	mi := &file_quarry_v1_connection_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1044,7 +1204,7 @@ func (x *ConnectResponse) String() string {
 func (*ConnectResponse) ProtoMessage() {}
 
 func (x *ConnectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[17]
+	mi := &file_quarry_v1_connection_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1057,7 +1217,7 @@ func (x *ConnectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectResponse.ProtoReflect.Descriptor instead.
 func (*ConnectResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{17}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ConnectResponse) GetStatus() *ConnectionStatus {
@@ -1076,7 +1236,7 @@ type DisconnectRequest struct {
 
 func (x *DisconnectRequest) Reset() {
 	*x = DisconnectRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[18]
+	mi := &file_quarry_v1_connection_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1088,7 +1248,7 @@ func (x *DisconnectRequest) String() string {
 func (*DisconnectRequest) ProtoMessage() {}
 
 func (x *DisconnectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[18]
+	mi := &file_quarry_v1_connection_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1101,7 +1261,7 @@ func (x *DisconnectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisconnectRequest.ProtoReflect.Descriptor instead.
 func (*DisconnectRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{18}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DisconnectRequest) GetId() string {
@@ -1119,7 +1279,7 @@ type DisconnectResponse struct {
 
 func (x *DisconnectResponse) Reset() {
 	*x = DisconnectResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[19]
+	mi := &file_quarry_v1_connection_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1131,7 +1291,7 @@ func (x *DisconnectResponse) String() string {
 func (*DisconnectResponse) ProtoMessage() {}
 
 func (x *DisconnectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[19]
+	mi := &file_quarry_v1_connection_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1144,7 +1304,7 @@ func (x *DisconnectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisconnectResponse.ProtoReflect.Descriptor instead.
 func (*DisconnectResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{19}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{22}
 }
 
 type WatchStatusRequest struct {
@@ -1155,7 +1315,7 @@ type WatchStatusRequest struct {
 
 func (x *WatchStatusRequest) Reset() {
 	*x = WatchStatusRequest{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[20]
+	mi := &file_quarry_v1_connection_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1167,7 +1327,7 @@ func (x *WatchStatusRequest) String() string {
 func (*WatchStatusRequest) ProtoMessage() {}
 
 func (x *WatchStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[20]
+	mi := &file_quarry_v1_connection_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1180,7 +1340,7 @@ func (x *WatchStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchStatusRequest.ProtoReflect.Descriptor instead.
 func (*WatchStatusRequest) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{20}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{23}
 }
 
 type WatchStatusResponse struct {
@@ -1194,7 +1354,7 @@ type WatchStatusResponse struct {
 
 func (x *WatchStatusResponse) Reset() {
 	*x = WatchStatusResponse{}
-	mi := &file_quarry_v1_connection_proto_msgTypes[21]
+	mi := &file_quarry_v1_connection_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1206,7 +1366,7 @@ func (x *WatchStatusResponse) String() string {
 func (*WatchStatusResponse) ProtoMessage() {}
 
 func (x *WatchStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_quarry_v1_connection_proto_msgTypes[21]
+	mi := &file_quarry_v1_connection_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1219,7 +1379,7 @@ func (x *WatchStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchStatusResponse.ProtoReflect.Descriptor instead.
 func (*WatchStatusResponse) Descriptor() ([]byte, []int) {
-	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{21}
+	return file_quarry_v1_connection_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *WatchStatusResponse) GetStatuses() []*ConnectionStatus {
@@ -1277,7 +1437,17 @@ const file_quarry_v1_connection_proto_rawDesc = "" +
 	"\fdefault_port\x18\x03 \x01(\x05R\vdefaultPort\"\x14\n" +
 	"\x12ListDriversRequest\"F\n" +
 	"\x13ListDriversResponse\x12/\n" +
-	"\adrivers\x18\x01 \x03(\v2\x15.quarry.v1.DriverInfoR\adrivers\"\x18\n" +
+	"\adrivers\x18\x01 \x03(\v2\x15.quarry.v1.DriverInfoR\adrivers\"2\n" +
+	"\x1aDiscoverConnectionsRequest\x12\x14\n" +
+	"\x05paths\x18\x01 \x03(\tR\x05paths\"\x91\x01\n" +
+	"\x14DiscoveredConnection\x123\n" +
+	"\x06config\x18\x01 \x01(\v2\x1b.quarry.v1.ConnectionConfigR\x06config\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12\x1f\n" +
+	"\bpassword\x18\x03 \x01(\tH\x00R\bpassword\x88\x01\x01B\v\n" +
+	"\t_password\"x\n" +
+	"\x1bDiscoverConnectionsResponse\x12A\n" +
+	"\vconnections\x18\x01 \x03(\v2\x1f.quarry.v1.DiscoveredConnectionR\vconnections\x12\x16\n" +
+	"\x06errors\x18\x02 \x03(\tR\x06errors\"\x18\n" +
 	"\x16ListConnectionsRequest\"R\n" +
 	"\x17ListConnectionsResponse\x127\n" +
 	"\vconnections\x18\x01 \x03(\v2\x15.quarry.v1.ConnectionR\vconnections\"\x9b\x02\n" +
@@ -1329,14 +1499,15 @@ const file_quarry_v1_connection_proto_rawDesc = "" +
 	"\x1bCONNECTION_STATE_CONNECTING\x10\x02\x12\x1e\n" +
 	"\x1aCONNECTION_STATE_CONNECTED\x10\x03\x12\x19\n" +
 	"\x15CONNECTION_STATE_LOST\x10\x04\x12\x1b\n" +
-	"\x17CONNECTION_STATE_FAILED\x10\x052\xe8\x05\n" +
+	"\x17CONNECTION_STATE_FAILED\x10\x052\xce\x06\n" +
 	"\x11ConnectionService\x12L\n" +
 	"\vListDrivers\x12\x1d.quarry.v1.ListDriversRequest\x1a\x1e.quarry.v1.ListDriversResponse\x12X\n" +
 	"\x0fListConnections\x12!.quarry.v1.ListConnectionsRequest\x1a\".quarry.v1.ListConnectionsResponse\x12U\n" +
 	"\x0eSaveConnection\x12 .quarry.v1.SaveConnectionRequest\x1a!.quarry.v1.SaveConnectionResponse\x12[\n" +
 	"\x10DeleteConnection\x12\".quarry.v1.DeleteConnectionRequest\x1a#.quarry.v1.DeleteConnectionResponse\x12U\n" +
 	"\x0eTestConnection\x12 .quarry.v1.TestConnectionRequest\x1a!.quarry.v1.TestConnectionResponse\x12C\n" +
-	"\bParseURI\x12\x1a.quarry.v1.ParseURIRequest\x1a\x1b.quarry.v1.ParseURIResponse\x12@\n" +
+	"\bParseURI\x12\x1a.quarry.v1.ParseURIRequest\x1a\x1b.quarry.v1.ParseURIResponse\x12d\n" +
+	"\x13DiscoverConnections\x12%.quarry.v1.DiscoverConnectionsRequest\x1a&.quarry.v1.DiscoverConnectionsResponse\x12@\n" +
 	"\aConnect\x12\x19.quarry.v1.ConnectRequest\x1a\x1a.quarry.v1.ConnectResponse\x12I\n" +
 	"\n" +
 	"Disconnect\x12\x1c.quarry.v1.DisconnectRequest\x1a\x1d.quarry.v1.DisconnectResponse\x12N\n" +
@@ -1355,69 +1526,76 @@ func file_quarry_v1_connection_proto_rawDescGZIP() []byte {
 }
 
 var file_quarry_v1_connection_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_quarry_v1_connection_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_quarry_v1_connection_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_quarry_v1_connection_proto_goTypes = []any{
-	(ConnectionState)(0),             // 0: quarry.v1.ConnectionState
-	(*ConnectionConfig)(nil),         // 1: quarry.v1.ConnectionConfig
-	(*ConnectionStatus)(nil),         // 2: quarry.v1.ConnectionStatus
-	(*Connection)(nil),               // 3: quarry.v1.Connection
-	(*DriverInfo)(nil),               // 4: quarry.v1.DriverInfo
-	(*ListDriversRequest)(nil),       // 5: quarry.v1.ListDriversRequest
-	(*ListDriversResponse)(nil),      // 6: quarry.v1.ListDriversResponse
-	(*ListConnectionsRequest)(nil),   // 7: quarry.v1.ListConnectionsRequest
-	(*ListConnectionsResponse)(nil),  // 8: quarry.v1.ListConnectionsResponse
-	(*SaveConnectionRequest)(nil),    // 9: quarry.v1.SaveConnectionRequest
-	(*SaveConnectionResponse)(nil),   // 10: quarry.v1.SaveConnectionResponse
-	(*DeleteConnectionRequest)(nil),  // 11: quarry.v1.DeleteConnectionRequest
-	(*DeleteConnectionResponse)(nil), // 12: quarry.v1.DeleteConnectionResponse
-	(*TestConnectionRequest)(nil),    // 13: quarry.v1.TestConnectionRequest
-	(*TestConnectionResponse)(nil),   // 14: quarry.v1.TestConnectionResponse
-	(*ParseURIRequest)(nil),          // 15: quarry.v1.ParseURIRequest
-	(*ParseURIResponse)(nil),         // 16: quarry.v1.ParseURIResponse
-	(*ConnectRequest)(nil),           // 17: quarry.v1.ConnectRequest
-	(*ConnectResponse)(nil),          // 18: quarry.v1.ConnectResponse
-	(*DisconnectRequest)(nil),        // 19: quarry.v1.DisconnectRequest
-	(*DisconnectResponse)(nil),       // 20: quarry.v1.DisconnectResponse
-	(*WatchStatusRequest)(nil),       // 21: quarry.v1.WatchStatusRequest
-	(*WatchStatusResponse)(nil),      // 22: quarry.v1.WatchStatusResponse
-	nil,                              // 23: quarry.v1.ConnectionConfig.OptionsEntry
+	(ConnectionState)(0),                // 0: quarry.v1.ConnectionState
+	(*ConnectionConfig)(nil),            // 1: quarry.v1.ConnectionConfig
+	(*ConnectionStatus)(nil),            // 2: quarry.v1.ConnectionStatus
+	(*Connection)(nil),                  // 3: quarry.v1.Connection
+	(*DriverInfo)(nil),                  // 4: quarry.v1.DriverInfo
+	(*ListDriversRequest)(nil),          // 5: quarry.v1.ListDriversRequest
+	(*ListDriversResponse)(nil),         // 6: quarry.v1.ListDriversResponse
+	(*DiscoverConnectionsRequest)(nil),  // 7: quarry.v1.DiscoverConnectionsRequest
+	(*DiscoveredConnection)(nil),        // 8: quarry.v1.DiscoveredConnection
+	(*DiscoverConnectionsResponse)(nil), // 9: quarry.v1.DiscoverConnectionsResponse
+	(*ListConnectionsRequest)(nil),      // 10: quarry.v1.ListConnectionsRequest
+	(*ListConnectionsResponse)(nil),     // 11: quarry.v1.ListConnectionsResponse
+	(*SaveConnectionRequest)(nil),       // 12: quarry.v1.SaveConnectionRequest
+	(*SaveConnectionResponse)(nil),      // 13: quarry.v1.SaveConnectionResponse
+	(*DeleteConnectionRequest)(nil),     // 14: quarry.v1.DeleteConnectionRequest
+	(*DeleteConnectionResponse)(nil),    // 15: quarry.v1.DeleteConnectionResponse
+	(*TestConnectionRequest)(nil),       // 16: quarry.v1.TestConnectionRequest
+	(*TestConnectionResponse)(nil),      // 17: quarry.v1.TestConnectionResponse
+	(*ParseURIRequest)(nil),             // 18: quarry.v1.ParseURIRequest
+	(*ParseURIResponse)(nil),            // 19: quarry.v1.ParseURIResponse
+	(*ConnectRequest)(nil),              // 20: quarry.v1.ConnectRequest
+	(*ConnectResponse)(nil),             // 21: quarry.v1.ConnectResponse
+	(*DisconnectRequest)(nil),           // 22: quarry.v1.DisconnectRequest
+	(*DisconnectResponse)(nil),          // 23: quarry.v1.DisconnectResponse
+	(*WatchStatusRequest)(nil),          // 24: quarry.v1.WatchStatusRequest
+	(*WatchStatusResponse)(nil),         // 25: quarry.v1.WatchStatusResponse
+	nil,                                 // 26: quarry.v1.ConnectionConfig.OptionsEntry
 }
 var file_quarry_v1_connection_proto_depIdxs = []int32{
-	23, // 0: quarry.v1.ConnectionConfig.options:type_name -> quarry.v1.ConnectionConfig.OptionsEntry
+	26, // 0: quarry.v1.ConnectionConfig.options:type_name -> quarry.v1.ConnectionConfig.OptionsEntry
 	0,  // 1: quarry.v1.ConnectionStatus.state:type_name -> quarry.v1.ConnectionState
 	1,  // 2: quarry.v1.Connection.config:type_name -> quarry.v1.ConnectionConfig
 	2,  // 3: quarry.v1.Connection.status:type_name -> quarry.v1.ConnectionStatus
 	4,  // 4: quarry.v1.ListDriversResponse.drivers:type_name -> quarry.v1.DriverInfo
-	3,  // 5: quarry.v1.ListConnectionsResponse.connections:type_name -> quarry.v1.Connection
-	1,  // 6: quarry.v1.SaveConnectionRequest.config:type_name -> quarry.v1.ConnectionConfig
-	3,  // 7: quarry.v1.SaveConnectionResponse.connection:type_name -> quarry.v1.Connection
-	1,  // 8: quarry.v1.TestConnectionRequest.config:type_name -> quarry.v1.ConnectionConfig
-	1,  // 9: quarry.v1.ParseURIResponse.config:type_name -> quarry.v1.ConnectionConfig
-	2,  // 10: quarry.v1.ConnectResponse.status:type_name -> quarry.v1.ConnectionStatus
-	2,  // 11: quarry.v1.WatchStatusResponse.statuses:type_name -> quarry.v1.ConnectionStatus
-	5,  // 12: quarry.v1.ConnectionService.ListDrivers:input_type -> quarry.v1.ListDriversRequest
-	7,  // 13: quarry.v1.ConnectionService.ListConnections:input_type -> quarry.v1.ListConnectionsRequest
-	9,  // 14: quarry.v1.ConnectionService.SaveConnection:input_type -> quarry.v1.SaveConnectionRequest
-	11, // 15: quarry.v1.ConnectionService.DeleteConnection:input_type -> quarry.v1.DeleteConnectionRequest
-	13, // 16: quarry.v1.ConnectionService.TestConnection:input_type -> quarry.v1.TestConnectionRequest
-	15, // 17: quarry.v1.ConnectionService.ParseURI:input_type -> quarry.v1.ParseURIRequest
-	17, // 18: quarry.v1.ConnectionService.Connect:input_type -> quarry.v1.ConnectRequest
-	19, // 19: quarry.v1.ConnectionService.Disconnect:input_type -> quarry.v1.DisconnectRequest
-	21, // 20: quarry.v1.ConnectionService.WatchStatus:input_type -> quarry.v1.WatchStatusRequest
-	6,  // 21: quarry.v1.ConnectionService.ListDrivers:output_type -> quarry.v1.ListDriversResponse
-	8,  // 22: quarry.v1.ConnectionService.ListConnections:output_type -> quarry.v1.ListConnectionsResponse
-	10, // 23: quarry.v1.ConnectionService.SaveConnection:output_type -> quarry.v1.SaveConnectionResponse
-	12, // 24: quarry.v1.ConnectionService.DeleteConnection:output_type -> quarry.v1.DeleteConnectionResponse
-	14, // 25: quarry.v1.ConnectionService.TestConnection:output_type -> quarry.v1.TestConnectionResponse
-	16, // 26: quarry.v1.ConnectionService.ParseURI:output_type -> quarry.v1.ParseURIResponse
-	18, // 27: quarry.v1.ConnectionService.Connect:output_type -> quarry.v1.ConnectResponse
-	20, // 28: quarry.v1.ConnectionService.Disconnect:output_type -> quarry.v1.DisconnectResponse
-	22, // 29: quarry.v1.ConnectionService.WatchStatus:output_type -> quarry.v1.WatchStatusResponse
-	21, // [21:30] is the sub-list for method output_type
-	12, // [12:21] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	1,  // 5: quarry.v1.DiscoveredConnection.config:type_name -> quarry.v1.ConnectionConfig
+	8,  // 6: quarry.v1.DiscoverConnectionsResponse.connections:type_name -> quarry.v1.DiscoveredConnection
+	3,  // 7: quarry.v1.ListConnectionsResponse.connections:type_name -> quarry.v1.Connection
+	1,  // 8: quarry.v1.SaveConnectionRequest.config:type_name -> quarry.v1.ConnectionConfig
+	3,  // 9: quarry.v1.SaveConnectionResponse.connection:type_name -> quarry.v1.Connection
+	1,  // 10: quarry.v1.TestConnectionRequest.config:type_name -> quarry.v1.ConnectionConfig
+	1,  // 11: quarry.v1.ParseURIResponse.config:type_name -> quarry.v1.ConnectionConfig
+	2,  // 12: quarry.v1.ConnectResponse.status:type_name -> quarry.v1.ConnectionStatus
+	2,  // 13: quarry.v1.WatchStatusResponse.statuses:type_name -> quarry.v1.ConnectionStatus
+	5,  // 14: quarry.v1.ConnectionService.ListDrivers:input_type -> quarry.v1.ListDriversRequest
+	10, // 15: quarry.v1.ConnectionService.ListConnections:input_type -> quarry.v1.ListConnectionsRequest
+	12, // 16: quarry.v1.ConnectionService.SaveConnection:input_type -> quarry.v1.SaveConnectionRequest
+	14, // 17: quarry.v1.ConnectionService.DeleteConnection:input_type -> quarry.v1.DeleteConnectionRequest
+	16, // 18: quarry.v1.ConnectionService.TestConnection:input_type -> quarry.v1.TestConnectionRequest
+	18, // 19: quarry.v1.ConnectionService.ParseURI:input_type -> quarry.v1.ParseURIRequest
+	7,  // 20: quarry.v1.ConnectionService.DiscoverConnections:input_type -> quarry.v1.DiscoverConnectionsRequest
+	20, // 21: quarry.v1.ConnectionService.Connect:input_type -> quarry.v1.ConnectRequest
+	22, // 22: quarry.v1.ConnectionService.Disconnect:input_type -> quarry.v1.DisconnectRequest
+	24, // 23: quarry.v1.ConnectionService.WatchStatus:input_type -> quarry.v1.WatchStatusRequest
+	6,  // 24: quarry.v1.ConnectionService.ListDrivers:output_type -> quarry.v1.ListDriversResponse
+	11, // 25: quarry.v1.ConnectionService.ListConnections:output_type -> quarry.v1.ListConnectionsResponse
+	13, // 26: quarry.v1.ConnectionService.SaveConnection:output_type -> quarry.v1.SaveConnectionResponse
+	15, // 27: quarry.v1.ConnectionService.DeleteConnection:output_type -> quarry.v1.DeleteConnectionResponse
+	17, // 28: quarry.v1.ConnectionService.TestConnection:output_type -> quarry.v1.TestConnectionResponse
+	19, // 29: quarry.v1.ConnectionService.ParseURI:output_type -> quarry.v1.ParseURIResponse
+	9,  // 30: quarry.v1.ConnectionService.DiscoverConnections:output_type -> quarry.v1.DiscoverConnectionsResponse
+	21, // 31: quarry.v1.ConnectionService.Connect:output_type -> quarry.v1.ConnectResponse
+	23, // 32: quarry.v1.ConnectionService.Disconnect:output_type -> quarry.v1.DisconnectResponse
+	25, // 33: quarry.v1.ConnectionService.WatchStatus:output_type -> quarry.v1.WatchStatusResponse
+	24, // [24:34] is the sub-list for method output_type
+	14, // [14:24] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_quarry_v1_connection_proto_init() }
@@ -1425,17 +1603,18 @@ func file_quarry_v1_connection_proto_init() {
 	if File_quarry_v1_connection_proto != nil {
 		return
 	}
-	file_quarry_v1_connection_proto_msgTypes[8].OneofWrappers = []any{}
-	file_quarry_v1_connection_proto_msgTypes[12].OneofWrappers = []any{}
+	file_quarry_v1_connection_proto_msgTypes[7].OneofWrappers = []any{}
+	file_quarry_v1_connection_proto_msgTypes[11].OneofWrappers = []any{}
 	file_quarry_v1_connection_proto_msgTypes[15].OneofWrappers = []any{}
-	file_quarry_v1_connection_proto_msgTypes[16].OneofWrappers = []any{}
+	file_quarry_v1_connection_proto_msgTypes[18].OneofWrappers = []any{}
+	file_quarry_v1_connection_proto_msgTypes[19].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_quarry_v1_connection_proto_rawDesc), len(file_quarry_v1_connection_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   23,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

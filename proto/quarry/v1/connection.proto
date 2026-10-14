@@ -13,6 +13,10 @@ service ConnectionService {
   rpc DeleteConnection(DeleteConnectionRequest) returns (DeleteConnectionResponse);
   rpc TestConnection(TestConnectionRequest) returns (TestConnectionResponse);
   rpc ParseURI(ParseURIRequest) returns (ParseURIResponse);
+  // DiscoverConnections reads .pgpass, pg_service.conf and tnsnames.ora from
+  // their usual locations, plus the given files, and returns the entries not
+  // saved yet.
+  rpc DiscoverConnections(DiscoverConnectionsRequest) returns (DiscoverConnectionsResponse);
   rpc Connect(ConnectRequest) returns (ConnectResponse);
   rpc Disconnect(DisconnectRequest) returns (DisconnectResponse);
   // WatchStatus sends the status of every connection, then each change. One
@@ -75,6 +79,25 @@ message ListDriversRequest {}
 
 message ListDriversResponse {
   repeated DriverInfo drivers = 1;
+}
+
+message DiscoverConnectionsRequest {
+  repeated string paths = 1;
+}
+
+message DiscoveredConnection {
+  // No id; saving it with SaveConnection creates the connection.
+  ConnectionConfig config = 1;
+  // File the entry came from.
+  string source = 2;
+  // From .pgpass, when it has one for this entry.
+  optional string password = 3;
+}
+
+message DiscoverConnectionsResponse {
+  repeated DiscoveredConnection connections = 1;
+  // Files that exist but could not be read or parsed.
+  repeated string errors = 2;
 }
 
 message ListConnectionsRequest {}

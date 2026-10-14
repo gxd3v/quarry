@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package quarry.v1;
+
+import "quarry/v1/explorer.proto";
+
+option go_package = "github.com/gxd3v/quarry/gen/quarry/v1;quarryv1";
+
+// ImportService loads CSV files into tables on their own session.
+service ImportService {
+  // PreviewCSV sniffs a file's format and suggests how its columns map to
+  // the table's.
+  rpc PreviewCSV(PreviewCSVRequest) returns (PreviewCSVResponse);
+  // ImportCSV inserts every row in one transaction, reporting progress;
+  // closing the stream cancels and rolls back.
+  rpc ImportCSV(ImportCSVRequest) returns (stream ImportCSVResponse);
+}
+
+message CSVFormat {
+  // One character: , ; tab or |.
+  string delimiter = 1;
+  bool has_header = 2;
+  // UTF-8 | UTF-8 BOM | UTF-16LE | UTF-16BE | Windows-1252
+  string encoding = 3;
+}
+
+message CSVRow {
+  repeated string cells = 1;
+}
+
+message PreviewCSVRequest {
+  string conn_id = 1;
+  Scope scope = 2;
+  Node table = 3;
+  string path = 4;
+  // Overrides the sniffed format when set.
+  CSVFormat format = 5;
+}
+
+message PreviewCSVResponse {
+  CSVFormat format = 1;
+  // The header row, or column1..columnN when there is none.
+  repeated string header = 2;
+  repeated CSVRow rows = 3;
+  repeated string table_columns = 4;
+  // Suggested target column per file column; "" skips it.
+  repeated string mapping = 5;
+}
+
+message ImportCSVRequest {
+  string conn_id = 1;
+  Scope scope = 2;
+  Node table = 3;
+  string path = 4;
+  CSVFormat format = 5;
+  // Target column per file column; "" skips it.
+  repeated string mapping = 6;
+  // Cells equal to this text are NULL; empty cells are NULL when unset.
+  optional string null_text = 7;
+  // Required on prod connections.
+  bool confirmed = 8;
+}
+
+message ImportCSVResponse {
+  int64 rows = 1;
+  bool done = 2;
+}
