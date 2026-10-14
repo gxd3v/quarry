@@ -41,7 +41,7 @@
   }
 
   async function toggle(r: Row) {
-    if (r.type === 'group') return explorer.toggleGroup(r.name)
+    if (r.type === 'group') return explorer.toggleGroup(r.path)
     if (r.expanded) return explorer.collapse(r.key)
     if (r.type === 'conn') return connectAndExpand(r.conn.id)
     if (!r.node.leaf) await explorer.expand(r.connId, r.node)
@@ -62,9 +62,9 @@
   function items(r: Row): MenuEntry[] {
     if (r.type === 'group') {
       return [
-        { label: r.expanded ? 'Collapse' : 'Expand', run: () => explorer.toggleGroup(r.name) },
+        { label: r.expanded ? 'Collapse' : 'Expand', run: () => explorer.toggleGroup(r.path) },
         'separator',
-        { label: 'Rename group…', icon: 'edit', run: () => void renameGroup(r.name) },
+        { label: 'Rename folder…', icon: 'edit', run: () => void renameGroup(r.path) },
       ]
     }
     if (r.type === 'conn') {
@@ -84,7 +84,7 @@
         r.conn.favorite
           ? { label: 'Remove from favorites', icon: 'star', run: () => void setFavorite(id, false) }
           : { label: 'Add to favorites', icon: 'star', run: () => void setFavorite(id, true) },
-        { label: 'Move to group…', icon: 'folder', run: () => void moveToGroup(id) },
+        { label: 'Move to folder…', icon: 'folder', run: () => void moveToGroup(id) },
         'separator',
         { label: 'Edit…', icon: 'edit', run: () => editConnection(id) },
         { label: 'Delete…', icon: 'trash', danger: true, run: () => deleteConnection(id) },

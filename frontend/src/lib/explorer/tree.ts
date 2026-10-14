@@ -19,7 +19,9 @@ export interface ChildrenState {
 export interface ConnEntry {
   id: string
   name: string
+  kind: string
   env: string
+  // Folder path, nested with "/" (e.g. "Acme/PRD"); '' at the top level.
   group: string
   favorite: boolean
 }
@@ -31,7 +33,7 @@ interface RowBase {
 }
 
 export type Row =
-  | (RowBase & { type: 'group'; name: string })
+  | (RowBase & { type: 'group'; name: string; path: string; count: number })
   | (RowBase & { type: 'conn'; conn: ConnEntry; loading: boolean; error: string })
   | (RowBase & { type: 'node'; connId: string; node: TreeNode; loading: boolean; error: string })
 
@@ -40,40 +42,73 @@ export interface TreeSource {
   expanded(key: string): boolean
 }
 
-const SEP = '\u0001'
+const SEP = ''
 
 // nodeKey identifies a node; a connection's own key is its id.
 export function nodeKey(connId: string, path: readonly string[] = []): string {
   return path.length ? connId + SEP + path.join(SEP) : connId
 }
 
-export function groupKey(name: string): string {
-  return 'group' + SEP + name
+export function groupKey(path: string): string {
+  return 'group' + SEP + path
 }
 
-// orderConnections puts favorites first, then ungrouped connections, then
-// groups, each by name.
-export function orderConnections(conns: readonly ConnEntry[]): { group: string; conns: ConnEntry[] }[] {
-  const byName = (a: ConnEntry, b: ConnEntry) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-  const favorites = conns.filter((c) => c.favorite).sort(byName)
-  const groups = new Map<string, ConnEntry[]>()
+// groupParts splits a folder path, ignoring blank parts.
+export function groupParts(group: string): string[] {
+  return group
+    .split('/')
+    .map((p) => p.trim())
+    .filter(Boolean)
+}
+
+// Folder is a node of the connection folders: subfolders and connections.
+export interface Folder {
+  name: string
+  path: string
+  folders: Folder[]
+  conns: ConnEntry[]
+}
+
+const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
+
+// folderTree arranges connections in their folders, each level sorted by
+// name; favorites are listed apart, at the top.
+export function folderTree(conns: readonly ConnEntry[]): { favorites: ConnEntry[]; root: Folder } {
+  const root: Folder = { name: '', path: '', folders: [], conns: [] }
+  const favorites: ConnEntry[] = []
   for (const c of conns) {
-    if (c.favorite) continue
-    const list = groups.get(c.group) ?? []
-    list.push(c)
-    groups.set(c.group, list)
+    if (c.favorite) {
+      favorites.push(c)
+      continue
+    }
+    let f = root
+    for (const part of groupParts(c.group)) {
+      let next = f.folders.find((x) => x.name.toLowerCase() === part.toLowerCase())
+      if (!next) {
+        next = { name: part, path: f.path ? `${f.path}/${part}` : part, folders: [], conns: [] }
+        f.folders.push(next)
+      }
+      f = next
+    }
+    f.conns.push(c)
   }
-  const out: { group: string; conns: ConnEntry[] }[] = []
-  if (favorites.length) out.push({ group: '', conns: favorites })
-  const names = [...groups.keys()].sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
-  for (const g of names) {
-    const list = groups.get(g)!.sort(byName)
-    if (g === '' && out.length) out[0].conns.push(...list)
-    else out.push({ group: g, conns: list })
+  const sort = (f: Folder) => {
+    f.folders.sort(byName)
+    f.conns.sort(byName)
+    f.folders.forEach(sort)
   }
-  return out
+  sort(root)
+  favorites.sort(byName)
+  return { favorites, root }
 }
 
+function countConns(f: Folder): number {
+  return f.conns.length + f.folders.reduce((n, x) => n + countConns(x), 0)
+}
+
+// flatten lists the visible rows: favorites, then folders (folders first at
+// every level), then connections and their expanded objects. A filter opens
+// whatever leads to a match among names and loaded objects.
 export function flatten(conns: readonly ConnEntry[], src: TreeSource, filter = ''): Row[] {
   const q = filter.trim().toLowerCase()
   const hit = (name: string) => name.toLowerCase().includes(q)
@@ -88,6 +123,8 @@ export function flatten(conns: readonly ConnEntry[], src: TreeSource, filter = '
     }
     return v
   }
+  const connMatches = (c: ConnEntry) => !q || hit(c.name) || below(c.id, c.id)
+  const folderMatches = (f: Folder): boolean => hit(f.name) || f.conns.some(connMatches) || f.folders.some(folderMatches)
 
   const rows: Row[] = []
   const visit = (connId: string, key: string, depth: number) => {
@@ -98,40 +135,34 @@ export function flatten(conns: readonly ConnEntry[], src: TreeSource, filter = '
       if (q && !hit(n.name) && !deep) continue
       const child = src.children(k)
       const expanded = !n.leaf && (q ? deep || (src.expanded(k) && hit(n.name)) : src.expanded(k))
-      rows.push({
-        type: 'node',
-        key: k,
-        depth,
-        expanded,
-        connId,
-        node: n,
-        loading: child?.loading ?? false,
-        error: child?.error ?? '',
-      })
+      rows.push({ type: 'node', key: k, depth, expanded, connId, node: n, loading: child?.loading ?? false, error: child?.error ?? '' })
       if (expanded) visit(connId, k, depth + 1)
     }
   }
-
-  for (const { group, conns: list } of orderConnections(conns)) {
-    let depth = 0
-    if (group) {
-      const gk = groupKey(group)
-      const visible = list.filter((c) => !q || hit(c.name) || below(c.id, c.id))
-      if (q && !visible.length) continue
-      const open = q !== '' || src.expanded(gk)
-      rows.push({ type: 'group', key: gk, depth: 0, expanded: open, name: group })
-      if (!open) continue
-      depth = 1
-    }
-    for (const c of list) {
-      const deep = q !== '' && below(c.id, c.id)
-      if (q && !hit(c.name) && !deep) continue
-      const st = src.children(c.id)
-      const expanded = q ? deep : src.expanded(c.id)
-      rows.push({ type: 'conn', key: c.id, depth, expanded, conn: c, loading: st?.loading ?? false, error: st?.error ?? '' })
-      if (expanded) visit(c.id, c.id, depth + 1)
-    }
+  const addConn = (c: ConnEntry, depth: number, all: boolean) => {
+    const deep = q !== '' && below(c.id, c.id)
+    if (q && !all && !hit(c.name) && !deep) return
+    const st = src.children(c.id)
+    const expanded = q ? deep : src.expanded(c.id)
+    rows.push({ type: 'conn', key: c.id, depth, expanded, conn: c, loading: st?.loading ?? false, error: st?.error ?? '' })
+    if (expanded) visit(c.id, c.id, depth + 1)
   }
+  // all: the folder name matched, so everything inside shows.
+  const addFolder = (f: Folder, depth: number, all: boolean) => {
+    if (q && !all && !folderMatches(f)) return
+    const k = groupKey(f.path)
+    const inside = all || (q !== '' && hit(f.name))
+    const open = q ? true : src.expanded(k)
+    rows.push({ type: 'group', key: k, depth, expanded: open, name: f.name, path: f.path, count: countConns(f) })
+    if (!open) return
+    for (const sub of f.folders) addFolder(sub, depth + 1, inside)
+    for (const c of f.conns) addConn(c, depth + 1, inside)
+  }
+
+  const { favorites, root } = folderTree(conns)
+  for (const c of favorites) addConn(c, 0, false)
+  for (const f of root.folders) addFolder(f, 0, false)
+  for (const c of root.conns) addConn(c, 0, false)
   return rows
 }
 

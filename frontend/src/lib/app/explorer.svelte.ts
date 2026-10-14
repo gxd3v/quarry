@@ -1,24 +1,36 @@
 import { SvelteMap, SvelteSet } from 'svelte/reactivity'
 import { explorerClient } from '../api/clients'
 import { errorMessage } from '../api/errors'
-import { flatten, groupKey, nodeKey, type ChildrenState, type ConnEntry, type Row, type TreeNode } from '../explorer/tree'
+import { flatten, groupKey, groupParts, nodeKey, type ChildrenState, type ConnEntry, type Row, type TreeNode } from '../explorer/tree'
 import { connections } from './connections.svelte'
 
 export type { Row, TreeNode }
 export { nodeKey }
+
+const OPEN_GROUPS_KEY = 'quarry.openFolders'
+
+function readOpenGroups(): string[] {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(OPEN_GROUPS_KEY) ?? '[]')
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
+  } catch {
+    return []
+  }
+}
 
 class Explorer {
   filter = $state('')
   selected = $state('')
   readonly #children = new SvelteMap<string, ChildrenState>()
   readonly #expanded = new SvelteSet<string>()
-  readonly #collapsedGroups = new SvelteSet<string>()
+  // Open folders, by path; folders start closed and remember their state.
+  readonly #openGroups = new SvelteSet<string>(readOpenGroups())
   readonly #inflight = new Map<string, Promise<TreeNode[]>>()
 
   readonly entries: ConnEntry[] = $derived(
     connections.list.map((c) => {
       const cfg = c.config!
-      return { id: cfg.id, name: cfg.name, env: cfg.env || 'local', group: cfg.group, favorite: cfg.favorite }
+      return { id: cfg.id, name: cfg.name, kind: cfg.kind, env: cfg.env || 'local', group: cfg.group, favorite: cfg.favorite }
     }),
   )
 
@@ -27,7 +39,7 @@ class Explorer {
       this.entries,
       {
         children: (k) => this.#children.get(k),
-        expanded: (k) => (k.startsWith(groupKey('')) ? !this.#collapsedGroups.has(k) : this.#expanded.has(k)),
+        expanded: (k) => (k.startsWith(groupKey('')) ? this.#openGroups.has(k.slice(groupKey('').length)) : this.#expanded.has(k)),
       },
       this.filter,
     ),
@@ -85,10 +97,20 @@ class Explorer {
     this.#expanded.delete(key)
   }
 
-  toggleGroup(name: string) {
-    const k = groupKey(name)
-    if (this.#collapsedGroups.has(k)) this.#collapsedGroups.delete(k)
-    else this.#collapsedGroups.add(k)
+  toggleGroup(path: string, open = !this.#openGroups.has(path)) {
+    if (open) this.#openGroups.add(path)
+    else this.#openGroups.delete(path)
+    try {
+      localStorage.setItem(OPEN_GROUPS_KEY, JSON.stringify([...this.#openGroups]))
+    } catch {
+      // storage may be unavailable
+    }
+  }
+
+  // reveal opens the folders that lead to a connection.
+  reveal(group: string) {
+    const parts = groupParts(group)
+    for (let i = 1; i <= parts.length; i++) this.toggleGroup(parts.slice(0, i).join('/'), true)
   }
 
   async refresh(connId: string, node: TreeNode | null) {

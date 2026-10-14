@@ -9,6 +9,7 @@ import { schemaOfObject, scopeOfPath, selectAll, type ScopeLike } from '../sql'
 import { MAX_TERMINALS } from '../terminal/limits'
 import { orderBy } from '../table/order'
 import { connections } from './connections.svelte'
+import { groupParts } from '../explorer/tree'
 import { explorer, type TreeNode } from './explorer.svelte'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
@@ -162,31 +163,45 @@ export function setFavorite(id: string, favorite: boolean) {
   return saveConfig(id, (c) => (c.favorite = favorite), favorite ? 'Add to favorites' : 'Remove from favorites')
 }
 
+// groupNames lists every folder path in use, parents included.
 export function groupNames(): string[] {
-  return [...new Set(connections.list.map((c) => c.config!.group).filter(Boolean))].sort()
+  const out = new Set<string>()
+  for (const c of connections.list) {
+    const parts = groupParts(c.config!.group)
+    for (let i = 1; i <= parts.length; i++) out.add(parts.slice(0, i).join('/'))
+  }
+  return [...out].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
 }
 
 export async function moveToGroup(id: string) {
   const cfg = connections.config(id)
   if (!cfg) return
   const group = await prompts.prompt({
-    title: `Group of ${cfg.name}`,
-    label: 'Group (empty for none)',
+    title: `Folder of ${cfg.name}`,
+    label: 'Folder; "/" nests folders, empty is the top level',
     value: cfg.group,
-    placeholder: 'e.g. Billing',
+    placeholder: 'e.g. Acme/PRD',
     suggestions: groupNames(),
     confirm: 'Move',
   })
-  if (group === null || group.trim() === cfg.group) return
-  await saveConfig(id, (c) => (c.group = group.trim()), 'Move to group')
+  if (group === null || groupParts(group).join('/') === cfg.group) return
+  await saveConfig(id, (c) => (c.group = groupParts(group).join('/')), 'Move to folder')
+  explorer.reveal(groupParts(group).join('/'))
 }
 
-export async function renameGroup(name: string) {
-  const next = await prompts.prompt({ title: `Rename group ${name}`, label: 'Name (empty ungroups)', value: name, confirm: 'Rename' })
-  if (next === null || next.trim() === name) return
-  for (const c of connections.list.filter((c) => c.config!.group === name)) {
-    await saveConfig(c.config!.id, (x) => (x.group = next.trim()), 'Rename group')
+// renameGroup renames a folder path, moving its subfolders along.
+export async function renameGroup(path: string) {
+  const next = await prompts.prompt({ title: `Rename folder ${path}`, label: 'Folder path; empty moves its connections to the top level', value: path, confirm: 'Rename' })
+  if (next === null) return
+  const to = groupParts(next).join('/')
+  if (to === path) return
+  for (const c of connections.list) {
+    const g = c.config!.group
+    if (g !== path && !g.startsWith(path + '/')) continue
+    const moved = [to, g.slice(path.length + 1)].filter(Boolean).join('/')
+    await saveConfig(c.config!.id, (x) => (x.group = moved), 'Rename folder')
   }
+  if (to) explorer.reveal(to)
 }
 
 // run runs a script tab's statement, or reloads a table tab.

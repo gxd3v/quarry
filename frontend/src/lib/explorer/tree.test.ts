@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { dragName, flatten, groupKey, nodeKey, orderConnections, type ChildrenState, type ConnEntry, type TreeNode } from './tree'
+import { dragName, flatten, folderTree, groupKey, groupParts, nodeKey, type ChildrenState, type ConnEntry, type TreeNode } from './tree'
 
-const conn = (id: string, group = '', favorite = false): ConnEntry => ({ id, name: id, env: 'dev', group, favorite })
+const conn = (id: string, group = '', favorite = false, name = id): ConnEntry => ({ id, name, kind: 'postgres', env: 'dev', group, favorite })
 const node = (path: string[], kind = 'table', leaf = false): TreeNode => ({ path, kind, name: path.at(-1)!, detail: '', leaf })
 
 function source(children: Record<string, TreeNode[]>, expanded: string[]) {
@@ -13,14 +13,43 @@ function source(children: Record<string, TreeNode[]>, expanded: string[]) {
 const label = (r: ReturnType<typeof flatten>[number]) =>
   '  '.repeat(r.depth) + (r.type === 'group' ? `[${r.name}]` : r.type === 'conn' ? r.conn.name : r.node.name)
 
-describe('orderConnections', () => {
-  it('puts favorites first, then ungrouped, then groups', () => {
-    const out = orderConnections([conn('b', 'g2'), conn('z'), conn('a', 'g1'), conn('f', 'g1', true), conn('c')])
-    expect(out.map((g) => [g.group, g.conns.map((c) => c.id)])).toEqual([
-      ['', ['f', 'c', 'z']],
-      ['g1', ['a']],
-      ['g2', ['b']],
+describe('folders', () => {
+  it('nests folders and sorts every level', () => {
+    const { favorites, root } = folderTree([
+      conn('1', 'Iris/TST', false, 'postgres'),
+      conn('2', 'Iris/PRD', false, 'postgres'),
+      conn('3', 'Iris/PRD', false, 'oracle'),
+      conn('4', 'acme'),
+      conn('5', 'Acme', false, 'tst'),
+      conn('6', '', true, 'fav'),
+      conn('7', ''),
+      conn('8', 'Item 10'),
+      conn('9', 'Item 9'),
     ])
+    expect(favorites.map((c) => c.name)).toEqual(['fav'])
+    expect(root.folders.map((f) => f.path)).toEqual(['acme', 'Iris', 'Item 9', 'Item 10'])
+    expect(root.folders[0].conns.map((c) => c.name)).toEqual(['4', 'tst'])
+    const iris = root.folders[1]
+    expect(iris.folders.map((f) => f.path)).toEqual(['Iris/PRD', 'Iris/TST'])
+    expect(iris.folders[0].conns.map((c) => c.name)).toEqual(['oracle', 'postgres'])
+    expect(root.conns.map((c) => c.id)).toEqual(['7'])
+    expect(groupParts(' a / / b ')).toEqual(['a', 'b'])
+  })
+
+  it('shows open folders with counts', () => {
+    const conns = [conn('p', 'Iris/PRD', false, 'postgres'), conn('t', 'Iris/TST', false, 'postgres'), conn('x')]
+    const closed = flatten(conns, source({}, []))
+    expect(closed.map(label)).toEqual(['[Iris]', 'x'])
+    expect(closed[0]).toMatchObject({ type: 'group', count: 2, path: 'Iris' })
+    const open = flatten(conns, source({}, [groupKey('Iris'), groupKey('Iris/PRD')]))
+    expect(open.map(label)).toEqual(['[Iris]', '  [PRD]', '    postgres', '  [TST]', 'x'])
+  })
+
+  it('filters through folders', () => {
+    const conns = [conn('p', 'Iris/PRD', false, 'postgres'), conn('o', 'Iris/TST', false, 'oracle'), conn('k', 'Kestrel', false, 'postgres')]
+    expect(flatten(conns, source({}, []), 'orac').map(label)).toEqual(['[Iris]', '  [TST]', '    oracle'])
+    // A matching folder shows everything inside it.
+    expect(flatten(conns, source({}, []), 'iris').map(label)).toEqual(['[Iris]', '  [PRD]', '    postgres', '  [TST]', '    oracle'])
   })
 })
 
@@ -38,8 +67,8 @@ describe('flatten', () => {
 
   it('shows expanded nodes only', () => {
     const rows = flatten(conns, source(children, [groupKey('work'), 'pg', nodeKey('pg', ['app'])]))
-    expect(rows.map(label)).toEqual(['local', '[work]', '  pg', '    app', '      public'])
-    expect(flatten(conns, source(children, [])).map(label)).toEqual(['local', '[work]'])
+    expect(rows.map(label)).toEqual(['[work]', '  pg', '    app', '      public', 'local'])
+    expect(flatten(conns, source(children, [])).map(label)).toEqual(['[work]', 'local'])
   })
 
   it('filters loaded nodes and opens their ancestors', () => {
