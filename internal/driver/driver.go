@@ -197,6 +197,16 @@ type RowChange struct {
 	Values map[string]any
 }
 
+// Importer is implemented by connections that can bulk load rows (V-11).
+type Importer interface {
+	// Import inserts rows into the given columns of target in one
+	// transaction. next returns the following row and io.EOF at the end;
+	// cells are nil (NULL) or text, converted by the server to the column
+	// types. progress, when set, is called with the rows sent so far,
+	// possibly from another goroutine.
+	Import(ctx context.Context, target *Node, columns []string, next func() ([]any, error), progress func(int64)) (int64, error)
+}
+
 // Catalog is implemented by connections that can list a scope's objects in
 // one call, for autocomplete and object search.
 type Catalog interface {
