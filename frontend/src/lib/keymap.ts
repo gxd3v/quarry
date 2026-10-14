@@ -36,7 +36,21 @@ export const DEFAULT_BINDINGS: Readonly<Record<string, string>> = {
   'Mod+P': 'palette.objects',
   'Mod+Shift+O': 'palette.objects',
   'Mod+Shift+H': 'results.history',
+  'Mod+Shift+T': 'terminal.open',
 }
+
+// Actions whose chords still work while a terminal has the focus; every
+// other key goes to the shell (Ctrl+N, Ctrl+P, Ctrl+R... mean something there).
+export const TERMINAL_ACTIONS: ReadonlySet<string> = new Set([
+  'tab.close',
+  'tab.next',
+  'tab.prev',
+  'focus.explorer',
+  'focus.editor',
+  'focus.results',
+  'palette.commands',
+  'terminal.open',
+])
 
 // Action id → chord; '' means unbound.
 export type Overrides = Readonly<Record<string, string>>

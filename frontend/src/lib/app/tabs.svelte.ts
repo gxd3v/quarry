@@ -14,6 +14,7 @@ import { connections } from './connections.svelte'
 import { afterClose, cycle } from './layout'
 import { notify } from './notify.svelte'
 import { prompts } from './prompts.svelte'
+import type { TerminalSession } from '../terminal/session.svelte'
 import type { TableState } from './table.svelte'
 import { slicer } from './yield'
 
@@ -35,13 +36,16 @@ export interface TabOptions {
   cursor?: number
   // Makes a table tab showing this table.
   table?: TableState
+  // Makes a terminal tab running this shell.
+  terminal?: TerminalSession
 }
 
 export class Tab {
   readonly key: number
-  // A script editor, or a table view (see table.svelte.ts).
-  readonly kind: 'script' | 'table'
+  // A script editor, a table view (see table.svelte.ts) or a terminal.
+  readonly kind: 'script' | 'table' | 'terminal'
   readonly table: TableState | null
+  readonly terminal: TerminalSession | null
   title = $state('')
   path = $state('')
   scratch = $state(false)
@@ -74,8 +78,9 @@ export class Tab {
 
   constructor(key: number, connId: string, scope: ScopeLike, text: string, opts: TabOptions = {}) {
     this.key = key
-    this.kind = opts.table ? 'table' : 'script'
+    this.kind = opts.table ? 'table' : opts.terminal ? 'terminal' : 'script'
     this.table = opts.table ?? null
+    this.terminal = opts.terminal ?? null
     this.path = opts.path ?? ''
     this.title = opts.title || `Script ${key}`
     this.scratch = opts.scratch ?? false
@@ -118,7 +123,7 @@ class Tabs {
     const tab = new Tab(++this.#seq, connId, scope, text, opts)
     this.tabs.push(tab)
     this.activeKey = tab.key
-    this.#server(tab).catch((err: unknown) => notify.error(err, 'Open tab'))
+    if (tab.kind !== 'terminal') this.#server(tab).catch((err: unknown) => notify.error(err, 'Open tab'))
     return tab
   }
 
@@ -160,6 +165,7 @@ class Tabs {
       if (!ok) return
     }
     tab.controller?.abort()
+    tab.terminal?.dispose()
     const i = this.tabs.indexOf(tab)
     if (i < 0) return
     const n = this.tabs.length

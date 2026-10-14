@@ -10,6 +10,7 @@
     newScript,
     openObject,
     renameGroup,
+    openTerminal,
     selectFrom,
     setFavorite,
   } from '../app/actions'
@@ -70,6 +71,7 @@
       return [
         { label: 'New script', icon: 'script', run: () => newScript(id) },
         { label: 'New scratch', icon: 'scratch', run: () => guard('New scratch', () => workspace.newScratch(id)) },
+        { label: 'Open terminal', icon: 'terminal', run: () => void openTerminal(id) },
         'separator',
         live
           ? { label: 'Disconnect', icon: 'unplug', run: () => disconnect(id) }
@@ -102,6 +104,7 @@
         icon: 'script',
         run: () => newScript(r.connId, scope),
       })
+      if (SCOPED.has(n.kind)) out.push({ label: `Open terminal in ${n.name}`, icon: 'terminal', run: () => void openTerminal(r.connId, scope) })
     }
     if (!n.leaf) {
       if (out.length) out.push('separator')

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { closeTab, exportTableData, guard, pickAndNewScript, run, saveTab } from '../app/actions'
+  import { closeTab, exportTableData, guard, pickAndNewScript, pickAndOpenTerminal, run, saveTab } from '../app/actions'
   import { onBeforeClose } from '../api/server'
   import { connections } from '../app/connections.svelte'
   import { exportTasks } from '../app/exports.svelte'
@@ -13,7 +13,7 @@
   import { ui } from '../app/ui.svelte'
   import { workspace } from '../app/workspace.svelte'
   import { COPY_FORMATS } from '../grid/copy'
-  import { chordOf, keymap, label } from '../keymap'
+  import { chordOf, keymap, label, TERMINAL_ACTIONS } from '../keymap'
   import { clipboard } from '../ui/clipboard'
   import ContextMenu from '../ui/ContextMenu.svelte'
   import { startDrag } from '../ui/drag'
@@ -34,12 +34,14 @@
   import StatusBar from './StatusBar.svelte'
   import TableView from './TableView.svelte'
   import TabBar from './TabBar.svelte'
+  import TerminalView from './TerminalView.svelte'
   import Toasts from './Toasts.svelte'
 
   let center = $state<HTMLElement>()
   let explorerRef = $state<ReturnType<typeof Explorer>>()
   let resultsRef = $state<ReturnType<typeof ResultsPanel>>()
   let tableRef = $state<ReturnType<typeof TableView>>()
+  let terminalRef = $state<ReturnType<typeof TerminalView>>()
 
   const layout = $derived(ui.layout)
 
@@ -70,15 +72,20 @@
     // A focused component may own some chords (e.g. Ctrl+Shift+N sets NULL in a table grid).
     const own = e.target instanceof Element ? e.target.closest('[data-keys]')?.getAttribute('data-keys') : null
     if (own && own.split(' ').includes(chordOf(e))) return
+    if (e.target instanceof Element && e.target.closest('.xterm-host')) {
+      const id = keymap.boundTo(chordOf(e))
+      if (!id || !TERMINAL_ACTIONS.has(id)) return
+    }
     if (keymap.handle(e)) {
       e.preventDefault()
       e.stopPropagation()
     }
   }
 
+  // withTab runs f on the active script or table tab.
   const withTab = (f: (t: NonNullable<typeof tabs.active>) => unknown) => () => {
     const t = tabs.active
-    if (!t) return false
+    if (!t || t.kind === 'terminal') return false
     f(t)
   }
 
@@ -149,6 +156,7 @@
         },
       },
       { id: 'connection.new', category: 'Connection', title: 'New connection…', run: () => void (ui.editing = '') },
+      { id: 'terminal.open', category: 'Connection', title: 'Open terminal', run: () => void pickAndOpenTerminal() },
       { id: 'palette.commands', category: 'View', title: 'Command palette', run: () => void (ui.palette = 'commands') },
       { id: 'palette.objects', category: 'Go', title: 'Go to object…', run: withTab(() => (ui.palette = 'objects')) },
       { id: 'keymap.edit', category: 'Preferences', title: 'Keyboard shortcuts', run: () => void (ui.shortcuts = true) },
@@ -189,6 +197,7 @@
         title: 'Focus editor',
         run: () => {
           if (tabs.active?.kind === 'table') return void tableRef?.focus()
+          if (tabs.active?.kind === 'terminal') return void terminalRef?.focus()
           if (!editorHost.view) return false
           editorHost.view.focus()
         },
@@ -268,8 +277,12 @@
     <TabBar />
     {#if tabs.active}
       {@const tab = tabs.active}
-      <ContextBar {tab} />
-      {#if tab.kind === 'table'}
+      {#if tab.kind !== 'terminal'}<ContextBar {tab} />{/if}
+      {#if tab.kind === 'terminal'}
+        <div class="center table" bind:this={center}>
+          {#key tab.key}<TerminalView {tab} bind:this={terminalRef} />{/key}
+        </div>
+      {:else if tab.kind === 'table'}
         <div class="center table" bind:this={center}>
           {#key tab.key}<TableView {tab} bind:this={tableRef} />{/key}
         </div>

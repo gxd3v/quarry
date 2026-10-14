@@ -6,6 +6,7 @@ import { ConnectionConfigSchema, type ConnectionConfig } from '../gen/quarry/v1/
 import { RunMode } from '../gen/quarry/v1/query_pb'
 import type { ResultSet } from '../run/model'
 import { scopeOfPath, selectAll, type ScopeLike } from '../sql'
+import { MAX_TERMINALS, TerminalSession } from '../terminal/session.svelte'
 import { orderBy } from '../table/order'
 import { connections } from './connections.svelte'
 import { explorer, type TreeNode } from './explorer.svelte'
@@ -53,6 +54,29 @@ export function newScript(connId: string, scope?: ScopeLike, text = '', title = 
 export async function pickAndNewScript() {
   const id = await ui.pickConnection('New script on…')
   if (id) newScript(id)
+}
+
+// openTerminal opens a terminal tab running the connection's native CLI.
+export function openTerminal(connId: string, scope?: ScopeLike): Tab | null {
+  if (tabs.tabs.filter((t) => t.kind === 'terminal').length >= MAX_TERMINALS) {
+    notify.toast('error', `At most ${MAX_TERMINALS} terminals can be open; close one first`)
+    return null
+  }
+  const cfg = connections.config(connId)
+  const where = scope ?? { database: cfg?.database ?? '', schema: '' }
+  const term = new TerminalSession(connId, where, () => prompts.askPassword(`Password for ${connections.name(connId)}`, ''))
+  const tab = tabs.open(connId, where, '', { title: 'Shell', terminal: term })
+  void term.start()
+  return tab
+}
+
+// pickAndOpenTerminal opens a terminal on the active tab's connection, or
+// asks for one.
+export async function pickAndOpenTerminal() {
+  const t = tabs.active
+  if (t && t.kind !== 'terminal') return void openTerminal(t.connId, t.scope)
+  const id = await ui.pickConnection('Open terminal on…')
+  if (id) openTerminal(id)
 }
 
 // openObject opens the table tab of a table or view.

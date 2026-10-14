@@ -21,6 +21,15 @@
   }
 
   function oncontextmenu(e: MouseEvent, t: Tab) {
+    if (t.kind === 'terminal') {
+      menu.open(e, [
+        { label: 'Restart', icon: 'refresh', run: () => void t.terminal?.start() },
+        'separator',
+        { label: 'Close', hint: hint('tab.close'), run: () => close(t) },
+        { label: 'Close others', run: () => tabs.tabs.filter((x) => x !== t).forEach(close) },
+      ])
+      return
+    }
     if (t.kind === 'table') {
       menu.open(e, [
         { label: 'Refresh', icon: 'refresh', run: () => void run(t) },
@@ -67,6 +76,7 @@
       >
         <span class="env-dot" data-env={env}></span>
         {#if t.scratch}<span class="scratch" title="Scratch"><Icon name="scratch" size={12} /></span>{/if}
+        {#if t.terminal}<span class="tkind" title="Terminal"><Icon name="terminal" size={12} /></span>{/if}
         {#if t.table}<span class="tkind" title={t.table.node.kind}><Icon name={t.table.node.kind === 'view' ? 'view' : 'table'} size={12} /></span>{/if}
         <span class="title">{t.title}</span>
         <span class="conn">@{connections.name(t.connId)}</span>

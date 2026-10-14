@@ -228,7 +228,9 @@ class Workspace {
     clearTimeout(this.#timer)
     if (!this.ready || !this.#pending) return this.#saving ?? undefined
     this.#pending = false
-    const snapshot = tabs.tabs.map((t): TabSnapshot => {
+    // Terminals are not restored: the shell behind them is gone.
+    const kept = tabs.tabs.filter((t) => t.kind !== 'terminal')
+    const snapshot = kept.map((t): TabSnapshot => {
       const st = tabs.state(t)
       const keep = !t.path || t.dirty
       return {
@@ -242,7 +244,7 @@ class Workspace {
         table: t.table?.snapshot(),
       }
     })
-    const active = tabs.tabs.findIndex((t) => t.key === tabs.activeKey)
+    const active = kept.findIndex((t) => t.key === tabs.activeKey)
     const session = create(SessionSchema, encodeSession(snapshot, active, ui.layout))
     const p = workspaceClient()
       .saveSession({ session })
