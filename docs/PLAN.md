@@ -267,21 +267,22 @@ Notas: no WSLg o WebKitGTK não tinha acesso a `/dev/dri` (render por software),
 **A3 · Dados e segurança (feita a 2026-10-14).** Aceite quando se editam e aplicam 50 alterações numa transação e se exporta 1M linhas para CSV em streaming.
 - Vista de tabela (filtro, ordenação no servidor, filtro rápido, edição, Apply, confirmação PROD), Describe/DDL, export com progresso, guardas de risco e read-only, parâmetros, transações visíveis, reconexão.
 
-**A4 · Oracle e shell.** Aceite com A1–A3 a funcionar contra Oracle Free e a shell a abrir autenticada no scope.
+**A4 · Oracle e shell (feita a 2026-10-14).** Aceite com A1–A3 a funcionar contra Oracle Free e a shell a abrir autenticada no scope.
 - [x] Driver Oracle (`internal/driver/oracle`), com CI contra Oracle Free.
 - [x] Backend do terminal: `ShellService` com PTY (creack/pty, conpty).
-- [ ] UI: terminal embutido com xterm.js.
+- [x] UI: terminal embutido com xterm.js (tabs que mantêm o scrollback, até 3 abertos, xterm carregado a pedido).
 
-**A5 · MongoDB e Redis.** Aceite quando se consultam, filtram e editam documentos e keys.
+**A5 · MongoDB e Redis (feita a 2026-10-14).** Aceite quando se consultam, filtram e editam documentos e keys.
 - [x] Drivers MongoDB e Redis, com CI.
-- [ ] UI de documentos (árvore/JSON) e de valores por tipo, com TTL.
+- [x] UI de documentos (árvore/JSON, edição do documento inteiro) e de keys por tipo, com TTL.
 
 **A6 · Polimento e distribuição (v1.0).** Aceite com a v1.0 publicada (deb/rpm/AppImage, AUR, Homebrew, Scoop, winget).
 - [x] Backend: SSH tunnel, EXPLAIN (PG/Oracle/Mongo), LISTEN/NOTIFY, import CSV, importers de conexões.
-- [ ] UI: campos SSH, EXPLAIN visual, painel de notificações, import CSV, importar conexões, formatador SQL, temas Catppuccin.
-- [ ] Auto-update.
-- Migração para Wails v3 se já for estável (multi-janela, tray).
-- Empacotamento: `wails build` por plataforma; Linux com CGO e webkit2gtk-4.1.
+- [x] UI: campos SSH, EXPLAIN visual, painel de notificações, import CSV, importar conexões, formatador SQL (sql-formatter), temas Catppuccin.
+- [x] Auto-update: verificação diária da última release no GitHub, com aviso e link (a app não se substitui; ver `internal/update`).
+- [ ] Migração para Wails v3: adiada, a 2026-10-14 o v3 ainda está em beta (v3.0.0-beta.29).
+- [x] Empacotamento: workflow `release.yml` (deb, rpm, AppImage, zip e instalador NSIS, app macOS universal) e manifestos AUR/Homebrew/Scoop/winget; ver `docs/RELEASING.md`.
+- [ ] Publicar a v1.0: precisa de licença, das contas dos gestores de pacotes e da tua aprovação.
 
 ## 11. Requisitos não funcionais
 
