@@ -73,6 +73,9 @@ func (s *Service) SaveConnection(_ context.Context, req *connect.Request[quarryv
 		return nil, err
 	}
 	cfg, err = s.m.save(cfg, req.Msg.Password, req.Msg.ForgetPassword)
+	if err == nil {
+		err = s.m.storeSSHSecrets(cfg.ID, req.Msg.SshPassword, req.Msg.SshPassphrase)
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -238,3 +238,32 @@ func TestTestConnection(t *testing.T) {
 	_, err = test(&quarryv1.ConnectionConfig{Kind: "oracle"}, nil)
 	wantCode(t, err, connect.CodeFailedPrecondition)
 }
+
+func TestSaveSSHSecrets(t *testing.T) {
+	secrets := store.NewMemory()
+	m, _, _ := newTestManager(t, secrets)
+	client := newClient(t, m)
+	save := func(id string, pw, pass *string) string {
+		t.Helper()
+		res, err := client.SaveConnection(t.Context(), connect.NewRequest(&quarryv1.SaveConnectionRequest{
+			Config:      &quarryv1.ConnectionConfig{Id: id, Name: "A", Kind: "postgres", Host: "db", Options: map[string]string{"ssh_host": "bastion"}},
+			SshPassword: pw, SshPassphrase: pass,
+		}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res.Msg.Connection.Config.Id
+	}
+	id := save("", ptr("pw"), ptr("phrase"))
+	uid, _ := parseID(id)
+	if got := m.sshSecret(uid, sshPassword) + "/" + m.sshSecret(uid, sshPassphrase); got != "pw/phrase" {
+		t.Fatalf("stored %q", got)
+	}
+	save(id, nil, ptr(""))
+	if got := m.sshSecret(uid, sshPassword) + "/" + m.sshSecret(uid, sshPassphrase); got != "pw/" {
+		t.Fatalf("after removing the passphrase %q", got)
+	}
+	if _, err := secrets.Get(sshSecretID(uid, sshPassphrase)); !errors.Is(err, store.ErrNoSecret) {
+		t.Fatalf("passphrase still stored: %v", err)
+	}
+}

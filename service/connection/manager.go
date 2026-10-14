@@ -555,6 +555,27 @@ func (m *Manager) sshSecret(id uuid.UUID, kind string) string {
 	return s
 }
 
+// storeSSHSecrets stores the given SSH secrets; "" removes one, nil keeps it.
+func (m *Manager) storeSSHSecrets(id uuid.UUID, password, passphrase *string) error {
+	for kind, v := range map[string]*string{sshPassword: password, sshPassphrase: passphrase} {
+		if v == nil {
+			continue
+		}
+		var err error
+		if *v == "" {
+			if err = m.secrets.Delete(sshSecretID(id, kind)); errors.Is(err, store.ErrNoSecret) {
+				err = nil
+			}
+		} else {
+			err = m.secrets.Set(sshSecretID(id, kind), *v)
+		}
+		if err != nil {
+			return connect.NewError(connect.CodeUnavailable, fmt.Errorf("connection saved, but the SSH %s could not be stored: %w", kind, err))
+		}
+	}
+	return nil
+}
+
 // openConn opens and, when supported, pings a connection. The latency is the
 // ping round trip, or the open time for drivers without Ping.
 func openConn(ctx context.Context, d driver.Driver, cfg driver.Config, pw string) (driver.Conn, time.Duration, error) {
