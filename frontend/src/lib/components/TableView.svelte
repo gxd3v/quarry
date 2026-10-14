@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { exportTableData } from '../app/actions'
-  import { TABLE_VIEWS, type TableView } from '../app/table.svelte'
+  import { exportTableData, guard } from '../app/actions'
+  import { connections } from '../app/connections.svelte'
+  import { prompts } from '../app/prompts.svelte'
+  import { flavorOf, keyTTL, loadDescribe, redisKey, setTTL, viewsFor, type TableView } from '../app/table.svelte'
   import type { Tab } from '../app/tabs.svelte'
   import TableData from './TableData.svelte'
   import TableDetails from './TableDetails.svelte'
@@ -12,6 +14,28 @@
   let { tab }: Props = $props()
 
   const t = $derived(tab.table!)
+  const flavor = $derived(flavorOf(connections.config(tab.connId)?.kind ?? ''))
+  const views = $derived(viewsFor(flavor))
+  const isKey = $derived(flavor === 'redis' && t.node.kind === 'key')
+  const ttl = $derived(isKey ? keyTTL(t) : '')
+
+  // Redis keys show their TTL, which comes with the stats.
+  $effect(() => {
+    if (isKey && !t.describe && !t.describing && !t.describeError) void loadDescribe(tab)
+  })
+
+  async function editTTL() {
+    const v = await prompts.prompt({
+      title: `Expiry of ${t.node.name}`,
+      label: 'Seconds until the key expires; empty or 0 removes the expiry',
+      placeholder: 'e.g. 3600',
+      confirm: 'Set',
+    })
+    if (v === null) return
+    const secs = Number(v.trim() || '0')
+    if (!Number.isFinite(secs) || secs < 0) return void prompts.ask({ title: 'Expiry', text: `"${v}" is not a number of seconds.`, confirm: 'OK' })
+    guard('Set expiry', () => setTTL(tab, secs))
+  }
   let data = $state<ReturnType<typeof TableData>>()
 
   export function shownGrid() {
@@ -28,22 +52,26 @@
 
   function onkeydown(e: KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-    const i = TABLE_VIEWS.findIndex((v) => v.view === t.view)
-    const n = TABLE_VIEWS.length
-    const next = TABLE_VIEWS[(i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n].view
+    const i = views.findIndex((v) => v.view === t.view)
+    const n = views.length
+    const next = views[(i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n].view
     t.view = next
     e.preventDefault()
     ;(e.currentTarget as HTMLElement).querySelector<HTMLElement>(`[data-view="${next}"]`)?.focus()
   }
 
-  const kindLabel = $derived(t.node.kind === 'view' ? 'view' : 'table')
+  const kindLabel = $derived(t.node.kind === 'view' || t.node.kind === 'collection' || t.node.kind === 'key' ? t.node.kind : flavor === 'redis' ? 'keys' : 'table')
+  const qualifier = $derived(flavor === 'sql' && t.node.path[1] ? `${t.node.path[1]}.` : '')
   const select = (v: TableView) => (t.view = v)
 </script>
 
 <section class="table-view">
   <div class="subtabs" role="tablist" tabindex="-1" {onkeydown}>
-    <span class="what" title={t.node.path.join(' › ')}>{kindLabel} <b>{t.node.path[1] ? `${t.node.path[1]}.` : ''}{t.node.name}</b></span>
-    {#each TABLE_VIEWS as v (v.view)}
+    <span class="what" title={t.node.path.join(' › ')}>{kindLabel} <b>{qualifier}{(isKey && redisKey(t.node.path)) || t.node.name}</b></span>
+    {#if isKey}
+      <button class="ttl" type="button" title="Change the expiry" onclick={editTTL}>TTL {ttl || '…'}</button>
+    {/if}
+    {#each views as v (v.view)}
       <button
         type="button"
         role="tab"
@@ -70,6 +98,23 @@
 </section>
 
 <style>
+  .ttl {
+    margin-right: 8px;
+    padding: 1px 8px;
+    border: 1px solid var(--surface1);
+    border-radius: 10px;
+    background: var(--crust);
+    color: var(--subtext0);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .ttl:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
   .table-view {
     display: flex;
     flex-direction: column;

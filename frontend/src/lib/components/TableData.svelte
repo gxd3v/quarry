@@ -6,6 +6,7 @@
   import {
     applyChanges,
     applyFilter,
+    flavorOf,
     deleteRows,
     discardChanges,
     duplicateRows,
@@ -20,6 +21,7 @@
   import { ui } from '../app/ui.svelte'
   import type { CopyOptions } from '../grid/copy'
   import Grid from '../grid/Grid.svelte'
+  import DocumentsView from './DocumentsView.svelte'
   import { quoteIdent } from '../sql'
   import { cycleOrder, orderBy, sortOf } from '../table/order'
   import Icon from '../ui/Icon.svelte'
@@ -54,6 +56,16 @@
   })
 
   const source = $derived(snap.result ? t.source(snap.result.buffer) : null)
+  const flavor = $derived(flavorOf(connections.config(tab.connId)?.kind ?? ''))
+  // MongoDB results end with the whole document (see the mongo driver).
+  const docCol = $derived(flavor === 'mongo' && source ? source.columns.findIndex((c) => c.name === '{document}') : -1)
+  const showDocs = $derived(docCol >= 0 && t.documents)
+  const FILTERS = {
+    sql: { kw: 'WHERE', title: 'SQL WHERE condition; Enter applies', placeholder: "condition, e.g. status = 'open' (Enter)" },
+    mongo: { kw: 'FILTER', title: 'MongoDB query document; Enter applies', placeholder: '{ status: "open", total: { $gt: 10 } } (Enter)' },
+    redis: { kw: 'MATCH', title: 'Key pattern (folders, hashes, sets) or index range (lists, streams); Enter applies', placeholder: 'pattern, e.g. user:* (Enter)' },
+  }
+  const filterUI = $derived(FILTERS[flavor])
   let grid = $state<ReturnType<typeof Grid>>()
   let history = $state<string[]>([])
 
@@ -169,6 +181,7 @@
     insertRow(t)
     await tick()
     const row = (source?.length ?? 1) - 1
+    if (showDocs) return openEditor(row, docCol)
     grid?.setSelection(row, 0)
     grid?.focus()
   }
@@ -248,13 +261,13 @@
 
 <div class="data">
   <div class="toolbar">
-    <div class="filter" class:active={!!t.filter} title="SQL WHERE condition; Enter applies">
-      <span class="kw">WHERE</span>
+    <div class="filter" class:active={!!t.filter} title={filterUI.title}>
+      <span class="kw">{filterUI.kw}</span>
       <input
         class="filter-input"
         type="text"
         spellcheck="false"
-        placeholder="condition, e.g. status = 'open' (Enter)"
+        placeholder={filterUI.placeholder}
         list="filters-{tab.key}"
         bind:value={t.draft}
         onkeydown={filterKey}
@@ -276,8 +289,14 @@
     <button class="icon-btn" type="button" title="Refresh (Ctrl+Enter)" disabled={!!tab.busy} onclick={() => guard('Refresh', () => loadData(tab))}>
       <Icon name="refresh" />
     </button>
+    {#if docCol >= 0}
+      <div class="seg" role="radiogroup" aria-label="Show as">
+        <button type="button" role="radio" aria-checked={t.documents} class:on={t.documents} onclick={() => (t.documents = true)}>Documents</button>
+        <button type="button" role="radio" aria-checked={!t.documents} class:on={!t.documents} onclick={() => (t.documents = false)}>Grid</button>
+      </div>
+    {/if}
     {#if t.editable}
-      <button class="icon-btn" type="button" title="Add row (Insert)" onclick={addRow}><Icon name="rowAdd" /></button>
+      <button class="icon-btn" type="button" title={showDocs ? 'Add document' : 'Add row (Insert)'} onclick={addRow}><Icon name="rowAdd" /></button>
     {/if}
     <button class="icon-btn" type="button" title="Export data…" onclick={onexport}><Icon name="export" /></button>
   </div>
@@ -289,7 +308,16 @@
   {/if}
 
   <div class="grid-wrap">
-    {#if source}
+    {#if source && showDocs}
+      <DocumentsView
+        {source}
+        col={docCol}
+        version={tab.version + t.epoch}
+        editable={t.editable}
+        onedit={(row) => openEditor(row, docCol)}
+        ondelete={(row) => deleteRows(t, [row])}
+      />
+    {:else if source}
       <Grid
         bind:this={grid}
         buffer={source}
@@ -413,6 +441,27 @@
     color: var(--overlay1);
     font-family: var(--font-mono);
     font-size: 11px;
+  }
+
+  .seg {
+    display: flex;
+    border: 1px solid var(--surface1);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .seg button {
+    padding: 2px 8px;
+    border: 0;
+    background: var(--crust);
+    color: var(--subtext0);
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .seg button.on {
+    background: color-mix(in srgb, var(--accent) 18%, var(--crust));
+    color: var(--text);
   }
 
   .quick {

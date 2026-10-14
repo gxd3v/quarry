@@ -27,7 +27,8 @@
 
   let tree = $state<HTMLDivElement>()
 
-  const OPENABLE = new Set(['table', 'view'])
+  const OPENABLE = new Set(['table', 'view', 'collection', 'key'])
+  const SQL_OBJECT = new Set(['table', 'view'])
   const SCOPED = new Set(['database', 'schema'])
 
   const rows = $derived(explorer.rows)
@@ -91,8 +92,8 @@
     const out: MenuEntry[] = []
     if (OPENABLE.has(n.kind)) {
       out.push(
-        { label: n.kind === 'view' ? 'Open view' : 'Open table', icon: 'table', hint: 'Enter', run: () => openObject(r.connId, n) },
-        { label: 'New script with SELECT', icon: 'play', run: () => selectFrom(r.connId, n) },
+        { label: `Open ${n.kind}`, icon: n.kind === 'view' ? 'view' : n.kind === 'key' ? 'key' : 'table', hint: 'Enter', run: () => openObject(r.connId, n) },
+        ...(SQL_OBJECT.has(n.kind) && n.path.length > 2 ? [{ label: 'New script with SELECT', icon: 'play', run: () => selectFrom(r.connId, n) }] : []),
         { label: 'Export data…', icon: 'export', run: () => exportNode(r.connId, n) },
         'separator',
       )
