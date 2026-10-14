@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"embed"
 	"flag"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -17,6 +20,7 @@ import (
 
 	"github.com/gxd3v/quarry/internal/applog"
 	"github.com/gxd3v/quarry/internal/store"
+	"github.com/gxd3v/quarry/internal/update"
 	"github.com/gxd3v/quarry/service"
 )
 
@@ -29,6 +33,7 @@ var version = "dev"
 func main() {
 	debug := flag.Bool("debug", false, "verbose logging, also to stderr")
 	showVersion := flag.Bool("version", false, "print the version and exit")
+	waitPID := flag.Int("wait-pid", 0, "wait for this process (the copy being updated) to exit first")
 	benchOut := flag.String("bench-out", "", "run the frontend benchmark, write its JSON report to this file and quit")
 	flag.Parse()
 	if *showVersion {
@@ -37,8 +42,14 @@ func main() {
 	}
 	closeLog := setupLog(*debug)
 	defer closeLog()
+	slog.Info("quarry starting", "version", version, "pid", os.Getpid(), "after", *waitPID)
 
-	app := &App{bench: *benchOut != ""}
+	if *waitPID > 0 {
+		waitExit(*waitPID, 15*time.Second)
+	}
+	cleanupUpdate()
+
+	app := &App{bench: *benchOut != "", updates: update.NewChecker(cmp.Or(os.Getenv("QUARRY_UPDATE_URL"), update.LatestURL))}
 	dev := service.Dev{}
 	if app.bench {
 		dev.OnReport = func(report string) {
@@ -77,6 +88,21 @@ func main() {
 }
 
 // setupLog sends slog to StateDir/quarry.log (and stderr with debug on).
+// cleanupUpdate removes the copy an update replaced and its leftovers.
+func cleanupUpdate() {
+	exe, err := os.Executable()
+	if err != nil {
+		return
+	}
+	update.Cleanup(exe)
+	if p := os.Getenv("APPIMAGE"); p != "" {
+		update.Cleanup(p)
+	}
+	if bundle := filepath.Dir(filepath.Dir(filepath.Dir(exe))); strings.HasSuffix(bundle, ".app") {
+		update.Cleanup(bundle)
+	}
+}
+
 func setupLog(debug bool) (closeLog func()) {
 	level := slog.LevelInfo
 	if debug {
